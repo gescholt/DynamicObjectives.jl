@@ -14,6 +14,6 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 [compat]
 julia = "1.10"
 DataStructures = "0.18"
-ModelingToolkit = "9"
+ModelingToolkit = "9, 10"
 OrdinaryDiffEq = "6"
 StaticArrays = "1"
