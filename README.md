@@ -133,11 +133,26 @@ Dynamic_objectives = {path = "../Dynamic_objectives"}
 
 ## Testing
 
-Run the basic test suite:
+### Quick Test Script (Recommended)
+
+```bash
+# Run all tests (basic + validation)
+./run_tests.sh
+
+# Or run specific test suite
+./run_tests.sh basic      # Basic tests only
+./run_tests.sh validate   # Validate all 13 models
+```
+
+### Manual Testing
 
 ```julia
+# Basic test suite
 using Pkg
 Pkg.test("Dynamic_objectives")
+
+# Comprehensive validation of all 13 models
+include("test/validate_all_models.jl")
 ```
 
 ## Testing with globtim
