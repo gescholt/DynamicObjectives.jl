@@ -77,11 +77,11 @@ for (i, spec) in enumerate(models)
         @test error_at_test > 0
 
         println("✓ PASS (error @ true: $(round(error_at_true, sigdigits=3)), @ perturbed: $(round(error_at_test, sigdigits=3)))")
-        passed += 1
+        global passed += 1
     catch e
         println("✗ FAIL")
         println("  Error: ", sprint(showerror, e))
-        failed += 1
+        global failed += 1
     end
 end
 
@@ -111,11 +111,11 @@ try
     @test error_at_true < 1e-6
 
     println("✓ PASS (error @ true: $(round(error_at_true, sigdigits=3)))")
-    passed += 1
+    global passed += 1
 catch e
     println("✗ FAIL")
     println("  Error: ", sprint(showerror, e))
-    failed += 1
+    global failed += 1
 end
 
 # Summary

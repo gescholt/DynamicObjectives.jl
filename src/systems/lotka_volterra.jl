@@ -30,7 +30,7 @@ function define_generalized_lotka_volterra_4D()
     states = [x1, x2, x3, x4]
     parameters = [a1, a2, a3, a4, B11, B12, B13, B14, B21, B22, B23, B24, B31, B32, B33, B34, B41, B42, B43, B44]
 
-    @named model = ODESystem(
+    @mtkbuild model = ODESystem(
         [
             D(x1) ~ x1 * (a1 + B11*x1 + B12*x2 + B13*x3 + B14*x4),
             D(x2) ~ x2 * (a2 + B21*x1 + B22*x2 + B23*x3 + B24*x4),
@@ -94,7 +94,7 @@ function define_constrained_lotka_volterra_4D()
     B11, B12, B21, B22 = 0.2, -0.6, 0.6, 0.05
     B33, B34, B43, B44 = 0.2, -0.6, 0.6, 0.05
 
-    @named model = ODESystem(
+    @mtkbuild model = ODESystem(
         [
             D(x1) ~ x1 * (a1 + B11*x1 + B12*x2 + eps1*x3 + eps2*x4),
             D(x2) ~ x2 * (a2 + B21*x1 + B22*x2 + eps3*x3 + eps4*x4),
@@ -133,7 +133,7 @@ function define_lotka_volterra_3D_model()
     D = Differential(t)
     params = [a, b, c]
     states = [x1, x2]
-    @named model = ODESystem(
+    @mtkbuild model = ODESystem(
         [D(x1) ~ a * x1 + b * x1 * x2, D(x2) ~ b * x1 * x2 + c * x2],
         t,
         states,
@@ -166,7 +166,7 @@ function define_lotka_volterra_3D_model_v2()
     D = Differential(t)
     params = [a, b, c]
     states = [x1, x2]
-    @named model = ODESystem(
+    @mtkbuild model = ODESystem(
         [D(x1) ~ a * x1 + -b * x1 * x2,
             D(x2) ~ -b * x2 + c * x1 * x2],
         t,
@@ -200,7 +200,7 @@ function define_lotka_volterra_2D_model()
     D = Differential(t)
     params = [a, b]
     states = [x1, x2]
-    @named model = ODESystem(
+    @mtkbuild model = ODESystem(
         [D(x1) ~ a * x1 + b * x1 * x2, D(x2) ~ b * x1 * x2 + x2],
         t,
         states,
@@ -233,7 +233,7 @@ function define_lotka_volterra_2D_model_v3()
     D = Differential(t)
     params = [a, b]
     states = [x1, x2]
-    @named model = ODESystem(
+    @mtkbuild model = ODESystem(
         [D(x1) ~ a * x1 + -b * x1 * x2,
             D(x2) ~ -b * x2 + 0.5 * x1 * x2],
         t,
@@ -268,7 +268,7 @@ function define_lotka_volterra_2D_model_v3_two_outputs()
     D = Differential(t)
     params = [a, b]
     states = [x1, x2]
-    @named model = ODESystem(
+    @mtkbuild model = ODESystem(
         [D(x1) ~ a * x1 + -b * x1 * x2,
             D(x2) ~ -b * x2 + 0.5 * x1 * x2],
         t,
@@ -302,7 +302,7 @@ function define_lotka_volterra_2D_model_v2()
     D = Differential(t)
     params = [a, b]
     states = [x1, x2]
-    @named model = ODESystem(
+    @mtkbuild model = ODESystem(
         [
             D(x1) ~ a * x1 + b * x1 * x2,
             D(x2) ~ b * x1 * x2 + 0.1 * x2],
