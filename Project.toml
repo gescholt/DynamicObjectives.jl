@@ -5,6 +5,8 @@ version = "0.1.0"
 
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
+Globtim = "00da9514-6261-47e9-8848-33640cb1e528"
+GlobtimPostProcessing = "b470b6bb-4443-493e-998d-c7c5e1aa9116"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
 ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"

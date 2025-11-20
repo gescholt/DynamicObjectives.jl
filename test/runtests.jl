@@ -2,6 +2,8 @@ using Dynamic_objectives
 using Test
 
 @testset "Dynamic_objectives.jl" begin
+
+    # Core functionality tests
     @testset "DAISY LV4D Definition" begin
         model, params, states, outputs = define_daisy_ex3_model_4D()
         @test length(params) == 4
@@ -49,4 +51,8 @@ using Test
         @test L2_norm(y_true, y_test) > 0
         @test log_L2_norm(y_true, y_test) < 0  # log of small number
     end
+
 end
+
+# globtim integration tests (comprehensive test suite)
+include("test_globtim_integration.jl")
