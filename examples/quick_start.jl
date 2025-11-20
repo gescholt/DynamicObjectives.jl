@@ -3,6 +3,7 @@
 # Usage: julia --project=. examples/quick_start.jl
 
 using Dynamic_objectives
+using LinearAlgebra
 using Printf
 
 println("="^80)

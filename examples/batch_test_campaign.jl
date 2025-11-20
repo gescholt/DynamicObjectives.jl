@@ -3,6 +3,7 @@
 # Usage: julia --project=. examples/batch_test_campaign.jl
 
 using Dynamic_objectives
+using LinearAlgebra
 using Printf
 using Dates
 
