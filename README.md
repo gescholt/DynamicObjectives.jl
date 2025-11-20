@@ -72,6 +72,22 @@ p_test = p_true .+ 0.1
 # The optimizer will minimize error_func to recover p_true
 ```
 
+## Ready-to-Run Examples
+
+See **[examples/](examples/)** directory for complete testing campaign scripts:
+
+- **[quick_start.jl](examples/quick_start.jl)** ⭐ - Your first test (start here!)
+- **[single_test_template.jl](examples/single_test_template.jl)** - Template for testing any model
+- **[batch_test_campaign.jl](examples/batch_test_campaign.jl)** - Run multiple models systematically
+- **[test_configs.jl](examples/test_configs.jl)** - Pre-configured test cases for all 13 models
+
+```bash
+# Run your first test
+julia --project=. examples/quick_start.jl
+```
+
+See **[examples/README.md](examples/README.md)** for complete usage guide.
+
 ## Timeout Mechanism
 
 A key feature for global optimization: the `eval_timeout` parameter prevents the ODE solver from stalling on difficult parameter regions.
