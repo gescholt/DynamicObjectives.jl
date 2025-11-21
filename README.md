@@ -12,6 +12,7 @@ This package provides objective functions based on dynamical systems for paramet
 - **Error Metrics**: L1, L2, log-L2 distance functions
 - **Data Generation**: Synthetic time series generation from ODE systems
 - **Flexible Objective Functions**: Configurable error functions with timeout and noise injection support
+- **Display Infrastructure**: Pretty, readable output for models, parameters, time series, and optimization results (NEW!)
 
 ## Included Models
 
@@ -29,6 +30,8 @@ This package provides objective functions based on dynamical systems for paramet
 - Simple 1D/2D locally identifiable test models
 
 ## Usage
+
+### Basic Parameter Estimation
 
 ```julia
 using Dynamic_objectives
@@ -49,6 +52,36 @@ error_func = make_error_distance(
 p_test = [0.15, 0.25, 0.35, 0.45]
 error = error_func(p_test)
 ```
+
+### Pretty Display Infrastructure
+
+```julia
+# Display model information
+display_model_summary(model)
+
+# Display parameters in a formatted table
+param_names = [:α, :β, :γ, :δ]
+display_parameters(param_names, [p_true p_test], labels=["True", "Test"])
+
+# Generate and display time series data with plots
+problem = ODEProblem(...)
+data = sample_data(problem, model, outputs, time_interval, p_true, ic, 25)
+display_time_series(data, show_plot=true)
+
+# Compare different parameter sets
+data_test = sample_data(problem, model, outputs, time_interval, p_test, ic, 25)
+display_comparison(data, data_test, labels=["True", "Test"])
+
+# Display error metrics
+errors = Dict("L1" => 0.123, "L2" => 0.045, "log_L2" => -3.45)
+display_error_metrics(errors)
+
+# Display optimization results
+result = (params=p_optimal, error=0.001, iterations=150, converged=true, time_elapsed=2.5)
+display_optimization_result(result)
+```
+
+See `examples/display_demo.jl` for a comprehensive demonstration.
 
 ## Installation
 
