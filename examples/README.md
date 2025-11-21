@@ -2,6 +2,26 @@
 
 This directory contains example scripts demonstrating various features of Dynamic_objectives.
 
+## Basic Workflow
+
+**File:** `basic_workflow.jl`
+
+A simple, practical example showing a typical parameter estimation workflow:
+
+1. Define an ODE model
+2. Set up problem parameters
+3. Generate reference data
+4. Create objective function
+5. Evaluate at different parameters
+6. Visualize comparisons
+7. Next steps for optimization
+
+This is the best starting point for new users. Run with:
+
+```bash
+julia --project=. examples/basic_workflow.jl
+```
+
 ## Display Infrastructure Demo
 
 **File:** `display_demo.jl`
