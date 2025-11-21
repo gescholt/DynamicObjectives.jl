@@ -13,6 +13,16 @@ The key challenge is signature compatibility:
 The helper function bridges this gap by creating a closure that captures the model
 configuration and adapts the function signature.
 
+# Limitations
+
+**ForwardDiff Incompatibility**: Dynamic_objectives uses ODE solvers internally which
+cannot propagate ForwardDiff.Dual types for automatic differentiation. Therefore:
+- Gradient computation must be disabled (enable_gradient_computation = false)
+- Hessian computation must be disabled (enable_hessian_computation = false)
+- BFGS refinement must be disabled (enable_bfgs_refinement = false)
+
+See examples/globtim_integration/run_single_model.jl for configuration.
+
 # Usage
 
 This module is lightweight and only provides the objective adapter. To run full
@@ -80,6 +90,10 @@ objective = create_globtim_objective(
 )
 
 # Use objective in standalone script with globtimcore environment
+# IMPORTANT: Disable ForwardDiff-dependent features in ExperimentParams:
+#   enable_gradient_computation = false
+#   enable_hessian_computation = false
+#   enable_bfgs_refinement = false
 ```
 """
 function create_globtim_objective(
@@ -92,17 +106,21 @@ function create_globtim_objective(
     # Create Dynamic_objectives error function (single argument)
     error_func = make_error_distance(
         model, outputs, ic, p_true,
-        time_interval, numpoints;
-        distance = distance,
-        aggregate = aggregate,
-        eval_timeout = eval_timeout,
-        return_inf_on_error = return_inf_on_error
+        time_interval, numpoints,
+        distance,              # positional: distance_function
+        aggregate,             # positional: aggregate_distances
+        nothing;               # positional: add_noise_in_time_series
+        return_inf_on_error = return_inf_on_error,  # keyword
+        eval_timeout = eval_timeout                  # keyword
     )
 
     # Adapt to globtimcore signature (two arguments)
     # The `params` argument is ignored since all configuration is captured in closure
-    function globtim_objective(point::Vector{Float64}, params)
-        return error_func(point)
+    # NOTE: Only accepts Float64 - NOT ForwardDiff.Dual compatible
+    # Dynamic_objectives cannot propagate Dual numbers through ODE solvers
+    # This triggers globtimcore's capability detection to disable gradient/Hessian features
+    function globtim_objective(point::AbstractVector{Float64}, params)
+        return error_func(Vector{Float64}(point))  # Ensure plain Vector{Float64}
     end
 
     return globtim_objective

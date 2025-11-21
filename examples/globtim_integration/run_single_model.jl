@@ -13,22 +13,38 @@ Environment:
     - Loads both Dynamic_objectives and Globtim packages
     - Uses globtimcore's StandardExperiment infrastructure
 
+Limitations:
+    - Gradient/Hessian disabled (Dynamic_objectives ODE solvers incompatible with ForwardDiff)
+    - Refinement uses NelderMead (gradient-free) instead of BFGS
+    - Hessian classification unavailable (requires second derivatives)
+
 Example:
     cd Dynamic_objectives/examples/globtim_integration
     julia run_single_model.jl
 """
 
 using Pkg
+using Printf
+using LinearAlgebra
 
 # Activate globtimcore environment (required for StandardExperiment)
 GLOBTIMCORE_PATH = joinpath(@__DIR__, "..", "..", "..", "globtimcore")
+DYNAMIC_OBJ_PATH = joinpath(@__DIR__, "..", "..")
+
 println("Activating globtimcore environment: $GLOBTIMCORE_PATH")
 Pkg.activate(GLOBTIMCORE_PATH)
 
-# Load packages from both environments
-using Glob
+# Add Dynamic_objectives as dev dependency (doesn't modify package Project.toml)
+println("Setting up Dynamic_objectives...")
+try
+    using Dynamic_objectives
+catch
+    println("  Adding Dynamic_objectives as dev dependency...")
+    Pkg.develop(path=DYNAMIC_OBJ_PATH)
+end
 
-tim
+# Load packages from both environments
+using Globtim
 using Dynamic_objectives
 
 # Include globtimcore modules (standard pattern from their examples)
@@ -53,7 +69,7 @@ println("="^80)
 # ==============================================================================
 
 println("\n[1/5] Defining model...")
-model, params, states, outputs = define_lotka_volterra_2D_model_v3_two_outputs()
+model, params, states, outputs = define_lotka_volterra_2D_model_v3_two_outputs();
 p_true = [1.0, 0.5]
 ic = [1.0, 0.5]
 bounds = [(0.0, 3.0), (0.0, 2.0)]
@@ -78,7 +94,7 @@ objective = create_globtim_objective(
     aggregate = first,
     eval_timeout = nothing,  # Not needed for Lotka-Volterra
     return_inf_on_error = true
-)
+);
 
 # Test objective at true parameters (should be ≈0)
 test_error = objective(p_true, (;))
@@ -101,12 +117,18 @@ println("    Polynomial degrees: $degree_range")
 println("    Basis: Chebyshev")
 
 # Create experiment configuration
+# NOTE: Gradient/Hessian disabled - Dynamic_objectives uses ODE solvers
+# which cannot propagate ForwardDiff.Dual types for automatic differentiation
+# BUT refinement enabled - globtimcore uses NelderMead (gradient-free) internally
 experiment_config = ExperimentParams(
     GN = GN,
     degree_range = degree_range,
     domain_size = 0.5,  # Not used (domain_bounds takes precedence)
     max_time = 3600,
-    basis = :chebyshev
+    basis = :chebyshev,
+    enable_gradient_computation = false,  # ODE solver incompatible with ForwardDiff
+    enable_hessian_computation = false,   # ODE solver incompatible with ForwardDiff
+    enable_bfgs_refinement = true         # Uses NelderMead (gradient-free), works with ODEs
 )
 
 # Metadata
@@ -129,7 +151,7 @@ result = run_standard_experiment(
     output_dir = output_dir,
     metadata = metadata,
     true_params = p_true  # Enables recovery_error calculation
-)
+);
 
 println("  ✓ Optimization complete")
 
@@ -140,12 +162,16 @@ println("  ✓ Optimization complete")
 println("\n[4/5] Analyzing results...")
 
 # Extract best solution across all degrees
+# Initialize variables (will be modified in for loop using global keyword)
 best_objective = Inf
 best_params = nothing
 best_degree = nothing
 n_success = 0
 
 for deg_result in result[:degree_results]
+    # Use global keyword to modify script-level variables (Julia 1.11+ scoping)
+    global n_success, best_objective, best_params, best_degree
+
     if deg_result.status == "success"
         n_success += 1
         if deg_result.best_objective < best_objective
