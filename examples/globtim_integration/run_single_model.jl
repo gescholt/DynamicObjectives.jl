@@ -156,9 +156,9 @@ display_parameters(param_names, p_true, labels=["True Value"])
 # ============================================================================
 println("[2/5] Creating objective function...")
 
-using ModelingToolkit: complete
+using ModelingToolkit
 problem = ModelingToolkit.ODEProblem(
-    complete(model),
+    ModelingToolkit.complete(model),
     merge(
         Dict(states .=> ic),
         Dict(params .=> p_true)
@@ -287,7 +287,7 @@ display_comparison(
 # Summary
 # ============================================================================
 println()
-using Term
+import Term
 
 # Create a summary panel
 min_error = minimum([error_at_test1, error_at_test2, error_at_test3])
@@ -321,7 +321,7 @@ summary_text = """
 """
 
 panel = Term.Panel(
-    Term.parse(summary_text),
+    summary_text,
     title="Integration Test Complete ✓",
     title_style="bold green",
     style="green",

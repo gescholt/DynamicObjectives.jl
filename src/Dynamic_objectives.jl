@@ -7,7 +7,7 @@ using DataStructures
 using LinearAlgebra
 using Logging
 using PrettyTables
-using Term
+using Term: Panel, apply_style
 using UnicodePlots
 
 # Include submodules

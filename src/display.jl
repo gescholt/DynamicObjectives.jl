@@ -14,14 +14,14 @@ Configuration for display output customization.
 
 Fields:
 - `use_color`: Enable colored output (default: true)
-- `table_backend`: Backend for tables (:unicode, :ascii, :markdown) (default: :unicode)
+- `table_backend`: Backend for tables (:text, :markdown, :latex) (default: :text)
 - `plot_width`: Width of plots in characters (default: 60)
 - `plot_height`: Height of plots in characters (default: 20)
 - `precision`: Decimal precision for numerical output (default: 4)
 """
 Base.@kwdef mutable struct DisplayConfig
     use_color::Bool = true
-    table_backend::Symbol = :unicode
+    table_backend::Symbol = :text
     plot_width::Int = 60
     plot_height::Int = 20
     precision::Int = 4
@@ -75,7 +75,7 @@ function display_model_summary(model::ModelingToolkit.ODESystem; config::Display
     panel_content *= "Equations: $(length(eqs))\n"
 
     if config.use_color
-        panel = Term.Panel(
+        panel = Panel(
             panel_content,
             title="ODE Model Summary",
             title_style="bold cyan",
@@ -134,11 +134,11 @@ function display_parameters(
 
     # Select backend
     backend_map = Dict(
-        :unicode => Val(:unicode),
+        :text => Val(:text),
         :ascii => Val(:ascii),
         :markdown => Val(:markdown)
     )
-    backend = get(backend_map, config.table_backend, Val(:unicode))
+    backend = get(backend_map, config.table_backend, Val(:text))
 
     if config.use_color
         println()
@@ -210,7 +210,7 @@ function display_time_series(
 
     # Display header
     if config.use_color
-        header_panel = Term.Panel(
+        header_panel = Panel(
             "Time Series Data ($(length(t)) points)",
             title="Data Summary",
             title_style="bold green",
@@ -255,11 +255,11 @@ function display_time_series(
     end
 
     backend_map = Dict(
-        :unicode => Val(:unicode),
+        :text => Val(:text),
         :ascii => Val(:ascii),
         :markdown => Val(:markdown)
     )
-    backend = get(backend_map, config.table_backend, Val(:unicode))
+    backend = get(backend_map, config.table_backend, Val(:text))
 
     println()
     if config.use_color
@@ -355,7 +355,7 @@ function display_comparison(
 
     # Display header
     if config.use_color
-        header = Term.Panel(
+        header = Panel(
             "Comparing $(labels[1]) vs $(labels[2])",
             title="Time Series Comparison",
             title_style="bold magenta",
@@ -445,15 +445,15 @@ function display_error_metrics(
     end
 
     backend_map = Dict(
-        :unicode => Val(:unicode),
+        :text => Val(:text),
         :ascii => Val(:ascii),
         :markdown => Val(:markdown)
     )
-    backend = get(backend_map, config.table_backend, Val(:unicode))
+    backend = get(backend_map, config.table_backend, Val(:text))
 
     if config.use_color
         println()
-        panel = Term.Panel(
+        panel = Panel(
             "Error Metrics",
             title="Metrics",
             title_style="bold yellow",
@@ -549,7 +549,7 @@ function display_optimization_result(
 
     # Display
     if config.use_color
-        panel = Term.Panel(
+        panel = Panel(
             summary,
             title="Optimization Result",
             title_style="bold green",
@@ -597,9 +597,9 @@ function display_optimization_progress(
 
     if config.use_color
         print("\r")  # Carriage return for same-line update
-        print("Iter: ", Term.apply_style("$iteration", "bold cyan"), " | ")
-        print("Error: ", Term.apply_style(error_str, "bold yellow"), " | ")
-        print("Params: ", Term.apply_style("[$(param_str)]", "bold white"))
+        print("Iter: ", apply_style("$iteration", "bold cyan"), " | ")
+        print("Error: ", apply_style(error_str, "bold yellow"), " | ")
+        print("Params: ", apply_style("[$(param_str)]", "bold white"))
     else
         print("\rIter: $iteration | Error: $error_str | Params: [$(param_str)]")
     end
