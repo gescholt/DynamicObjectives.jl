@@ -130,10 +130,11 @@ end
 """
     run_globtim_optimization(objective, bounds, p_true; kwargs...)
 
-Run global optimization using globtimcore with real-time progress monitoring.
+Run grid-based global optimization with real-time progress monitoring.
 
-This function integrates with globtimcore's polynomial approximation and homotopy
-continuation methods, providing a high-level interface with progress display.
+This function performs grid-based optimization by evaluating the objective
+on a structured grid and finding the minimum. It provides real-time progress
+display using the display_optimization_progress() function.
 
 # Arguments
 - `objective`: Function with signature `f(point::Vector{Float64}, params) -> Float64`
@@ -201,13 +202,6 @@ function run_globtim_optimization(
     show_progress::Bool = true,
     save_results::Bool = true
 )
-    # Import Globtim components (must be available in environment)
-    try
-        @eval using Globtim
-    catch e
-        error("Globtim package not available. Ensure globtimcore is in the load path. Error: $e")
-    end
-
     dimension = length(bounds)
     start_time = time()
 
@@ -234,35 +228,16 @@ function run_globtim_optimization(
     best_params = nothing
     best_degree = nothing
 
-    # Try each polynomial degree
+    # Try each grid resolution (degree parameter kept for compatibility)
     for (idx, degree) in enumerate(degree_range)
         degree_start = time()
 
         if show_progress
-            println("\n[Degree $degree] ($idx/$(length(degree_range)))")
+            println("\n[Grid resolution: $degree] ($idx/$(length(degree_range)))")
             println("─"^60)
         end
 
         try
-            # Create experiment configuration
-            # Note: Disable ForwardDiff features for ODE-based objectives
-            experiment_params = @eval Globtim.ExperimentParams(
-                GN = $GN,
-                degree = $degree,
-                basis = $basis,
-                enable_gradient_computation = false,  # ODE not ForwardDiff compatible
-                enable_hessian_computation = false,
-                enable_bfgs_refinement = false,
-                max_computation_time = $max_time,
-                verbose = false
-            )
-
-            # Run polynomial approximation and find critical points
-            if show_progress
-                print("  Building polynomial approximation... ")
-                flush(stdout)
-            end
-
             # Evaluate objective on grid
             grid_start = time()
             grid_values = []
@@ -418,7 +393,6 @@ function run_globtim_optimization(
 
     # Save summary results
     if save_results
-        using JSON
         summary = Dict(
             "model_name" => model_name,
             "dimension" => dimension,
