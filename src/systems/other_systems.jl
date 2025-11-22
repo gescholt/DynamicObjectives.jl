@@ -32,7 +32,7 @@ function define_fitzhugh_nagumo_3D_model()
     states = [V, R]
     params = [g, a, b]
     outputs = [y1 ~ V]
-    @named model = ODESystem(
+    @mtkbuild model = ODESystem(
         [D(V) ~ g * (V - V^3 / 3 + R), D(R) ~ 1 / g * (V - a + b * R)],
         t,
         states,
@@ -66,7 +66,7 @@ function define_simple_2D_model_locally_identifiable()
     D = Differential(t)
     params = [a, b]
     states = [x1]
-    @named model = ODESystem([D(x1) ~ a * b * x1 + (a + b)], t, states, params)
+    @mtkbuild model = ODESystem([D(x1) ~ a * b * x1 + (a + b)], t, states, params)
     outputs = [y1 ~ x1]
     return model, params, states, outputs
 end
@@ -96,7 +96,7 @@ function define_simple_2D_model_locally_identifiable_square()
     D = Differential(t)
     params = [a, b]
     states = [x1]
-    @named model = ODESystem([D(x1) ~ a * x1 + b^2], t, states, params)
+    @mtkbuild model = ODESystem([D(x1) ~ a * x1 + b^2], t, states, params)
     outputs = [y1 ~ x1]
     return model, params, states, outputs
 end
@@ -126,7 +126,7 @@ function define_simple_1D_model_locally_identifiable()
     D = Differential(t)
     params = [a]
     states = [x1]
-    @named model = ODESystem([D(x1) ~ x1 + a^2], t, states, params)
+    @mtkbuild model = ODESystem([D(x1) ~ x1 + a^2], t, states, params)
     outputs = [y1 ~ x1]
     return model, params, states, outputs
 end

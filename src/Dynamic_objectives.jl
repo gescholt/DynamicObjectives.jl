@@ -14,6 +14,7 @@ include("systems/other_systems.jl")
 include("data_generation.jl")
 include("error_metrics.jl")
 include("support.jl")
+include("globtim_integration.jl")
 
 # System definitions - DAISY models
 export define_daisy_ex3_model_4D,
