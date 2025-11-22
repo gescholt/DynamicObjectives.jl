@@ -22,6 +22,27 @@ This is the best starting point for new users. Run with:
 julia --project=. examples/basic_workflow.jl
 ```
 
+## globtim Integration Test
+
+**File:** `globtim_integration/run_single_model.jl`
+
+Integration test demonstrating Dynamic_objectives working with globtimcore:
+
+1. Activates globtimcore environment
+2. Loads a 2D Lotka-Volterra model
+3. Creates objective function
+4. Generates reference data
+5. Tests at multiple parameter sets
+6. Compares predictions visually
+
+Uses the display infrastructure throughout to show model information, parameters, time series, and comparisons. Run with:
+
+```bash
+julia examples/globtim_integration/run_single_model.jl
+```
+
+**Note:** Requires globtimcore to be installed in a sibling directory (`../../../globtimcore` relative to the script).
+
 ## Display Infrastructure Demo
 
 **File:** `display_demo.jl`
