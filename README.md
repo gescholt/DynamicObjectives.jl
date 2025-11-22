@@ -15,6 +15,7 @@ This package provides **13 time parameter estimation benchmark problems** based 
 - **Multiple Distance Metrics**: L1, L2, log-L2 norms with support for custom functions
 - **Flexible Data Generation**: Synthetic time series with optional noise injection
 - **Full/Partial Observability**: Models with 1-4 measured outputs
+- **Display Infrastructure**: Pretty, readable output for models, parameters, time series, and optimization results (NEW!)
 
 ## Included Models
 
@@ -35,6 +36,8 @@ From the DAISY (Differential Algebra for Identifiability of SYstems) suite:
 - **Simple 1D/2D locally identifiable models**: 1-2 parameters, hard (test identifiability issues)
 
 ## Quick Start
+
+### Basic Parameter Estimation
 
 ```julia
 using Dynamic_objectives
@@ -128,6 +131,36 @@ error_log = make_error_distance(..., log_L2_norm, ...)
 my_distance(y_true, y_test) = maximum(abs.(y_true - y_test))
 error_custom = make_error_distance(..., my_distance, ...)
 ```
+
+### Pretty Display Infrastructure
+
+```julia
+# Display model information
+display_model_summary(model)
+
+# Display parameters in a formatted table
+param_names = [:α, :β, :γ, :δ]
+display_parameters(param_names, [p_true p_test], labels=["True", "Test"])
+
+# Generate and display time series data with plots
+problem = ODEProblem(...)
+data = sample_data(problem, model, outputs, time_interval, p_true, ic, 25)
+display_time_series(data, show_plot=true)
+
+# Compare different parameter sets
+data_test = sample_data(problem, model, outputs, time_interval, p_test, ic, 25)
+display_comparison(data, data_test, labels=["True", "Test"])
+
+# Display error metrics
+errors = Dict("L1" => 0.123, "L2" => 0.045, "log_L2" => -3.45)
+display_error_metrics(errors)
+
+# Display optimization results
+result = (params=p_optimal, error=0.001, iterations=150, converged=true, time_elapsed=2.5)
+display_optimization_result(result)
+```
+
+See `examples/display_demo.jl` for a comprehensive demonstration.
 
 ## Installation
 

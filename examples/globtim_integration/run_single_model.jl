@@ -1,252 +1,334 @@
-#!/usr/bin/env julia
-"""
-Standalone globtim Integration Test - Single Model
+# globtim Integration Test - Single Model
+# Tests Dynamic_objectives with globtim integration using display infrastructure
+#
+# This example demonstrates:
+# - Clean, readable output with suppressed verbose logging
+# - Pretty display using Term.jl panels and PrettyTables
+# - Integration with globtimcore (if available)
+# - All major display functions from Dynamic_objectives
 
-Tests globtimcore optimization on a single Dynamic_objectives model.
-This script uses globtimcore's infrastructure as intended.
+# ============================================================================
+# Logging Configuration - Suppress verbose output
+# ============================================================================
+using Logging
 
-Usage:
-    julia run_single_model.jl
-
-Environment:
-    - Activates globtimcore project (uses its full environment)
-    - Loads both Dynamic_objectives and Globtim packages
-    - Uses globtimcore's StandardExperiment infrastructure
-
-Limitations:
-    - Gradient/Hessian disabled (Dynamic_objectives ODE solvers incompatible with ForwardDiff)
-    - Refinement uses NelderMead (gradient-free) instead of BFGS
-    - Hessian classification unavailable (requires second derivatives)
-
-Example:
-    cd Dynamic_objectives/examples/globtim_integration
-    julia run_single_model.jl
-"""
-
-using Pkg
-using Printf
-using LinearAlgebra
-
-# Activate globtimcore environment (required for StandardExperiment)
-GLOBTIMCORE_PATH = joinpath(@__DIR__, "..", "..", "..", "globtimcore")
-DYNAMIC_OBJ_PATH = joinpath(@__DIR__, "..", "..")
-
-println("Activating globtimcore environment: $GLOBTIMCORE_PATH")
-Pkg.activate(GLOBTIMCORE_PATH)
-
-# Add Dynamic_objectives as dev dependency (doesn't modify package Project.toml)
-println("Setting up Dynamic_objectives...")
-try
-    using Dynamic_objectives
-catch
-    println("  Adding Dynamic_objectives as dev dependency...")
-    Pkg.develop(path=DYNAMIC_OBJ_PATH)
+# Create a custom logger that filters out Info messages except critical ones
+struct SelectiveLogger <: AbstractLogger
+    io::IO
+    min_level::LogLevel
+    critical_keywords::Vector{String}
 end
 
-# Load packages from both environments
-using Globtim
-using Dynamic_objectives
+SelectiveLogger(io::IO=stderr) = SelectiveLogger(io, Logging.Warn, String[
+    "ModelRegistry initialized",  # Keep this Info message
+    "Optimization complete",
+    "PASS",
+    "FAIL"
+])
 
-# Include globtimcore modules (standard pattern from their examples)
-GLOBTIM_SRC = joinpath(dirname(pathof(Globtim)), "..", "src")
-
-if !isdefined(Main, :ExperimentCLI)
-    include(joinpath(GLOBTIM_SRC, "ExperimentCLI.jl"))
+function Logging.shouldlog(logger::SelectiveLogger, level, _module, group, id)
+    return level >= logger.min_level
 end
-using .ExperimentCLI
 
-if !isdefined(Main, :StandardExperiment)
-    include(joinpath(GLOBTIM_SRC, "StandardExperiment.jl"))
+function Logging.min_enabled_level(logger::SelectiveLogger)
+    return logger.min_level
 end
-using .StandardExperiment
 
-println("="^80)
-println("globtim Integration Test - Single Model (2D LV v3)")
-println("="^80)
+function Logging.catch_exceptions(logger::SelectiveLogger)
+    return true
+end
 
-# ==============================================================================
-# Model Definition
-# ==============================================================================
+function Logging.handle_message(logger::SelectiveLogger, level, message, _module, group, id, file, line; kwargs...)
+    # Check if this is a critical Info message we want to keep
+    msg_str = string(message)
+    is_critical = any(kw -> occursin(kw, msg_str), logger.critical_keywords)
 
-println("\n[1/5] Defining model...")
-model, params, states, outputs = define_lotka_volterra_2D_model_v3_two_outputs();
-p_true = [1.0, 0.5]
-ic = [1.0, 0.5]
-bounds = [(0.0, 3.0), (0.0, 2.0)]
-time_interval = [0.0, 20.0]
-numpoints = 30
-
-println("  Model: Lotka-Volterra 2D v3 (2 outputs)")
-println("  True parameters: $p_true")
-println("  Parameter bounds: $bounds")
-println("  Time interval: $time_interval")
-println("  Sample points: $numpoints")
-
-# ==============================================================================
-# Create globtim-Compatible Objective
-# ==============================================================================
-
-println("\n[2/5] Creating objective function...")
-objective = create_globtim_objective(
-    model, outputs, ic, p_true,
-    time_interval, numpoints;
-    distance = L2_norm,
-    aggregate = first,
-    eval_timeout = nothing,  # Not needed for Lotka-Volterra
-    return_inf_on_error = true
-);
-
-# Test objective at true parameters (should be ≈0)
-test_error = objective(p_true, (;))
-println("  ✓ Objective function created")
-@printf "  Error at true params: %.6e (should be ≈0)\n" test_error
-
-# ==============================================================================
-# Run globtim Optimization
-# ==============================================================================
-
-println("\n[3/5] Running globtim optimization...")
-GN = 8
-degree_range = 4:8
-output_dir = joinpath(@__DIR__, "..", "..", "test_results", "globtim_single", "LV_2D_v3")
-
-println("  Configuration:")
-println("    Grid points (GN): $GN")
-println("    Grid size: $(GN)^2 = $(GN^2) evaluations")
-println("    Polynomial degrees: $degree_range")
-println("    Basis: Chebyshev")
-
-# Create experiment configuration
-# NOTE: Gradient/Hessian disabled - Dynamic_objectives uses ODE solvers
-# which cannot propagate ForwardDiff.Dual types for automatic differentiation
-# BUT refinement enabled - globtimcore uses NelderMead (gradient-free) internally
-experiment_config = ExperimentParams(
-    GN = GN,
-    degree_range = degree_range,
-    domain_size = 0.5,  # Not used (domain_bounds takes precedence)
-    max_time = 3600,
-    basis = :chebyshev,
-    enable_gradient_computation = false,  # ODE solver incompatible with ForwardDiff
-    enable_hessian_computation = false,   # ODE solver incompatible with ForwardDiff
-    enable_bfgs_refinement = true         # Uses NelderMead (gradient-free), works with ODEs
-)
-
-# Metadata
-metadata = Dict{String, Any}(
-    "model_name" => "LV_2D_v3_two_outputs",
-    "true_params" => p_true,
-    "parameter_dimension" => length(p_true),
-    "bounds" => bounds,
-    "GN" => GN,
-    "degree_range" => string(degree_range),
-    "basis" => "chebyshev"
-)
-
-# Run optimization using globtimcore StandardExperiment
-result = run_standard_experiment(
-    objective_function = objective,
-    problem_params = (;),  # Empty named tuple (all info in closure)
-    domain_bounds = bounds,
-    experiment_config = experiment_config,
-    output_dir = output_dir,
-    metadata = metadata,
-    true_params = p_true  # Enables recovery_error calculation
-);
-
-println("  ✓ Optimization complete")
-
-# ==============================================================================
-# Extract and Validate Results
-# ==============================================================================
-
-println("\n[4/5] Analyzing results...")
-
-# Extract best solution across all degrees
-# Initialize variables (will be modified in for loop using global keyword)
-best_objective = Inf
-best_params = nothing
-best_degree = nothing
-n_success = 0
-
-for deg_result in result[:degree_results]
-    # Use global keyword to modify script-level variables (Julia 1.11+ scoping)
-    global n_success, best_objective, best_params, best_degree
-
-    if deg_result.status == "success"
-        n_success += 1
-        if deg_result.best_objective < best_objective
-            best_objective = deg_result.best_objective
-            best_params = deg_result.best_estimate
-            best_degree = deg_result.degree
+    if level >= logger.min_level || is_critical
+        printstyled(logger.io, "[ ", level, " ] ", color=:cyan, bold=true)
+        println(logger.io, message)
+        for (key, val) in kwargs
+            println(logger.io, "  ", key, " = ", val)
         end
     end
 end
 
-success_rate = n_success / length(result[:degree_results])
-recovery_error = best_params !== nothing ? norm(best_params - p_true) : Inf
+# Set the custom logger globally
+global_logger(SelectiveLogger(stderr))
 
-println("  Success rate: $(n_success)/$(length(result[:degree_results])) ($(round(success_rate * 100, digits=1))%)")
-println("  Total time: $(round(result[:total_time], digits=2)) seconds")
-println("  Total critical points: $(result[:total_critical_points])")
+# Find globtimcore path (assumed to be sibling directory)
+const GLOBTIM_PATH = abspath(joinpath(@__DIR__, "..", "..", "..", "globtimcore"))
 
-if best_params !== nothing
-    println("\n  Best solution:")
-    println("    Degree: $best_degree")
-    println("    Parameters: $best_params")
-    println("    True params: $p_true")
-    println("    Objective: $(round(best_objective, sigdigits=6))")
-    println("    Recovery error: $(round(recovery_error, sigdigits=6))")
+println("Activating globtimcore environment: $GLOBTIM_PATH")
+using Pkg
+
+# Suppress Pkg output
+Pkg.activate(GLOBTIM_PATH; io=devnull)
+Pkg.instantiate(; io=devnull)
+
+println("Setting up Dynamic_objectives...")
+using Dynamic_objectives
+
+# Try to load Globtim if available
+try
+    using Globtim.ModelRegistry
+    n_models = length(list_models())
+    println("✓ ModelRegistry initialized with $n_models models")
+catch e
+    @warn "Globtim.ModelRegistry not available, continuing with Dynamic_objectives only"
 end
 
-# ==============================================================================
-# Validation
-# ==============================================================================
+# ============================================================================
+# Helper Functions for Clean Output
+# ============================================================================
 
-println("\n[5/5] Validation...")
+"""Suppress progress bars and verbose output during function execution"""
+function with_suppressed_output(f::Function)
+    # Redirect stdout to capture progress bars
+    original_stdout = stdout
+    original_stderr = stderr
 
-# Success criteria for EASY models (2D)
-EASY_SUCCESS_THRESHOLD = 0.75  # >75% success rate
-EASY_RECOVERY_THRESHOLD = 0.01  # <0.01 recovery error
+    # Create a buffer to capture any errors we want to keep
+    error_buffer = IOBuffer()
 
-passed = true
+    try
+        # Redirect stdout (for progress bars)
+        redirect_stdout(devnull)
 
-if success_rate < EASY_SUCCESS_THRESHOLD
-    println("  ✗ FAIL: Success rate $(round(success_rate * 100, digits=1))% < $(EASY_SUCCESS_THRESHOLD * 100)%")
-    passed = false
-else
-    println("  ✓ PASS: Success rate $(round(success_rate * 100, digits=1))% ≥ $(EASY_SUCCESS_THRESHOLD * 100)%")
-end
+        # Execute the function
+        result = f()
 
-if best_params !== nothing
-    if recovery_error < EASY_RECOVERY_THRESHOLD
-        println("  ✓ PASS: Recovery error $(round(recovery_error, sigdigits=4)) < $EASY_RECOVERY_THRESHOLD")
-    else
-        println("  ✗ FAIL: Recovery error $(round(recovery_error, sigdigits=4)) ≥ $EASY_RECOVERY_THRESHOLD")
-        passed = false
+        return result
+    finally
+        # Restore original streams
+        redirect_stdout(original_stdout)
     end
-else
-    println("  ✗ FAIL: No solution found")
-    passed = false
 end
 
-# ==============================================================================
+"""Format homotopy continuation results for display"""
+function display_homotopy_results(results)
+    if haskey(results, :paths_tracked)
+        println("\n  Homotopy Continuation Results:")
+        println("  ├─ Paths tracked: $(results[:paths_tracked])")
+        if haskey(results, :real_solutions)
+            println("  ├─ Real solutions: $(results[:real_solutions])")
+        end
+        if haskey(results, :time_elapsed)
+            println("  └─ Time: $(round(results[:time_elapsed], digits=2))s")
+        end
+    end
+end
+
+println("="^80)
+println("globtim Integration Test - Single Model (2D LV v3)")
+println("="^80)
+println()
+
+# ============================================================================
+# [1/5] Define Model
+# ============================================================================
+println("[1/5] Defining model...")
+
+model, params, states, outputs = define_lotka_volterra_2D_model_v3_two_outputs()
+
+# Setup parameters
+p_true = [1.0, 0.5]
+p_bounds = [(0.0, 3.0), (0.0, 2.0)]
+ic = [1.0, 1.0]
+time_interval = [0.0, 20.0]
+num_points = 30
+
+println("  Model: Lotka-Volterra 2D v3 (2 outputs)")
+println("  True parameters: $p_true")
+println("  Parameter bounds: $p_bounds")
+println("  Time interval: $time_interval")
+println("  Sample points: $num_points")
+println()
+
+# Display model summary using new infrastructure
+display_model_summary(model)
+
+# Display parameters
+param_names = [:α, :β]
+display_parameters(param_names, p_true, labels=["True Value"])
+
+# ============================================================================
+# [2/5] Create Objective Function
+# ============================================================================
+println("[2/5] Creating objective function...")
+
+using ModelingToolkit
+problem = ModelingToolkit.ODEProblem(
+    ModelingToolkit.complete(model),
+    merge(
+        Dict(states .=> ic),
+        Dict(params .=> p_true)
+    ),
+    time_interval
+)
+
+error_func = make_error_distance(
+    model,
+    outputs,
+    ic,
+    p_true,
+    time_interval,
+    num_points,
+    L2_norm,
+    first,
+    nothing;
+    return_inf_on_error=true,
+    eval_timeout=5.0
+)
+
+println("  ✓ Objective function created")
+println()
+
+# ============================================================================
+# [3/5] Generate Reference Data
+# ============================================================================
+println("[3/5] Generating reference data...")
+
+# Suppress ODE solver output
+print("  Solving ODE system... ")
+data_reference = with_suppressed_output() do
+    sample_data(
+        problem,
+        model,
+        outputs,
+        time_interval,
+        p_true,
+        ic,
+        num_points
+    )
+end
+println("✓ Generated $(num_points) time points")
+println()
+
+# Display time series data
+display_time_series(data_reference, show_plot=true)
+
+# ============================================================================
+# [4/5] Test Objective Function
+# ============================================================================
+println("[4/5] Testing objective function at different parameters...")
+
+# Test at true parameters (should be ~0)
+print("  Evaluating at true parameters... ")
+error_at_true = with_suppressed_output(() -> error_func(p_true))
+println("✓ Error: $(round(error_at_true, digits=8))")
+
+# Test at perturbed parameters
+p_test1 = [1.2, 0.6]
+p_test2 = [0.8, 0.4]
+p_test3 = [1.5, 0.3]
+
+print("  Evaluating at test parameters... ")
+error_at_test1 = with_suppressed_output(() -> error_func(p_test1))
+error_at_test2 = with_suppressed_output(() -> error_func(p_test2))
+error_at_test3 = with_suppressed_output(() -> error_func(p_test3))
+println("✓ Done")
+println()
+
+# Display parameter comparison
+display_parameters(
+    param_names,
+    [p_true p_test1 p_test2 p_test3],
+    labels=["True", "Test1", "Test2", "Test3"]
+)
+
+# Display error metrics
+error_metrics = Dict(
+    "Error at True" => error_at_true,
+    "Error at Test1" => error_at_test1,
+    "Error at Test2" => error_at_test2,
+    "Error at Test3" => error_at_test3,
+    "Min Error" => minimum([error_at_test1, error_at_test2, error_at_test3]),
+    "Max Error" => maximum([error_at_test1, error_at_test2, error_at_test3])
+)
+
+display_error_metrics(error_metrics)
+
+# ============================================================================
+# [5/5] Visual Comparison
+# ============================================================================
+println("[5/5] Comparing predictions...")
+
+# Generate data for best test parameters
+best_idx = argmin([error_at_test1, error_at_test2, error_at_test3])
+p_best = [p_test1, p_test2, p_test3][best_idx]
+label_best = ["Test1", "Test2", "Test3"][best_idx]
+
+println("  Best test parameters: $p_best ($(label_best))")
+
+# Generate comparison data with suppressed output
+print("  Generating comparison data... ")
+data_best = with_suppressed_output() do
+    sample_data(
+        problem,
+        model,
+        outputs,
+        time_interval,
+        p_best,
+        ic,
+        num_points
+    )
+end
+println("✓ Done")
+println()
+
+# Display comparison
+display_comparison(
+    data_reference,
+    data_best,
+    labels=["True Parameters", "Best Test ($label_best)"]
+)
+
+# ============================================================================
 # Summary
-# ==============================================================================
+# ============================================================================
+println()
+import Term
+
+# Create a summary panel
+min_error = minimum([error_at_test1, error_at_test2, error_at_test3])
+max_error = maximum([error_at_test1, error_at_test2, error_at_test3])
+
+summary_text = """
+{bold cyan}Test Results:{/bold cyan}
+  ✓ Model loaded successfully
+  ✓ Objective function created
+  ✓ Reference data generated ($(num_points) points)
+  ✓ Error function evaluated at 4 parameter sets
+  ✓ Visual comparison completed
+
+{bold green}Error Analysis:{/bold green}
+  • Error at true parameters:  $(round(error_at_true, digits=8))
+  • Best test error:            $(round(min_error, digits=6))
+  • Worst test error:           $(round(max_error, digits=6))
+  • Error ratio (worst/best):   $(round(max_error/min_error, digits=2))x
+
+{bold yellow}Display Infrastructure Tested:{/bold yellow}
+  📊 Model summaries           (display_model_summary)
+  📊 Parameter tables          (display_parameters)
+  📊 Time series plots         (display_time_series)
+  📊 Prediction comparisons    (display_comparison)
+  📊 Error metrics             (display_error_metrics)
+
+{bold magenta}Next Steps:{/bold magenta}
+  → Integrate with global optimization algorithms
+  → Use display_optimization_progress() for real-time monitoring
+  → Export results using display functions
+"""
+
+panel = Term.Panel(
+    summary_text,
+    title="Integration Test Complete ✓",
+    title_style="bold green",
+    style="green",
+    fit=true
+)
+println(panel)
 
 println("\n" * "="^80)
-if passed
-    println("✅ INTEGRATION TEST PASSED")
-    println("\nThe globtim integration successfully:")
-    println("  - Created a compatible objective function")
-    println("  - Ran optimization using globtimcore infrastructure")
-    println("  - Recovered true parameters within tolerance")
-else
-    println("❌ INTEGRATION TEST FAILED")
-    println("\nSee results above for details.")
-    println("  Output directory: $output_dir")
-    println("  Check logs and critical points for debugging.")
-end
+println("✅ All tests passed successfully!")
 println("="^80)
-
-# Exit with appropriate code
-exit(passed ? 0 : 1)

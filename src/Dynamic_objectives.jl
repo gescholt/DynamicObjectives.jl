@@ -6,6 +6,9 @@ using OrdinaryDiffEq
 using DataStructures
 using LinearAlgebra
 using Logging
+using PrettyTables
+using Term: Panel, apply_style
+using UnicodePlots
 
 # Include submodules
 include("systems/daisy_models.jl")
@@ -14,6 +17,7 @@ include("systems/other_systems.jl")
 include("data_generation.jl")
 include("error_metrics.jl")
 include("support.jl")
+include("display.jl")
 include("globtim_integration.jl")
 
 # System definitions - DAISY models
@@ -44,5 +48,16 @@ export make_error_distance,
     L1_norm,
     L2_norm,
     log_L2_norm
+
+# Display infrastructure
+export DisplayConfig,
+    set_display_config!,
+    display_model_summary,
+    display_parameters,
+    display_time_series,
+    display_comparison,
+    display_error_metrics,
+    display_optimization_result,
+    display_optimization_progress
 
 end # module Dynamic_objectives
