@@ -1,5 +1,6 @@
 using Dynamic_objectives
 using Test
+using ModelingToolkit
 
 @testset "Dynamic_objectives.jl" begin
 
@@ -93,9 +94,8 @@ using Test
             time_interval = [0.0, 10.0]
             p_true = [0.1, 0.2, 0.3, 0.4]
 
-            using ModelingToolkit: complete
             problem = ModelingToolkit.ODEProblem(
-                complete(model),
+                ModelingToolkit.complete(model),
                 merge(
                     Dict(states .=> ic),
                     Dict(params .=> p_true)

@@ -60,4 +60,8 @@ export DisplayConfig,
     display_optimization_result,
     display_optimization_progress
 
+# Globtim integration
+export create_globtim_objective,
+    run_globtim_optimization
+
 end # module Dynamic_objectives
