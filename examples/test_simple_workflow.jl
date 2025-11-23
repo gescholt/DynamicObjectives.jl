@@ -42,10 +42,12 @@ objective = make_error_distance(
 )
 
 # Configure globtimcore using ExperimentParams
+# Note: GN = 10 gives 10^2 = 100 grid points (fast for testing)
+#       For production, use GN = 50-100 for better accuracy
 config = ExperimentParams(
     domain_size = 1.5,
-    GN = 50,
-    degree_range = 4:8,
+    GN = 10,           # Small grid for quick test (100 points for 2D)
+    degree_range = 4:6, # Reduced range for speed
     max_time = 3600.0,
     basis = :chebyshev
 )
