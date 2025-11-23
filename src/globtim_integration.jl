@@ -480,3 +480,90 @@ end
 # - ARCHITECTURE.md
 # - setup_dev_packages.jl (one-time dev setup)
 # Refinement requires globtimpostprocessing package (set up via `./setup_dev_packages.jl`)
+
+"""
+    run_globtim_pipeline(objective, bounds, config; refine=true, refinement_config=nothing)
+
+Convenience function for running the complete 2-stage globtim pipeline.
+
+This function combines globtimcore (raw critical point finding) with
+globtimpostprocessing (local refinement) in a single call.
+
+# Arguments
+- `objective::Function`: Objective function with signature `f(p::Vector{Float64}) -> Float64`
+- `bounds::Vector{Tuple}`: Parameter bounds as vector of (min, max) tuples
+- `config`: StandardExperimentConfig for globtimcore
+
+# Keyword Arguments
+- `refine::Bool = true`: Whether to refine critical points after finding them
+- `refinement_config = nothing`: RefinementConfig for postprocessing (uses default if nothing)
+
+# Returns
+If `refine=true`: Tuple `(raw_result, refined_result)`
+If `refine=false`: Just `raw_result`
+
+# Example
+```julia
+using Dynamic_objectives, Globtim, GlobtimPostProcessing
+
+# Create objective
+objective = make_error_distance(model, outputs, ic, p_true, [0.0, 20.0], 30,
+                                L2_norm, first, nothing; eval_timeout=10.0)
+
+# Run 2-stage pipeline
+config = StandardExperimentConfig(max_degree=18, grid_size=100)
+raw, refined = run_globtim_pipeline(objective, bounds, config)
+
+# Access results
+println("Best refined: ", refined[:refined_points][refined[:best_refined_idx]])
+```
+
+# Note
+Requires Globtim and GlobtimPostProcessing packages to be available.
+Run `./setup_dev_packages.jl` first if using local dev versions.
+"""
+function run_globtim_pipeline(
+    objective::Function,
+    bounds::Vector{<:Tuple},
+    config;
+    refine::Bool = true,
+    refinement_config = nothing
+)
+    # Check if packages are available
+    if !@isdefined(Globtim)
+        error("Globtim package not found. Run ./setup_dev_packages.jl or add as dependency.")
+    end
+
+    if refine && !@isdefined(GlobtimPostProcessing)
+        error("GlobtimPostProcessing package not found. Run ./setup_dev_packages.jl or add as dependency.")
+    end
+
+    # Stage 1: Find raw critical points with globtimcore
+    println("Stage 1: Finding raw critical points...")
+    raw_result = Globtim.run_standard_experiment(objective, bounds, config)
+    println("  ✓ Found $(raw_result[:n_critical_points]) critical points")
+
+    if !refine
+        return raw_result
+    end
+
+    # Stage 2: Refine critical points with globtimpostprocessing
+    println("\nStage 2: Refining critical points...")
+
+    # Use default config if not provided
+    if refinement_config === nothing
+        refinement_config = GlobtimPostProcessing.ode_refinement_config(verbose=false)
+    end
+
+    refined_result = GlobtimPostProcessing.refine_experiment_results(
+        raw_result[:output_dir],
+        objective,
+        refinement_config
+    )
+    println("  ✓ Refined $(refined_result[:n_converged])/$(refined_result[:n_raw]) points")
+
+    return (raw_result, refined_result)
+end
+
+export run_globtim_pipeline
+
