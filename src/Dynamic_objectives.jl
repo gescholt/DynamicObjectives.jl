@@ -19,7 +19,6 @@ include("error_metrics.jl")
 include("support.jl")
 include("display.jl")
 include("globtim_integration.jl")
-include("globtim_postprocessing.jl")
 
 # System definitions - DAISY models
 export define_daisy_ex3_model_4D,
@@ -64,10 +63,5 @@ export DisplayConfig,
 # Globtim integration
 export create_globtim_objective,
     run_globtim_optimization
-
-# Globtim postprocessing (Phase 3)
-export RefinementConfig,
-    ode_refinement_config,
-    refine_experiment_results
 
 end # module Dynamic_objectives
