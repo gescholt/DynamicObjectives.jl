@@ -1,6 +1,6 @@
 #!/usr/bin/env julia
 """
-Test integration with globtimcore and globtimpostprocessing
+Test integration with globtimcore and globtimpostprocessing (Phase 2 compatible)
 
 This script tests the 2-stage workflow:
 1. Use Globtim to find raw critical points
@@ -9,17 +9,30 @@ This script tests the 2-stage workflow:
 Requirements:
 - Globtim and GlobtimPostProcessing must be available
 - Run ./setup_dev_packages.jl first to set up local dev versions
+
+Phase 2 Updates:
+- Uses ExperimentParams instead of StandardExperimentConfig
+- Uses keyword arguments for run_standard_experiment
+- Compatible with new result schema
 """
 
 using Pkg
 Pkg.activate(dirname(@__DIR__))
 
 using Dynamic_objectives
-using Globtim: Globtim, StandardExperimentConfig, run_standard_experiment
+using Globtim: Globtim, run_standard_experiment
 using GlobtimPostProcessing: GlobtimPostProcessing, refine_experiment_results, ode_refinement_config
+using LinearAlgebra
+
+# Include ExperimentCLI module for config
+if !isdefined(Main, :ExperimentCLI)
+    globtimcore_path = joinpath(dirname(@__DIR__), "..", "globtimcore")
+    include(joinpath(globtimcore_path, "src", "ExperimentCLI.jl"))
+end
+using .ExperimentCLI
 
 println("="^80)
-println("Testing Globtim Integration Workflow")
+println("Testing Globtim Integration Workflow (Phase 2)")
 println("="^80)
 println()
 
@@ -61,23 +74,37 @@ println()
 println("Step 2: Finding raw critical points with Globtim...")
 println("-"^80)
 
-# Configure experiment
-config = StandardExperimentConfig(
-    max_degree = 8,        # Lower degree for quick test
-    grid_size = 50         # Smaller grid for speed
+# Configure experiment (Phase 2: use ExperimentParams)
+config = ExperimentParams(
+    domain_size = 1.5,
+    GN = 50,                # Grid size
+    degree_range = 4:8,     # Polynomial degrees
+    max_time = 3600.0,
+    basis = :chebyshev
 )
 
-# Run standard experiment
+# Create output directory
+output_dir = mkpath(joinpath(dirname(@__DIR__), "test_results", "integration_test"))
+
+# Run standard experiment (Phase 2: keyword arguments)
 result = run_standard_experiment(
-    objective,
-    bounds,
-    config
+    objective_function = objective,
+    problem_params = nothing,
+    domain_bounds = bounds,
+    experiment_config = config,
+    output_dir = output_dir,
+    metadata = Dict("experiment_type" => "integration_test"),
+    true_params = p_true
 )
 
 println("  ✓ Globtim experiment complete")
 println("  Output directory: $(result[:output_dir])")
-println("  Critical points found: $(result[:n_critical_points])")
-println("  Best raw value: $(round(result[:best_objective], digits=6))")
+println("  Degrees processed: $(result[:degrees_processed])")
+println("  Critical points found: $(result[:total_critical_points])")
+
+# Get best raw value across all degrees
+best_raw_value = minimum([dr.best_objective for dr in result[:degree_results]])
+println("  Best raw value: $(round(best_raw_value, digits=6))")
 println()
 
 # ==============================================================================
@@ -90,8 +117,7 @@ println("-"^80)
 # Configure refinement
 refinement_config = ode_refinement_config(
     max_time_per_point = 30.0,
-    optimization_method = :nelder_mead,
-    verbose = true
+    verbose = false
 )
 
 # Refine results
@@ -105,7 +131,7 @@ println()
 println("  ✓ Refinement complete")
 println("  Converged: $(refined[:n_converged])/$(refined[:n_raw])")
 println("  Mean improvement: $(round(refined[:mean_improvement], digits=2))x")
-println("  Best refined value: $(round(refined[:best_refined_value], digits=6))")
+println("  Best refined value: $(round(refined[:best_refined_value], digits=8))")
 println()
 
 # ==============================================================================

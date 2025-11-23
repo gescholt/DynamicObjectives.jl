@@ -1,22 +1,29 @@
 #!/usr/bin/env julia
 """
-Simple test of the 2-stage workflow as shown by user:
+Simple test of the 2-stage workflow:
 
-using Globtim, GlobtimPostProcessing
+Stage 1 (globtimcore): Find raw critical points
+Stage 2 (globtimpostprocessing): Refine critical points with local optimization
 
-# Get raw critical points
-result = run_standard_experiment(objective, bounds, config)
-
-# Refine in post-processing
-refined = refine_experiment_results(result[:output_dir], objective, config)
+This demonstrates the Phase 2 migration architecture where refinement
+is separated from critical point finding.
 """
 
 using Pkg
 Pkg.activate(dirname(@__DIR__))
 
 using Dynamic_objectives
-using Globtim: Globtim, StandardExperimentConfig, run_standard_experiment
+using Globtim: Globtim, run_standard_experiment  # Load first to bring in ConstructionBase
 using GlobtimPostProcessing: GlobtimPostProcessing, refine_experiment_results, ode_refinement_config
+using LinearAlgebra
+
+# Include ExperimentCLI module to access ExperimentParams
+# Note: Must load Globtim first since ExperimentCLI uses ConstructionBase
+if !isdefined(Main, :ExperimentCLI)
+    globtimcore_path = joinpath(dirname(@__DIR__), "..", "globtimcore")
+    include(joinpath(globtimcore_path, "src", "ExperimentCLI.jl"))
+end
+using .ExperimentCLI
 
 println("Testing simple 2-stage workflow")
 println("="^80)
@@ -34,17 +41,33 @@ objective = make_error_distance(
     eval_timeout = 10.0
 )
 
-# Configure globtimcore
-config = StandardExperimentConfig(
-    max_degree = 8,
-    grid_size = 50
+# Configure globtimcore using ExperimentParams
+config = ExperimentParams(
+    domain_size = 1.5,
+    GN = 50,
+    degree_range = 4:8,
+    max_time = 3600.0,
+    basis = :chebyshev
 )
+
+# Create output directory
+output_dir = mkpath(joinpath(@__DIR__, "..", "test_results", "simple_workflow"))
 
 # Stage 1: Get raw critical points
 println("\nStage 1: run_standard_experiment...")
-result = run_standard_experiment(objective, bounds, config)
-println("✓ Found $(result[:n_critical_points]) critical points")
-println("  Best raw value: $(result[:best_objective])")
+result = run_standard_experiment(
+    objective_function = objective,
+    problem_params = nothing,
+    domain_bounds = bounds,
+    experiment_config = config,
+    output_dir = output_dir,
+    metadata = Dict{String, Any}("experiment_type" => "lv2d_simple_test"),
+    true_params = p_true
+)
+
+println("✓ Found critical points across $(result[:degrees_processed]) degrees")
+println("  Total critical points: $(result[:total_critical_points])")
+println("  Best raw value: $(minimum([r.best_objective for r in result[:degree_results]]))")
 
 # Configure refinement
 refinement_config = ode_refinement_config(

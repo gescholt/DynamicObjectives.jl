@@ -482,19 +482,27 @@ end
 # Refinement requires globtimpostprocessing package (set up via `./setup_dev_packages.jl`)
 
 """
-    run_globtim_pipeline(objective, bounds, config; refine=true, refinement_config=nothing)
+    run_globtim_pipeline(objective, bounds, config; output_dir=".", metadata=Dict(), true_params=nothing, refine=true, refinement_config=nothing)
 
-Convenience function for running the complete 2-stage globtim pipeline.
+Convenience function for running the complete 2-stage globtim pipeline (Phase 2 compatible).
 
 This function combines globtimcore (raw critical point finding) with
 globtimpostprocessing (local refinement) in a single call.
 
+**Phase 2 Update (2025-11-23):**
+- Now uses keyword arguments for run_standard_experiment
+- Returns updated schema with :total_critical_points and :degree_results
+- Compatible with ExperimentParams configuration
+
 # Arguments
-- `objective::Function`: Objective function with signature `f(p::Vector{Float64}) -> Float64`
+- `objective::Function`: Objective function with signature `f(p::Vector{Float64}, problem_params) -> Float64`
 - `bounds::Vector{Tuple}`: Parameter bounds as vector of (min, max) tuples
-- `config`: StandardExperimentConfig for globtimcore
+- `config`: ExperimentParams for globtimcore (or NamedTuple with compatible fields)
 
 # Keyword Arguments
+- `output_dir::String = "."`: Directory for saving results
+- `metadata::Dict = Dict()`: Experiment metadata
+- `true_params::Union{Vector{Float64}, Nothing} = nothing`: True parameters (for recovery analysis)
 - `refine::Bool = true`: Whether to refine critical points after finding them
 - `refinement_config = nothing`: RefinementConfig for postprocessing (uses default if nothing)
 
@@ -506,26 +514,48 @@ If `refine=false`: Just `raw_result`
 ```julia
 using Dynamic_objectives, Globtim, GlobtimPostProcessing
 
+# Include ExperimentCLI for config
+include(joinpath(dirname(@__DIR__), "..", "globtimcore", "src", "ExperimentCLI.jl"))
+using .ExperimentCLI
+
 # Create objective
 objective = make_error_distance(model, outputs, ic, p_true, [0.0, 20.0], 30,
                                 L2_norm, first, nothing; eval_timeout=10.0)
 
+# Create config (Phase 2)
+config = ExperimentParams(
+    domain_size = 1.5,
+    GN = 50,
+    degree_range = 4:8,
+    basis = :chebyshev
+)
+
 # Run 2-stage pipeline
-config = StandardExperimentConfig(max_degree=18, grid_size=100)
-raw, refined = run_globtim_pipeline(objective, bounds, config)
+output_dir = mkpath("results/my_experiment")
+raw, refined = run_globtim_pipeline(
+    objective, bounds, config;
+    output_dir = output_dir,
+    true_params = p_true
+)
 
 # Access results
+println("Total critical points: ", raw[:total_critical_points])
 println("Best refined: ", refined[:refined_points][refined[:best_refined_idx]])
 ```
 
 # Note
 Requires Globtim and GlobtimPostProcessing packages to be available.
 Run `./setup_dev_packages.jl` first if using local dev versions.
+
+See also: `examples/templates/integration_template_pipeline.jl`
 """
 function run_globtim_pipeline(
     objective::Function,
     bounds::Vector{<:Tuple},
     config;
+    output_dir::String = ".",
+    metadata::Dict{String, Any} = Dict{String, Any}(),
+    true_params::Union{Vector{Float64}, Nothing} = nothing,
     refine::Bool = true,
     refinement_config = nothing
 )
@@ -538,10 +568,18 @@ function run_globtim_pipeline(
         error("GlobtimPostProcessing package not found. Run ./setup_dev_packages.jl or add as dependency.")
     end
 
-    # Stage 1: Find raw critical points with globtimcore
+    # Stage 1: Find raw critical points with globtimcore (Phase 2)
     println("Stage 1: Finding raw critical points...")
-    raw_result = Globtim.run_standard_experiment(objective, bounds, config)
-    println("  ✓ Found $(raw_result[:n_critical_points]) critical points")
+    raw_result = Globtim.run_standard_experiment(
+        objective_function = objective,
+        problem_params = nothing,
+        domain_bounds = bounds,
+        experiment_config = config,
+        output_dir = output_dir,
+        metadata = metadata,
+        true_params = true_params
+    )
+    println("  ✓ Found $(raw_result[:total_critical_points]) critical points across $(raw_result[:degrees_processed]) degrees")
 
     if !refine
         return raw_result
