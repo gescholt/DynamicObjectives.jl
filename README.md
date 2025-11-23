@@ -221,6 +221,19 @@ Pkg.test("Dynamic_objectives")
 include("test/validate_all_models.jl")
 ```
 
+## Integration with globtim
+
+For integrating Dynamic_objectives with globtimcore and globtimpostprocessing, see **[INTEGRATION.md](INTEGRATION.md)** which covers:
+
+- **2-stage pipeline**: globtimcore (finding raw critical points) → globtimpostprocessing (refinement)
+- **Phase 2 compatibility**: 1-argument functions work directly (no wrappers needed)
+- **Quick start guide**: Minimal working example
+- **Integration patterns**: Simple, Pipeline, and Advanced workflows
+- **Configuration**: ExperimentParams and RefinementConfig
+- **Example scripts**: verify_model.jl, test_simple_workflow.jl, test_globtim_integration.jl
+- **Performance tips**: Grid size selection and timing estimates
+- **Troubleshooting**: Common pitfalls and anti-patterns
+
 ## Testing with globtim
 
 For comprehensive testing campaigns with your local globtim optimizer, see the **[TESTING_GUIDE.md](TESTING_GUIDE.md)** which includes:
