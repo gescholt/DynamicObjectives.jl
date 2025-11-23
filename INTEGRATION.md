@@ -141,7 +141,7 @@ result = run_standard_experiment(
 )
 
 # Stage 2: Refine
-refinement_config = ode_refinement_config(max_time_per_point = 30.0, verbose = false)
+refinement_config = ode_refinement_config(max_time_per_point = 30.0, show_progress = false)
 refined = refine_experiment_results(
     result[:output_dir],
     objective,
@@ -277,7 +277,7 @@ config = ExperimentParams(
 ```julia
 refinement_config = ode_refinement_config(
     max_time_per_point = 30.0,      # Timeout per point
-    verbose = false,                # Suppress progress output
+    show_progress = false,          # Suppress progress output
     # Optional:
     # f_tol = 1e-12,
     # x_tol = 1e-12,

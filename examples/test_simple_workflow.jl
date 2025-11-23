@@ -133,7 +133,7 @@ println("-"^80)
 # Configure refinement
 refinement_config = ode_refinement_config(
     max_time_per_point = 30.0,
-    verbose = false
+    show_progress = false
 )
 
 println("Refinement configuration:")
