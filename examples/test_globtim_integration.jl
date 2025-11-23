@@ -15,8 +15,8 @@ using Pkg
 Pkg.activate(dirname(@__DIR__))
 
 using Dynamic_objectives
-using Globtim
-using GlobtimPostProcessing
+using Globtim: Globtim, StandardExperimentConfig, run_standard_experiment
+using GlobtimPostProcessing: GlobtimPostProcessing, refine_experiment_results, ode_refinement_config
 
 println("="^80)
 println("Testing Globtim Integration Workflow")
