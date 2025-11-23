@@ -4,6 +4,42 @@
 
 This guide provides a comprehensive testing strategy for time parameter estimation problems using the Dynamic_objectives package with globtim. All 13 models are suitable for testing parameter estimation algorithms.
 
+## Setup: Loading Local Dev Versions (REQUIRED)
+
+**Dynamic_objectives is standalone** (no package dependencies), but to use it with globtim for testing, you need to set up local dev versions:
+
+### One-Time Setup
+
+```bash
+cd /Users/ghscholt/GlobalOptim/Dynamic_objectives
+
+julia --project=. -e '
+using Pkg
+
+# Add local dev versions of globtimcore and globtimpostprocessing
+Pkg.develop(path="../globtimcore")
+Pkg.develop(path="../globtimpostprocessing")
+
+# Verify
+using Globtim
+using GlobtimPostProcessing
+println("✅ Setup complete!")
+'
+```
+
+**This only needs to be done ONCE.** After this, the packages will always be available in the Dynamic_objectives environment.
+
+### Verifying Setup
+
+```bash
+# Run integration tests to verify
+./run_tests.sh
+
+# If you see errors like "Package Globtim not found", re-run the setup above
+```
+
+---
+
 ## Model Catalog
 
 ### 1. DAISY Benchmark Models

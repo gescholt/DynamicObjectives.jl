@@ -182,6 +182,23 @@ Dynamic_objectives = {path = "../Dynamic_objectives"}
 
 ## Testing
 
+### Setup Required for Integration Tests
+
+**IMPORTANT**: Dynamic_objectives is standalone (no package dependencies), but integration tests require local dev versions of globtimcore and globtimpostprocessing.
+
+**Easy setup** (recommended):
+```bash
+cd /Users/ghscholt/GlobalOptim/Dynamic_objectives
+./setup_dev_packages.jl
+```
+
+**Manual setup** (if needed):
+```bash
+julia --project=. -e 'using Pkg; Pkg.develop(path="../globtimcore"); Pkg.develop(path="../globtimpostprocessing")'
+```
+
+This allows the integration tests to find the local development versions of both packages. **Only needs to be done ONCE.**
+
 ### Quick Test Script (Recommended)
 
 ```bash
