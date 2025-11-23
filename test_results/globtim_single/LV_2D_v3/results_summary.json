@@ -1,0 +1,691 @@
+{
+    "results_summary": {
+        "degree_4": {
+            "critical_points_in_domain": 0,
+            "polynomial_construction_time": 0,
+            "critical_point_processing_time": 0,
+            "condition_number": null,
+            "computation_time": 15.843750953674316,
+            "critical_points": 0,
+            "critical_points_refined": 0,
+            "total_computation_time": 15.843750953674316,
+            "status": "failed",
+            "refinement_stats": {
+                "converged": 0,
+                "failed": 0
+            },
+            "validation_stats": {
+                "critical_spurious": 0,
+                "critical_verified": 0
+            },
+            "best_estimate": null,
+            "critical_points_raw": 0,
+            "file_io_time": 0,
+            "recovery_error": null,
+            "error": {
+                "timestamp": "2025-11-22 14:26:23",
+                "stacktrace": [
+                    "error(s::String) at error.jl:44",
+                    "process_single_degree(degree::Int64, objective_function::Dynamic_objectives.var\"#globtim_objective#27\"{Dynamic_objectives.var\"#Error_distance#16\"{Bool, Nothing, ModelingToolkit.System, Vector{Symbolics.Equation}, Vector{Float64}, Vector{Float64}, Int64, typeof(L2_norm), typeof(first), OrderedCollections.OrderedDict{Any, Vector{Float64}}, SciMLBase.ODEProblem{Vector{Float64}, Tuple{Float64, Float64}, true, ModelingToolkit.MTKParameters{Vector{Float64}, Vector{Float64}, Tuple{}, Tuple{}, Tuple{}, Tuple{}}, SciMLBase.ODEFunction{true, SciMLBase.FullSpecialize, ModelingToolkit.GeneratedFunctionWrapper{(2, 3, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___, :t), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x060af478, 0x877161d3, 0x505f96c9, 0x1c28dd30, 0xb499c1e0), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___, :t), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x51358e41, 0x35c68ff6, 0x115558ce, 0xe5c441e5, 0xf89326c9), Nothing}}, UniformScaling{Bool}, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, ModelingToolkit.ObservedFunctionCache{ModelingToolkit.System}, Nothing, ModelingToolkit.System, SciMLBase.OverrideInitData{SciMLBase.NonlinearProblem{Nothing, true, ModelingToolkit.MTKParameters{Vector{Float64}, StaticArraysCore.SizedVector{0, Float64, Vector{Float64}}, Tuple{}, Tuple{}, Tuple{}, Tuple{}}, SciMLBase.NonlinearFunction{true, SciMLBase.FullSpecialize, ModelingToolkit.GeneratedFunctionWrapper{(2, 2, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0xc14a9cf8, 0x2e65eca9, 0x34ec8052, 0x13bd1df3, 0x77356401), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x18fd3142, 0x461be3ed, 0x90b4592a, 0x81418d8a, 0x30ac28e0), Nothing}}, UniformScaling{Bool}, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, ModelingToolkit.ObservedFunctionCache{ModelingToolkit.System}, Nothing, ModelingToolkit.System, Nothing, Nothing}, Base.Pairs{Symbol, Union{}, Nothing, @NamedTuple{}}, SciMLBase.StandardNonlinearProblem, Nothing, Nothing}, typeof(ModelingToolkit.update_initializeprob!), ComposedFunction{ComposedFunction{typeof(identity), typeof(ModelingToolkit.safe_float)}, SymbolicIndexingInterface.TimeIndependentObservedFunction{ModelingToolkit.GeneratedFunctionWrapper{(2, 2, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x9db50e21, 0x098a3b62, 0x2c810f5e, 0x9295cbbc, 0x5a11f5b1), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0xdeb7c68a, 0xab299d53, 0x85f71a25, 0xc0c7330d, 0x934b04b1), Nothing}}}}, ModelingToolkit.var\"#initprobpmap_split#977\"{ModelingToolkit.var\"#_getter#973\"{Tuple{ComposedFunction{ModelingToolkit.PConstructorApplicator{typeof(identity)}, ModelingToolkit.ObservedWrapper{false, ModelingToolkit.GeneratedFunctionWrapper{(2, 2, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0xb09aa332, 0x9236c2cf, 0xc12e6374, 0xc317a95c, 0xeaf790e0), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x20691c16, 0x8839ed4a, 0x201cb56d, 0xfd003eef, 0xaaf9c38b), Nothing}}}}, ComposedFunction{ModelingToolkit.PConstructorApplicator{typeof(identity)}, ModelingToolkit.ObservedWrapper{false, ModelingToolkit.GeneratedFunctionWrapper{(2, 2, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x8bc2419a, 0x4ff413e7, 0x47316aeb, 0x2f7a6c93, 0x33e68dad), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0xab980580, 0x8fb02e54, 0xc7ba728e, 0xad0a6d51, 0x40606d4b), Nothing}}}}, Returns{Tuple{}}, Returns{Tuple{}}, Returns{Tuple{}}}}}, ModelingToolkit.InitializationMetadata{ModelingToolkit.ReconstructInitializeprob{ModelingToolkit.var\"#_getter#973\"{Tuple{ComposedFunction{ModelingToolkit.PConstructorApplicator{typeof(identity)}, ModelingToolkit.ObservedWrapper{true, ModelingToolkit.GeneratedFunctionWrapper{(2, 3, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___, :t), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x22b3c150, 0x0e2e0607, 0xe91fef38, 0xe71205d0, 0xe44dd42e), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___, :t), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0xf67dde68, 0xeb719d0a, 0xfbfc4775, 0x66fb332a, 0xe54b96ba), Nothing}}}}, Returns{StaticArraysCore.SizedVector{0, Float64, Vector{Float64}}}, Returns{Tuple{}}, Returns{Tuple{}}, Returns{Tuple{}}}}, ComposedFunction{typeof(identity), ModelingToolkit.ObservedWrapper{true, ModelingToolkit.GeneratedFunctionWrapper{(2, 3, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___, :t), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0xa964bde4, 0x481b4006, 0x45c75aa4, 0x48dc8327, 0x979aa0c1), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___, :t), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x2e1b45f3, 0xca72f027, 0xc274ab33, 0xbbe48094, 0xfed2b347), Nothing}}}}}, ModelingToolkit.GetUpdatedU0{SymbolicIndexingInterface.MultipleGetters{SymbolicIndexingInterface.ContinuousTimeseries, Vector{SymbolicUtils.BasicSymbolic{Real}}}, SymbolicIndexingInterface.MultipleParametersGetter{SymbolicIndexingInterface.IndexerNotTimeseries, Vector{SymbolicIndexingInterface.GetParameterIndex{ModelingToolkit.ParameterIndex{SciMLStructures.Initials, Int64}}}, Nothing}}, ModelingToolkit.SetInitialUnknowns{SymbolicIndexingInterface.MultipleSetters{Vector{SymbolicIndexingInterface.ParameterHookWrapper{SymbolicIndexingInterface.SetParameterIndex{ModelingToolkit.ParameterIndex{SciMLStructures.Initials, Int64}}, SymbolicUtils.BasicSymbolic{Real}}}}}}, Val{true}}, Nothing}, Base.Pairs{Symbol, Union{}, Nothing, @NamedTuple{}}, SciMLBase.StandardODEProblem}}}, problem_params::@NamedTuple{}, domain_bounds::Vector{Tuple{Float64, Float64}}, experiment_config::ExperimentParams, output_dir::String, true_params::Vector{Float64}) at StandardExperiment.jl:448",
+                    "run_standard_experiment(; objective_function::Function, problem_params::@NamedTuple{}, domain_bounds::Vector{Tuple{Float64, Float64}}, experiment_config::ExperimentParams, output_dir::String, metadata::Dict{String, Any}, true_params::Vector{Float64}) at StandardExperiment.jl:227",
+                    "kwcall(::@NamedTuple{objective_function::Dynamic_objectives.var\"#globtim_objective#27\"{Dynamic_objectives.var\"#Error_distance#16\"{Bool, Nothing, ModelingToolkit.System, Vector{Symbolics.Equation}, Vector{Float64}, Vector{Float64}, Int64, typeof(L2_norm), typeof(first), OrderedCollections.OrderedDict{Any, Vector{Float64}}, SciMLBase.ODEProblem{Vector{Float64}, Tuple{Float64, Float64}, true, ModelingToolkit.MTKParameters{Vector{Float64}, Vector{Float64}, Tuple{}, Tuple{}, Tuple{}, Tuple{}}, SciMLBase.ODEFunction{true, SciMLBase.FullSpecialize, ModelingToolkit.GeneratedFunctionWrapper{(2, 3, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___, :t), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x060af478, 0x877161d3, 0x505f96c9, 0x1c28dd30, 0xb499c1e0), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___, :t), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x51358e41, 0x35c68ff6, 0x115558ce, 0xe5c441e5, 0xf89326c9), Nothing}}, UniformScaling{Bool}, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, ModelingToolkit.ObservedFunctionCache{ModelingToolkit.System}, Nothing, ModelingToolkit.System, SciMLBase.OverrideInitData{SciMLBase.NonlinearProblem{Nothing, true, ModelingToolkit.MTKParameters{Vector{Float64}, StaticArraysCore.SizedVector{0, Float64, Vector{Float64}}, Tuple{}, Tuple{}, Tuple{}, Tuple{}}, SciMLBase.NonlinearFunction{true, SciMLBase.FullSpecialize, ModelingToolkit.GeneratedFunctionWrapper{(2, 2, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0xc14a9cf8, 0x2e65eca9, 0x34ec8052, 0x13bd1df3, 0x77356401), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x18fd3142, 0x461be3ed, 0x90b4592a, 0x81418d8a, 0x30ac28e0), Nothing}}, UniformScaling{Bool}, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, ModelingToolkit.ObservedFunctionCache{ModelingToolkit.System}, Nothing, ModelingToolkit.System, Nothing, Nothing}, Base.Pairs{Symbol, Union{}, Nothing, @NamedTuple{}}, SciMLBase.StandardNonlinearProblem, Nothing, Nothing}, typeof(ModelingToolkit.update_initializeprob!), ComposedFunction{ComposedFunction{typeof(identity), typeof(ModelingToolkit.safe_float)}, SymbolicIndexingInterface.TimeIndependentObservedFunction{ModelingToolkit.GeneratedFunctionWrapper{(2, 2, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x9db50e21, 0x098a3b62, 0x2c810f5e, 0x9295cbbc, 0x5a11f5b1), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0xdeb7c68a, 0xab299d53, 0x85f71a25, 0xc0c7330d, 0x934b04b1), Nothing}}}}, ModelingToolkit.var\"#initprobpmap_split#977\"{ModelingToolkit.var\"#_getter#973\"{Tuple{ComposedFunction{ModelingToolkit.PConstructorApplicator{typeof(identity)}, ModelingToolkit.ObservedWrapper{false, ModelingToolkit.GeneratedFunctionWrapper{(2, 2, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0xb09aa332, 0x9236c2cf, 0xc12e6374, 0xc317a95c, 0xeaf790e0), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x20691c16, 0x8839ed4a, 0x201cb56d, 0xfd003eef, 0xaaf9c38b), Nothing}}}}, ComposedFunction{ModelingToolkit.PConstructorApplicator{typeof(identity)}, ModelingToolkit.ObservedWrapper{false, ModelingToolkit.GeneratedFunctionWrapper{(2, 2, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x8bc2419a, 0x4ff413e7, 0x47316aeb, 0x2f7a6c93, 0x33e68dad), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0xab980580, 0x8fb02e54, 0xc7ba728e, 0xad0a6d51, 0x40606d4b), Nothing}}}}, Returns{Tuple{}}, Returns{Tuple{}}, Returns{Tuple{}}}}}, ModelingToolkit.InitializationMetadata{ModelingToolkit.ReconstructInitializeprob{ModelingToolkit.var\"#_getter#973\"{Tuple{ComposedFunction{ModelingToolkit.PConstructorApplicator{typeof(identity)}, ModelingToolkit.ObservedWrapper{true, ModelingToolkit.GeneratedFunctionWrapper{(2, 3, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___, :t), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x22b3c150, 0x0e2e0607, 0xe91fef38, 0xe71205d0, 0xe44dd42e), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___, :t), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0xf67dde68, 0xeb719d0a, 0xfbfc4775, 0x66fb332a, 0xe54b96ba), Nothing}}}}, Returns{StaticArraysCore.SizedVector{0, Float64, Vector{Float64}}}, Returns{Tuple{}}, Returns{Tuple{}}, Returns{Tuple{}}}}, ComposedFunction{typeof(identity), ModelingToolkit.ObservedWrapper{true, ModelingToolkit.GeneratedFunctionWrapper{(2, 3, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___, :t), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0xa964bde4, 0x481b4006, 0x45c75aa4, 0x48dc8327, 0x979aa0c1), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___, :t), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x2e1b45f3, 0xca72f027, 0xc274ab33, 0xbbe48094, 0xfed2b347), Nothing}}}}}, ModelingToolkit.GetUpdatedU0{SymbolicIndexingInterface.MultipleGetters{SymbolicIndexingInterface.ContinuousTimeseries, Vector{SymbolicUtils.BasicSymbolic{Real}}}, SymbolicIndexingInterface.MultipleParametersGetter{SymbolicIndexingInterface.IndexerNotTimeseries, Vector{SymbolicIndexingInterface.GetParameterIndex{ModelingToolkit.ParameterIndex{SciMLStructures.Initials, Int64}}}, Nothing}}, ModelingToolkit.SetInitialUnknowns{SymbolicIndexingInterface.MultipleSetters{Vector{SymbolicIndexingInterface.ParameterHookWrapper{SymbolicIndexingInterface.SetParameterIndex{ModelingToolkit.ParameterIndex{SciMLStructures.Initials, Int64}}, SymbolicUtils.BasicSymbolic{Real}}}}}}, Val{true}}, Nothing}, Base.Pairs{Symbol, Union{}, Nothing, @NamedTuple{}}, SciMLBase.StandardODEProblem}}}, problem_params::@NamedTuple{}, domain_bounds::Vector{Tuple{Float64, Float64}}, experiment_config::ExperimentParams, output_dir::String, metadata::Dict{String, Any}, true_params::Vector{Float64}}, ::typeof(run_standard_experiment)) at StandardExperiment.jl:195",
+                    "top-level scope at run_single_model.jl:146",
+                    "eval(m::Module, e::Any) at boot.jl:489",
+                    "include_string(mapexpr::typeof(identity), mod::Module, code::String, filename::String) at loading.jl:2842",
+                    "_include(mapexpr::Function, mod::Module, _path::String) at loading.jl:2902",
+                    "include(mod::Module, _path::String) at Base.jl:306",
+                    "exec_options(opts::Base.JLOptions) at client.jl:317",
+                    "_start() at client.jl:550"
+                ],
+                "computation_time": 15.843750953674316,
+                "dimension": 2,
+                "error_type": "ErrorException",
+                "degree": 4,
+                "GN": 8,
+                "basis": "chebyshev",
+                "error_message": "ErrorException(\"CRITICAL: No critical points converged after refinement (found 3 raw points, 3 failed)\")"
+            },
+            "refinement_time": 0,
+            "best_objective": null,
+            "critical_point_solving_time": 0,
+            "validation_time": 0,
+            "l2_approx_error": null
+        },
+        "degree_5": {
+            "critical_points_in_domain": 0,
+            "polynomial_construction_time": 0.004251956939697266,
+            "critical_point_processing_time": 0.45435500144958496,
+            "condition_number": null,
+            "computation_time": 12.538689613342285,
+            "critical_points": 2,
+            "critical_points_refined": 2,
+            "total_computation_time": 12.538689613342285,
+            "status": "success",
+            "refinement_stats": {
+                "timed_out": 0,
+                "mean_improvement": 0.8450700860610714,
+                "converged": 2,
+                "mean_iterations": 102.5,
+                "failed": 2,
+                "max_improvement": 1.3171540954697356
+            },
+            "validation_stats": {
+                "post_refinement": {
+                    "gradient_norm_mean": null,
+                    "distinct_local_minima": 0,
+                    "gradient_norm_min": null,
+                    "classifications": {
+                        "minimum": 0,
+                        "degenerate": 0,
+                        "saddle": 0,
+                        "error": 0,
+                        "maximum": 0
+                    },
+                    "minima_cluster_representatives": [
+                    ],
+                    "critical_spurious": 0,
+                    "critical_verified": 2,
+                    "gradient_norm_max": null,
+                    "minima_cluster_sizes": [
+                    ]
+                },
+                "gradient_tol": 1.0e-6,
+                "pre_refinement": {
+                    "gradient_norm_mean": null,
+                    "gradient_norm_min": null,
+                    "classifications": {
+                        "minimum": 0,
+                        "degenerate": 0,
+                        "saddle": 0,
+                        "error": 0,
+                        "maximum": 0
+                    },
+                    "critical_spurious": 0,
+                    "critical_verified": 4,
+                    "gradient_norm_max": null
+                }
+            },
+            "best_estimate": [
+                0.09006769160316715,
+                213815.27444442193
+            ],
+            "critical_points_raw": 4,
+            "file_io_time": 0.24475502967834473,
+            "recovery_error": 213814.77444635815,
+            "error": null,
+            "refinement_time": 10.553115844726562,
+            "best_objective": 5.226944282945555,
+            "critical_point_solving_time": 1.2313098907470703,
+            "validation_time": 0.05090188980102539,
+            "l2_approx_error": 2.1326947572836827
+        },
+        "degree_6": {
+            "critical_points_in_domain": 2,
+            "polynomial_construction_time": 0.004209041595458984,
+            "critical_point_processing_time": 0.20598101615905762,
+            "condition_number": null,
+            "computation_time": 6.35593581199646,
+            "critical_points": 3,
+            "critical_points_refined": 3,
+            "total_computation_time": 6.35593581199646,
+            "status": "success",
+            "refinement_stats": {
+                "timed_out": 0,
+                "mean_improvement": 7.909908459165713,
+                "converged": 3,
+                "mean_iterations": 71,
+                "failed": 4,
+                "max_improvement": 12.372284294652696
+            },
+            "validation_stats": {
+                "post_refinement": {
+                    "gradient_norm_mean": null,
+                    "distinct_local_minima": 0,
+                    "gradient_norm_min": null,
+                    "classifications": {
+                        "minimum": 0,
+                        "degenerate": 0,
+                        "saddle": 0,
+                        "error": 0,
+                        "maximum": 0
+                    },
+                    "minima_cluster_representatives": [
+                    ],
+                    "critical_spurious": 0,
+                    "critical_verified": 3,
+                    "gradient_norm_max": null,
+                    "minima_cluster_sizes": [
+                    ]
+                },
+                "gradient_tol": 1.0e-6,
+                "pre_refinement": {
+                    "gradient_norm_mean": null,
+                    "gradient_norm_min": null,
+                    "classifications": {
+                        "minimum": 0,
+                        "degenerate": 0,
+                        "saddle": 0,
+                        "error": 0,
+                        "maximum": 0
+                    },
+                    "critical_spurious": 0,
+                    "critical_verified": 7,
+                    "gradient_norm_max": null
+                }
+            },
+            "best_estimate": [
+                0.9999999994839455,
+                0.5000000008466379
+            ],
+            "critical_points_raw": 7,
+            "file_io_time": 0.0012738704681396484,
+            "recovery_error": 9.91518010391394e-10,
+            "error": null,
+            "refinement_time": 4.915898084640503,
+            "best_objective": 1.6067194795147917e-8,
+            "critical_point_solving_time": 1.2261438369750977,
+            "validation_time": 0.002429962158203125,
+            "l2_approx_error": 1.824351727929484
+        },
+        "degree_8": {
+            "critical_points_in_domain": 3,
+            "polynomial_construction_time": 0.004485130310058594,
+            "critical_point_processing_time": 0.6121921539306641,
+            "condition_number": null,
+            "computation_time": 21.47546696662903,
+            "critical_points": 6,
+            "critical_points_refined": 6,
+            "total_computation_time": 21.47546696662903,
+            "status": "success",
+            "refinement_stats": {
+                "timed_out": 0,
+                "mean_improvement": 5.076795290052899,
+                "converged": 6,
+                "mean_iterations": 81,
+                "failed": 5,
+                "max_improvement": 11.034976204012665
+            },
+            "validation_stats": {
+                "post_refinement": {
+                    "gradient_norm_mean": null,
+                    "distinct_local_minima": 0,
+                    "gradient_norm_min": null,
+                    "classifications": {
+                        "minimum": 0,
+                        "degenerate": 0,
+                        "saddle": 0,
+                        "error": 0,
+                        "maximum": 0
+                    },
+                    "minima_cluster_representatives": [
+                    ],
+                    "critical_spurious": 0,
+                    "critical_verified": 6,
+                    "gradient_norm_max": null,
+                    "minima_cluster_sizes": [
+                    ]
+                },
+                "gradient_tol": 1.0e-6,
+                "pre_refinement": {
+                    "gradient_norm_mean": null,
+                    "gradient_norm_min": null,
+                    "classifications": {
+                        "minimum": 0,
+                        "degenerate": 0,
+                        "saddle": 0,
+                        "error": 0,
+                        "maximum": 0
+                    },
+                    "critical_spurious": 0,
+                    "critical_verified": 11,
+                    "gradient_norm_max": null
+                }
+            },
+            "best_estimate": [
+                0.9999999996991566,
+                0.5000000003006236
+            ],
+            "critical_points_raw": 11,
+            "file_io_time": 0.0015559196472167969,
+            "recovery_error": 4.253014137747903e-10,
+            "error": null,
+            "refinement_time": 19.41235589981079,
+            "best_objective": 5.664157456244839e-9,
+            "critical_point_solving_time": 1.4292778968811035,
+            "validation_time": 0.015599966049194336,
+            "l2_approx_error": 1.241423401259626
+        },
+        "degree_7": {
+            "critical_points_in_domain": 2,
+            "polynomial_construction_time": 0.004067897796630859,
+            "critical_point_processing_time": 0.6082570552825928,
+            "condition_number": null,
+            "computation_time": 18.639442682266235,
+            "critical_points": 5,
+            "critical_points_refined": 5,
+            "total_computation_time": 18.639442682266235,
+            "status": "success",
+            "refinement_stats": {
+                "timed_out": 0,
+                "mean_improvement": 5.018152017301611,
+                "converged": 5,
+                "mean_iterations": 85.4,
+                "failed": 3,
+                "max_improvement": 11.689162644407665
+            },
+            "validation_stats": {
+                "post_refinement": {
+                    "gradient_norm_mean": null,
+                    "distinct_local_minima": 0,
+                    "gradient_norm_min": null,
+                    "classifications": {
+                        "minimum": 0,
+                        "degenerate": 0,
+                        "saddle": 0,
+                        "error": 0,
+                        "maximum": 0
+                    },
+                    "minima_cluster_representatives": [
+                    ],
+                    "critical_spurious": 0,
+                    "critical_verified": 5,
+                    "gradient_norm_max": null,
+                    "minima_cluster_sizes": [
+                    ]
+                },
+                "gradient_tol": 1.0e-6,
+                "pre_refinement": {
+                    "gradient_norm_mean": null,
+                    "gradient_norm_min": null,
+                    "classifications": {
+                        "minimum": 0,
+                        "degenerate": 0,
+                        "saddle": 0,
+                        "error": 0,
+                        "maximum": 0
+                    },
+                    "critical_spurious": 0,
+                    "critical_verified": 8,
+                    "gradient_norm_max": null
+                }
+            },
+            "best_estimate": [
+                1.0000000001517977,
+                0.5000000002567719
+            ],
+            "critical_points_raw": 8,
+            "file_io_time": 0.0013189315795898438,
+            "recovery_error": 2.9828571033061063e-10,
+            "error": null,
+            "refinement_time": 16.71108603477478,
+            "best_objective": 8.314112702401221e-9,
+            "critical_point_solving_time": 1.299975872039795,
+            "validation_time": 0.01473689079284668,
+            "l2_approx_error": 1.550390540978454
+        }
+    },
+    "degree_range": "4:8",
+    "experiment_id": "LV_2D_v3",
+    "timestamp": "20251122_142722",
+    "params_dict": {
+        "max_time": 3600,
+        "GN": 8,
+        "degree_range": [
+            4,
+            5,
+            6,
+            7,
+            8
+        ],
+        "domain_size_param": 0.5
+    },
+    "parameter_dimension": 2,
+    "basis": "chebyshev",
+    "GN": 8,
+    "model_name": "LV_2D_v3_two_outputs",
+    "total_critical_points": 7,
+    "true_params": [
+        1,
+        0.5
+    ],
+    "success_rate": 0.8,
+    "bounds": [
+        [
+            0,
+            3
+        ],
+        [
+            0,
+            2
+        ]
+    ],
+    "output_dir": "/Users/ghscholt/GlobalOptim/Dynamic_objectives/examples/globtim_integration/../../test_results/globtim_single/LV_2D_v3",
+    "total_time": 74.85328602790833,
+    "degree_results": [
+        {
+            "critical_points_in_domain": 0,
+            "polynomial_construction_time": 0,
+            "critical_point_processing_time": 0,
+            "condition_number": null,
+            "critical_points": 0,
+            "critical_points_refined": 0,
+            "total_computation_time": 15.843750953674316,
+            "status": "failed",
+            "refinement_stats": {
+                "converged": 0,
+                "failed": 0
+            },
+            "validation_stats": {
+                "critical_spurious": 0,
+                "critical_verified": 0
+            },
+            "best_estimate": null,
+            "critical_points_raw": 0,
+            "file_io_time": 0,
+            "recovery_error": null,
+            "error": {
+                "timestamp": "2025-11-22 14:26:23",
+                "stacktrace": [
+                    "error(s::String) at error.jl:44",
+                    "process_single_degree(degree::Int64, objective_function::Dynamic_objectives.var\"#globtim_objective#27\"{Dynamic_objectives.var\"#Error_distance#16\"{Bool, Nothing, ModelingToolkit.System, Vector{Symbolics.Equation}, Vector{Float64}, Vector{Float64}, Int64, typeof(L2_norm), typeof(first), OrderedCollections.OrderedDict{Any, Vector{Float64}}, SciMLBase.ODEProblem{Vector{Float64}, Tuple{Float64, Float64}, true, ModelingToolkit.MTKParameters{Vector{Float64}, Vector{Float64}, Tuple{}, Tuple{}, Tuple{}, Tuple{}}, SciMLBase.ODEFunction{true, SciMLBase.FullSpecialize, ModelingToolkit.GeneratedFunctionWrapper{(2, 3, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___, :t), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x060af478, 0x877161d3, 0x505f96c9, 0x1c28dd30, 0xb499c1e0), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___, :t), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x51358e41, 0x35c68ff6, 0x115558ce, 0xe5c441e5, 0xf89326c9), Nothing}}, UniformScaling{Bool}, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, ModelingToolkit.ObservedFunctionCache{ModelingToolkit.System}, Nothing, ModelingToolkit.System, SciMLBase.OverrideInitData{SciMLBase.NonlinearProblem{Nothing, true, ModelingToolkit.MTKParameters{Vector{Float64}, StaticArraysCore.SizedVector{0, Float64, Vector{Float64}}, Tuple{}, Tuple{}, Tuple{}, Tuple{}}, SciMLBase.NonlinearFunction{true, SciMLBase.FullSpecialize, ModelingToolkit.GeneratedFunctionWrapper{(2, 2, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0xc14a9cf8, 0x2e65eca9, 0x34ec8052, 0x13bd1df3, 0x77356401), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x18fd3142, 0x461be3ed, 0x90b4592a, 0x81418d8a, 0x30ac28e0), Nothing}}, UniformScaling{Bool}, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, ModelingToolkit.ObservedFunctionCache{ModelingToolkit.System}, Nothing, ModelingToolkit.System, Nothing, Nothing}, Base.Pairs{Symbol, Union{}, Nothing, @NamedTuple{}}, SciMLBase.StandardNonlinearProblem, Nothing, Nothing}, typeof(ModelingToolkit.update_initializeprob!), ComposedFunction{ComposedFunction{typeof(identity), typeof(ModelingToolkit.safe_float)}, SymbolicIndexingInterface.TimeIndependentObservedFunction{ModelingToolkit.GeneratedFunctionWrapper{(2, 2, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x9db50e21, 0x098a3b62, 0x2c810f5e, 0x9295cbbc, 0x5a11f5b1), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0xdeb7c68a, 0xab299d53, 0x85f71a25, 0xc0c7330d, 0x934b04b1), Nothing}}}}, ModelingToolkit.var\"#initprobpmap_split#977\"{ModelingToolkit.var\"#_getter#973\"{Tuple{ComposedFunction{ModelingToolkit.PConstructorApplicator{typeof(identity)}, ModelingToolkit.ObservedWrapper{false, ModelingToolkit.GeneratedFunctionWrapper{(2, 2, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0xb09aa332, 0x9236c2cf, 0xc12e6374, 0xc317a95c, 0xeaf790e0), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x20691c16, 0x8839ed4a, 0x201cb56d, 0xfd003eef, 0xaaf9c38b), Nothing}}}}, ComposedFunction{ModelingToolkit.PConstructorApplicator{typeof(identity)}, ModelingToolkit.ObservedWrapper{false, ModelingToolkit.GeneratedFunctionWrapper{(2, 2, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x8bc2419a, 0x4ff413e7, 0x47316aeb, 0x2f7a6c93, 0x33e68dad), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0xab980580, 0x8fb02e54, 0xc7ba728e, 0xad0a6d51, 0x40606d4b), Nothing}}}}, Returns{Tuple{}}, Returns{Tuple{}}, Returns{Tuple{}}}}}, ModelingToolkit.InitializationMetadata{ModelingToolkit.ReconstructInitializeprob{ModelingToolkit.var\"#_getter#973\"{Tuple{ComposedFunction{ModelingToolkit.PConstructorApplicator{typeof(identity)}, ModelingToolkit.ObservedWrapper{true, ModelingToolkit.GeneratedFunctionWrapper{(2, 3, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___, :t), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x22b3c150, 0x0e2e0607, 0xe91fef38, 0xe71205d0, 0xe44dd42e), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___, :t), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0xf67dde68, 0xeb719d0a, 0xfbfc4775, 0x66fb332a, 0xe54b96ba), Nothing}}}}, Returns{StaticArraysCore.SizedVector{0, Float64, Vector{Float64}}}, Returns{Tuple{}}, Returns{Tuple{}}, Returns{Tuple{}}}}, ComposedFunction{typeof(identity), ModelingToolkit.ObservedWrapper{true, ModelingToolkit.GeneratedFunctionWrapper{(2, 3, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___, :t), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0xa964bde4, 0x481b4006, 0x45c75aa4, 0x48dc8327, 0x979aa0c1), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___, :t), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x2e1b45f3, 0xca72f027, 0xc274ab33, 0xbbe48094, 0xfed2b347), Nothing}}}}}, ModelingToolkit.GetUpdatedU0{SymbolicIndexingInterface.MultipleGetters{SymbolicIndexingInterface.ContinuousTimeseries, Vector{SymbolicUtils.BasicSymbolic{Real}}}, SymbolicIndexingInterface.MultipleParametersGetter{SymbolicIndexingInterface.IndexerNotTimeseries, Vector{SymbolicIndexingInterface.GetParameterIndex{ModelingToolkit.ParameterIndex{SciMLStructures.Initials, Int64}}}, Nothing}}, ModelingToolkit.SetInitialUnknowns{SymbolicIndexingInterface.MultipleSetters{Vector{SymbolicIndexingInterface.ParameterHookWrapper{SymbolicIndexingInterface.SetParameterIndex{ModelingToolkit.ParameterIndex{SciMLStructures.Initials, Int64}}, SymbolicUtils.BasicSymbolic{Real}}}}}}, Val{true}}, Nothing}, Base.Pairs{Symbol, Union{}, Nothing, @NamedTuple{}}, SciMLBase.StandardODEProblem}}}, problem_params::@NamedTuple{}, domain_bounds::Vector{Tuple{Float64, Float64}}, experiment_config::ExperimentParams, output_dir::String, true_params::Vector{Float64}) at StandardExperiment.jl:448",
+                    "run_standard_experiment(; objective_function::Function, problem_params::@NamedTuple{}, domain_bounds::Vector{Tuple{Float64, Float64}}, experiment_config::ExperimentParams, output_dir::String, metadata::Dict{String, Any}, true_params::Vector{Float64}) at StandardExperiment.jl:227",
+                    "kwcall(::@NamedTuple{objective_function::Dynamic_objectives.var\"#globtim_objective#27\"{Dynamic_objectives.var\"#Error_distance#16\"{Bool, Nothing, ModelingToolkit.System, Vector{Symbolics.Equation}, Vector{Float64}, Vector{Float64}, Int64, typeof(L2_norm), typeof(first), OrderedCollections.OrderedDict{Any, Vector{Float64}}, SciMLBase.ODEProblem{Vector{Float64}, Tuple{Float64, Float64}, true, ModelingToolkit.MTKParameters{Vector{Float64}, Vector{Float64}, Tuple{}, Tuple{}, Tuple{}, Tuple{}}, SciMLBase.ODEFunction{true, SciMLBase.FullSpecialize, ModelingToolkit.GeneratedFunctionWrapper{(2, 3, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___, :t), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x060af478, 0x877161d3, 0x505f96c9, 0x1c28dd30, 0xb499c1e0), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___, :t), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x51358e41, 0x35c68ff6, 0x115558ce, 0xe5c441e5, 0xf89326c9), Nothing}}, UniformScaling{Bool}, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, ModelingToolkit.ObservedFunctionCache{ModelingToolkit.System}, Nothing, ModelingToolkit.System, SciMLBase.OverrideInitData{SciMLBase.NonlinearProblem{Nothing, true, ModelingToolkit.MTKParameters{Vector{Float64}, StaticArraysCore.SizedVector{0, Float64, Vector{Float64}}, Tuple{}, Tuple{}, Tuple{}, Tuple{}}, SciMLBase.NonlinearFunction{true, SciMLBase.FullSpecialize, ModelingToolkit.GeneratedFunctionWrapper{(2, 2, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0xc14a9cf8, 0x2e65eca9, 0x34ec8052, 0x13bd1df3, 0x77356401), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x18fd3142, 0x461be3ed, 0x90b4592a, 0x81418d8a, 0x30ac28e0), Nothing}}, UniformScaling{Bool}, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, Nothing, ModelingToolkit.ObservedFunctionCache{ModelingToolkit.System}, Nothing, ModelingToolkit.System, Nothing, Nothing}, Base.Pairs{Symbol, Union{}, Nothing, @NamedTuple{}}, SciMLBase.StandardNonlinearProblem, Nothing, Nothing}, typeof(ModelingToolkit.update_initializeprob!), ComposedFunction{ComposedFunction{typeof(identity), typeof(ModelingToolkit.safe_float)}, SymbolicIndexingInterface.TimeIndependentObservedFunction{ModelingToolkit.GeneratedFunctionWrapper{(2, 2, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x9db50e21, 0x098a3b62, 0x2c810f5e, 0x9295cbbc, 0x5a11f5b1), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0xdeb7c68a, 0xab299d53, 0x85f71a25, 0xc0c7330d, 0x934b04b1), Nothing}}}}, ModelingToolkit.var\"#initprobpmap_split#977\"{ModelingToolkit.var\"#_getter#973\"{Tuple{ComposedFunction{ModelingToolkit.PConstructorApplicator{typeof(identity)}, ModelingToolkit.ObservedWrapper{false, ModelingToolkit.GeneratedFunctionWrapper{(2, 2, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0xb09aa332, 0x9236c2cf, 0xc12e6374, 0xc317a95c, 0xeaf790e0), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x20691c16, 0x8839ed4a, 0x201cb56d, 0xfd003eef, 0xaaf9c38b), Nothing}}}}, ComposedFunction{ModelingToolkit.PConstructorApplicator{typeof(identity)}, ModelingToolkit.ObservedWrapper{false, ModelingToolkit.GeneratedFunctionWrapper{(2, 2, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x8bc2419a, 0x4ff413e7, 0x47316aeb, 0x2f7a6c93, 0x33e68dad), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0xab980580, 0x8fb02e54, 0xc7ba728e, 0xad0a6d51, 0x40606d4b), Nothing}}}}, Returns{Tuple{}}, Returns{Tuple{}}, Returns{Tuple{}}}}}, ModelingToolkit.InitializationMetadata{ModelingToolkit.ReconstructInitializeprob{ModelingToolkit.var\"#_getter#973\"{Tuple{ComposedFunction{ModelingToolkit.PConstructorApplicator{typeof(identity)}, ModelingToolkit.ObservedWrapper{true, ModelingToolkit.GeneratedFunctionWrapper{(2, 3, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___, :t), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x22b3c150, 0x0e2e0607, 0xe91fef38, 0xe71205d0, 0xe44dd42e), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___, :t), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0xf67dde68, 0xeb719d0a, 0xfbfc4775, 0x66fb332a, 0xe54b96ba), Nothing}}}}, Returns{StaticArraysCore.SizedVector{0, Float64, Vector{Float64}}}, Returns{Tuple{}}, Returns{Tuple{}}, Returns{Tuple{}}}}, ComposedFunction{typeof(identity), ModelingToolkit.ObservedWrapper{true, ModelingToolkit.GeneratedFunctionWrapper{(2, 3, true), RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:__mtk_arg_1, :___mtkparameters___, :t), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0xa964bde4, 0x481b4006, 0x45c75aa4, 0x48dc8327, 0x979aa0c1), Nothing}, RuntimeGeneratedFunctions.RuntimeGeneratedFunction{(:ˍ₋out, :__mtk_arg_1, :___mtkparameters___, :t), ModelingToolkit.var\"#_RGF_ModTag\", ModelingToolkit.var\"#_RGF_ModTag\", (0x2e1b45f3, 0xca72f027, 0xc274ab33, 0xbbe48094, 0xfed2b347), Nothing}}}}}, ModelingToolkit.GetUpdatedU0{SymbolicIndexingInterface.MultipleGetters{SymbolicIndexingInterface.ContinuousTimeseries, Vector{SymbolicUtils.BasicSymbolic{Real}}}, SymbolicIndexingInterface.MultipleParametersGetter{SymbolicIndexingInterface.IndexerNotTimeseries, Vector{SymbolicIndexingInterface.GetParameterIndex{ModelingToolkit.ParameterIndex{SciMLStructures.Initials, Int64}}}, Nothing}}, ModelingToolkit.SetInitialUnknowns{SymbolicIndexingInterface.MultipleSetters{Vector{SymbolicIndexingInterface.ParameterHookWrapper{SymbolicIndexingInterface.SetParameterIndex{ModelingToolkit.ParameterIndex{SciMLStructures.Initials, Int64}}, SymbolicUtils.BasicSymbolic{Real}}}}}}, Val{true}}, Nothing}, Base.Pairs{Symbol, Union{}, Nothing, @NamedTuple{}}, SciMLBase.StandardODEProblem}}}, problem_params::@NamedTuple{}, domain_bounds::Vector{Tuple{Float64, Float64}}, experiment_config::ExperimentParams, output_dir::String, metadata::Dict{String, Any}, true_params::Vector{Float64}}, ::typeof(run_standard_experiment)) at StandardExperiment.jl:195",
+                    "top-level scope at run_single_model.jl:146",
+                    "eval(m::Module, e::Any) at boot.jl:489",
+                    "include_string(mapexpr::typeof(identity), mod::Module, code::String, filename::String) at loading.jl:2842",
+                    "_include(mapexpr::Function, mod::Module, _path::String) at loading.jl:2902",
+                    "include(mod::Module, _path::String) at Base.jl:306",
+                    "exec_options(opts::Base.JLOptions) at client.jl:317",
+                    "_start() at client.jl:550"
+                ],
+                "computation_time": 15.843750953674316,
+                "dimension": 2,
+                "error_type": "ErrorException",
+                "degree": 4,
+                "GN": 8,
+                "basis": "chebyshev",
+                "error_message": "ErrorException(\"CRITICAL: No critical points converged after refinement (found 3 raw points, 3 failed)\")"
+            },
+            "refinement_time": 0,
+            "best_objective": null,
+            "critical_point_solving_time": 0,
+            "degree": 4,
+            "validation_time": 0,
+            "l2_approx_error": null
+        },
+        {
+            "critical_points_in_domain": 0,
+            "polynomial_construction_time": 0.004251956939697266,
+            "critical_point_processing_time": 0.45435500144958496,
+            "condition_number": null,
+            "critical_points": 2,
+            "critical_points_refined": 2,
+            "total_computation_time": 12.538689613342285,
+            "status": "success",
+            "refinement_stats": {
+                "timed_out": 0,
+                "mean_improvement": 0.8450700860610714,
+                "converged": 2,
+                "mean_iterations": 102.5,
+                "failed": 2,
+                "max_improvement": 1.3171540954697356
+            },
+            "validation_stats": {
+                "post_refinement": {
+                    "gradient_norm_mean": null,
+                    "distinct_local_minima": 0,
+                    "gradient_norm_min": null,
+                    "classifications": {
+                        "minimum": 0,
+                        "degenerate": 0,
+                        "saddle": 0,
+                        "error": 0,
+                        "maximum": 0
+                    },
+                    "minima_cluster_representatives": [
+                    ],
+                    "critical_spurious": 0,
+                    "critical_verified": 2,
+                    "gradient_norm_max": null,
+                    "minima_cluster_sizes": [
+                    ]
+                },
+                "gradient_tol": 1.0e-6,
+                "pre_refinement": {
+                    "gradient_norm_mean": null,
+                    "gradient_norm_min": null,
+                    "classifications": {
+                        "minimum": 0,
+                        "degenerate": 0,
+                        "saddle": 0,
+                        "error": 0,
+                        "maximum": 0
+                    },
+                    "critical_spurious": 0,
+                    "critical_verified": 4,
+                    "gradient_norm_max": null
+                }
+            },
+            "best_estimate": [
+                0.09006769160316715,
+                213815.27444442193
+            ],
+            "critical_points_raw": 4,
+            "file_io_time": 0.24475502967834473,
+            "recovery_error": 213814.77444635815,
+            "error": null,
+            "refinement_time": 10.553115844726562,
+            "best_objective": 5.226944282945555,
+            "critical_point_solving_time": 1.2313098907470703,
+            "degree": 5,
+            "validation_time": 0.05090188980102539,
+            "l2_approx_error": 2.1326947572836827
+        },
+        {
+            "critical_points_in_domain": 2,
+            "polynomial_construction_time": 0.004209041595458984,
+            "critical_point_processing_time": 0.20598101615905762,
+            "condition_number": null,
+            "critical_points": 3,
+            "critical_points_refined": 3,
+            "total_computation_time": 6.35593581199646,
+            "status": "success",
+            "refinement_stats": {
+                "timed_out": 0,
+                "mean_improvement": 7.909908459165713,
+                "converged": 3,
+                "mean_iterations": 71,
+                "failed": 4,
+                "max_improvement": 12.372284294652696
+            },
+            "validation_stats": {
+                "post_refinement": {
+                    "gradient_norm_mean": null,
+                    "distinct_local_minima": 0,
+                    "gradient_norm_min": null,
+                    "classifications": {
+                        "minimum": 0,
+                        "degenerate": 0,
+                        "saddle": 0,
+                        "error": 0,
+                        "maximum": 0
+                    },
+                    "minima_cluster_representatives": [
+                    ],
+                    "critical_spurious": 0,
+                    "critical_verified": 3,
+                    "gradient_norm_max": null,
+                    "minima_cluster_sizes": [
+                    ]
+                },
+                "gradient_tol": 1.0e-6,
+                "pre_refinement": {
+                    "gradient_norm_mean": null,
+                    "gradient_norm_min": null,
+                    "classifications": {
+                        "minimum": 0,
+                        "degenerate": 0,
+                        "saddle": 0,
+                        "error": 0,
+                        "maximum": 0
+                    },
+                    "critical_spurious": 0,
+                    "critical_verified": 7,
+                    "gradient_norm_max": null
+                }
+            },
+            "best_estimate": [
+                0.9999999994839455,
+                0.5000000008466379
+            ],
+            "critical_points_raw": 7,
+            "file_io_time": 0.0012738704681396484,
+            "recovery_error": 9.91518010391394e-10,
+            "error": null,
+            "refinement_time": 4.915898084640503,
+            "best_objective": 1.6067194795147917e-8,
+            "critical_point_solving_time": 1.2261438369750977,
+            "degree": 6,
+            "validation_time": 0.002429962158203125,
+            "l2_approx_error": 1.824351727929484
+        },
+        {
+            "critical_points_in_domain": 2,
+            "polynomial_construction_time": 0.004067897796630859,
+            "critical_point_processing_time": 0.6082570552825928,
+            "condition_number": null,
+            "critical_points": 5,
+            "critical_points_refined": 5,
+            "total_computation_time": 18.639442682266235,
+            "status": "success",
+            "refinement_stats": {
+                "timed_out": 0,
+                "mean_improvement": 5.018152017301611,
+                "converged": 5,
+                "mean_iterations": 85.4,
+                "failed": 3,
+                "max_improvement": 11.689162644407665
+            },
+            "validation_stats": {
+                "post_refinement": {
+                    "gradient_norm_mean": null,
+                    "distinct_local_minima": 0,
+                    "gradient_norm_min": null,
+                    "classifications": {
+                        "minimum": 0,
+                        "degenerate": 0,
+                        "saddle": 0,
+                        "error": 0,
+                        "maximum": 0
+                    },
+                    "minima_cluster_representatives": [
+                    ],
+                    "critical_spurious": 0,
+                    "critical_verified": 5,
+                    "gradient_norm_max": null,
+                    "minima_cluster_sizes": [
+                    ]
+                },
+                "gradient_tol": 1.0e-6,
+                "pre_refinement": {
+                    "gradient_norm_mean": null,
+                    "gradient_norm_min": null,
+                    "classifications": {
+                        "minimum": 0,
+                        "degenerate": 0,
+                        "saddle": 0,
+                        "error": 0,
+                        "maximum": 0
+                    },
+                    "critical_spurious": 0,
+                    "critical_verified": 8,
+                    "gradient_norm_max": null
+                }
+            },
+            "best_estimate": [
+                1.0000000001517977,
+                0.5000000002567719
+            ],
+            "critical_points_raw": 8,
+            "file_io_time": 0.0013189315795898438,
+            "recovery_error": 2.9828571033061063e-10,
+            "error": null,
+            "refinement_time": 16.71108603477478,
+            "best_objective": 8.314112702401221e-9,
+            "critical_point_solving_time": 1.299975872039795,
+            "degree": 7,
+            "validation_time": 0.01473689079284668,
+            "l2_approx_error": 1.550390540978454
+        },
+        {
+            "critical_points_in_domain": 3,
+            "polynomial_construction_time": 0.004485130310058594,
+            "critical_point_processing_time": 0.6121921539306641,
+            "condition_number": null,
+            "critical_points": 6,
+            "critical_points_refined": 6,
+            "total_computation_time": 21.47546696662903,
+            "status": "success",
+            "refinement_stats": {
+                "timed_out": 0,
+                "mean_improvement": 5.076795290052899,
+                "converged": 6,
+                "mean_iterations": 81,
+                "failed": 5,
+                "max_improvement": 11.034976204012665
+            },
+            "validation_stats": {
+                "post_refinement": {
+                    "gradient_norm_mean": null,
+                    "distinct_local_minima": 0,
+                    "gradient_norm_min": null,
+                    "classifications": {
+                        "minimum": 0,
+                        "degenerate": 0,
+                        "saddle": 0,
+                        "error": 0,
+                        "maximum": 0
+                    },
+                    "minima_cluster_representatives": [
+                    ],
+                    "critical_spurious": 0,
+                    "critical_verified": 6,
+                    "gradient_norm_max": null,
+                    "minima_cluster_sizes": [
+                    ]
+                },
+                "gradient_tol": 1.0e-6,
+                "pre_refinement": {
+                    "gradient_norm_mean": null,
+                    "gradient_norm_min": null,
+                    "classifications": {
+                        "minimum": 0,
+                        "degenerate": 0,
+                        "saddle": 0,
+                        "error": 0,
+                        "maximum": 0
+                    },
+                    "critical_spurious": 0,
+                    "critical_verified": 11,
+                    "gradient_norm_max": null
+                }
+            },
+            "best_estimate": [
+                0.9999999996991566,
+                0.5000000003006236
+            ],
+            "critical_points_raw": 11,
+            "file_io_time": 0.0015559196472167969,
+            "recovery_error": 4.253014137747903e-10,
+            "error": null,
+            "refinement_time": 19.41235589981079,
+            "best_objective": 5.664157456244839e-9,
+            "critical_point_solving_time": 1.4292778968811035,
+            "degree": 8,
+            "validation_time": 0.015599966049194336,
+            "l2_approx_error": 1.241423401259626
+        }
+    ],
+    "schema_version": "1.2.0",
+    "degrees_processed": 5
+}

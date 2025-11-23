@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(julia:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "globtim"
+  ]
+}
