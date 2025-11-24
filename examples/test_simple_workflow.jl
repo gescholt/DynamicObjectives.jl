@@ -62,7 +62,7 @@ function display_stage_results(stage_name::String, results::Dict; style::String=
 
     panel = Panel(
         content,
-        title="✓ $stage_name Complete",
+        title="$stage_name Complete",
         title_style="bold $style",
         style=style,
         fit=true,
@@ -142,7 +142,7 @@ obj_at_true = objective(p_true)
 if obj_at_true < 1e-6
     check_panel = Panel(
         "Objective value at true parameters: $(@sprintf("%.2e", obj_at_true))\n" *
-        "Model validation passed ✓",
+        "Model validation passed",
         title="Objective Function Verified",
         title_style="bold green",
         style="green",
@@ -313,15 +313,15 @@ if refined.n_converged > 0
     if recovery_error < 0.01
         verdict_content = "Excellent recovery (< 1% relative error)\n\nThe optimization successfully recovered the true parameters\nwith high accuracy!"
         verdict_style = "green"
-        verdict_title = "✅ Success - Excellent Recovery"
+        verdict_title = "Success - Excellent Recovery"
     elseif recovery_error < 0.05
         verdict_content = "Good recovery (< 5% relative error)\n\nThe optimization found parameters close to the true values.\nPerformance is acceptable for most applications."
         verdict_style = "green"
-        verdict_title = "✅ Success - Good Recovery"
+        verdict_title = "Success - Good Recovery"
     else
         verdict_content = "Recovery needs improvement (> 5% relative error)\n\nConsider adjusting experiment configuration:\n- Increase grid size (GN)\n- Expand degree range\n- Adjust refinement settings"
         verdict_style = "yellow"
-        verdict_title = "⚠️  Needs Improvement"
+        verdict_title = "Needs Improvement"
     end
 
     verdict_panel = Panel(
@@ -349,7 +349,7 @@ else
 
     warning_panel = Panel(
         warning_content,
-        title="⚠️  No Convergence",
+        title="No Convergence",
         title_style="bold yellow",
         style="yellow",
         fit=true,
