@@ -33,13 +33,14 @@ using .ExperimentCLI
 
 """Display a section header with Term panel"""
 function display_section_header(title::String, subtitle::String=""; style::String="bold cyan")
-    content = subtitle == "" ? title : "$title\n$subtitle"
+    content = subtitle == "" ? "" : subtitle
     panel = Panel(
         content,
-        title="╔═ $title ═╗",
+        title=title,
+        title_style=style,
         style=style,
         fit=true,
-        padding=(1, 2, 0, 2)
+        padding=(0, 2, 0, 2)
     )
     println(panel)
 end
@@ -62,6 +63,7 @@ function display_stage_results(stage_name::String, results::Dict; style::String=
     panel = Panel(
         content,
         title="✓ $stage_name Complete",
+        title_style="bold $style",
         style=style,
         fit=true,
         padding=(1, 2, 1, 2)
@@ -81,7 +83,8 @@ function display_config(config::ExperimentParams)
 
     panel = Panel(
         content,
-        title="⚙ Experiment Configuration",
+        title="Experiment Configuration",
+        title_style="bold blue",
         style="blue",
         fit=true,
         padding=(1, 2, 0, 2)
@@ -95,13 +98,13 @@ end
 
 # Title banner
 title_panel = Panel(
-    "2-STAGE WORKFLOW TEST\n\n" *
     "Stage 1: Find raw critical points (globtimcore)\n" *
     "Stage 2: Refine with local optimization (globtimpostprocessing)",
-    title="╔═══════════════════════════════════════╗",
-    style="bold magenta",
+    title="2-Stage Workflow Test",
+    title_style="bold magenta",
+    style="magenta",
     fit=true,
-    padding=(1, 4, 1, 4)
+    padding=(1, 2, 1, 2)
 )
 println("\n", title_panel, "\n")
 
@@ -140,7 +143,8 @@ if obj_at_true < 1e-6
     check_panel = Panel(
         "Objective value at true parameters: $(@sprintf("%.2e", obj_at_true))\n" *
         "Model validation passed ✓",
-        title="✓ Objective Function Verified",
+        title="Objective Function Verified",
+        title_style="bold green",
         style="green",
         fit=true,
         padding=(0, 2, 0, 2)
@@ -221,7 +225,8 @@ ref_config_content = """
 """
 ref_config_panel = Panel(
     ref_config_content,
-    title="⚙ Refinement Configuration",
+    title="Refinement Configuration",
+    title_style="bold cyan",
     style="cyan",
     fit=true,
     padding=(0, 2, 0, 2)
@@ -291,7 +296,8 @@ if refined.n_converged > 0
 
     metrics_panel = Panel(
         metrics_content,
-        title="📊 Recovery Metrics",
+        title="Recovery Metrics",
+        title_style="bold blue",
         style="blue",
         fit=true,
         padding=(1, 2, 1, 2)
@@ -302,28 +308,29 @@ if refined.n_converged > 0
     # Final verdict
     verdict_content = ""
     verdict_style = ""
-    verdict_emoji = ""
+    verdict_title = ""
 
     if recovery_error < 0.01
         verdict_content = "Excellent recovery (< 1% relative error)\n\nThe optimization successfully recovered the true parameters\nwith high accuracy!"
-        verdict_style = "bold green"
-        verdict_emoji = "✅"
+        verdict_style = "green"
+        verdict_title = "✅ Success - Excellent Recovery"
     elseif recovery_error < 0.05
         verdict_content = "Good recovery (< 5% relative error)\n\nThe optimization found parameters close to the true values.\nPerformance is acceptable for most applications."
         verdict_style = "green"
-        verdict_emoji = "✅"
+        verdict_title = "✅ Success - Good Recovery"
     else
         verdict_content = "Recovery needs improvement (> 5% relative error)\n\nConsider adjusting experiment configuration:\n- Increase grid size (GN)\n- Expand degree range\n- Adjust refinement settings"
         verdict_style = "yellow"
-        verdict_emoji = "⚠️"
+        verdict_title = "⚠️  Needs Improvement"
     end
 
     verdict_panel = Panel(
         verdict_content,
-        title="$verdict_emoji Final Result",
+        title=verdict_title,
+        title_style="bold $verdict_style",
         style=verdict_style,
         fit=true,
-        padding=(1, 3, 1, 3)
+        padding=(1, 2, 1, 2)
     )
     println(verdict_panel)
 else
@@ -343,7 +350,8 @@ else
     warning_panel = Panel(
         warning_content,
         title="⚠️  No Convergence",
-        style="bold yellow",
+        title_style="bold yellow",
+        style="yellow",
         fit=true,
         padding=(1, 2, 1, 2)
     )
@@ -357,10 +365,11 @@ completion_panel = Panel(
     "Stage 1: Critical point search\n" *
     "Stage 2: Local refinement\n" *
     "Stage 3: Verification & analysis",
-    title="═══════════════ WORKFLOW COMPLETE ═══════════════",
-    style="bold magenta",
+    title="Workflow Complete",
+    title_style="bold magenta",
+    style="magenta",
     fit=true,
-    padding=(1, 4, 1, 4)
+    padding=(1, 2, 1, 2)
 )
 println(completion_panel)
 println()
