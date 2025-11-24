@@ -42,14 +42,26 @@ This guide explains how to integrate Dynamic_objectives with the globtim ecosyst
 **Integration Method**: Environment activation + local dev versions
 
 **Setup** (one-time):
+
+**Option 1: Quick setup** (recommended):
 ```bash
 cd /path/to/Dynamic_objectives
+./setup_dev_packages.jl  # Automated setup script
+```
 
-# Activate Dynamic_objectives environment
+**Option 2: Manual setup**:
+```bash
+cd /path/to/Dynamic_objectives
 julia --project=. -e 'using Pkg; Pkg.develop(path="../globtimcore"); Pkg.develop(path="../globtimpostprocessing")'
 ```
 
 After this setup, you can use all three packages together in your scripts.
+
+**Verification**:
+```bash
+# Verify packages are available
+julia --project=. -e 'using Globtim, GlobtimPostProcessing; println("✓ Setup successful")'
+```
 
 ## Phase 2 Migration (November 2025)
 
@@ -268,9 +280,32 @@ config = ExperimentParams(
 ```
 
 **Grid Size Guidelines**:
-- GN = 10: Quick test (100 points for 2D) - ⭐ Fast
-- GN = 20: Medium (400 points for 2D) - ⭐⭐ Reasonable
-- GN = 50: Production (2500 points for 2D) - ⭐⭐⭐ Slow but accurate
+- GN = 10: Quick test (100 points for 2D) - ⭐ Fast (~seconds)
+- GN = 20: Medium (400 points for 2D) - ⭐⭐ Reasonable (~minutes)
+- GN = 50: Production (2500 points for 2D) - ⭐⭐⭐ Slow but accurate (~10-30 min)
+
+**Performance Tuning**:
+```julia
+# Development/debugging: Fast iteration
+config = ExperimentParams(domain_size=1.5, GN=10, degree_range=4:6)
+
+# Testing: Reasonable quality, manageable time
+config = ExperimentParams(domain_size=1.5, GN=20, degree_range=4:8)
+
+# Production: High quality, long runtime
+config = ExperimentParams(domain_size=1.5, GN=50, degree_range=4:12)
+
+# HPC batch jobs: Maximum quality
+config = ExperimentParams(domain_size=1.5, GN=100, degree_range=4:16)
+```
+
+**Balancing Quality vs. Speed**:
+- **Grid size (GN)**: More points = better initial approximation, longer Stage 1
+- **Degree range**: Higher degrees = more critical points found, longer HC solving
+- **Domain size**: Larger domain = more exploration, more critical points
+- **Refinement timeout**: Longer timeout = more refined points converge
+
+**Rule of thumb**: Start with GN=10 and degree_range=4:6. If recovery is good, you're done. If not, incrementally increase GN or expand degree_range.
 
 ### RefinementConfig (globtimpostprocessing)
 
@@ -284,6 +319,45 @@ refinement_config = ode_refinement_config(
     # max_iterations = 2000,
 )
 ```
+
+**Custom Refinement Configurations**:
+
+```julia
+# Fast refinement (quick tests)
+quick_config = ode_refinement_config(
+    max_time_per_point = 10.0,
+    f_tol = 1e-8,
+    max_iterations = 500
+)
+
+# Aggressive refinement (high-precision)
+precise_config = ode_refinement_config(
+    max_time_per_point = 120.0,
+    f_tol = 1e-14,
+    x_tol = 1e-14,
+    max_iterations = 5000
+)
+
+# Parallel-friendly (no progress bar, suitable for batch jobs)
+batch_config = ode_refinement_config(
+    max_time_per_point = 60.0,
+    show_progress = false,
+    f_tol = 1e-12
+)
+
+# Stiff ODE-optimized (slower timeouts for expensive evaluations)
+stiff_config = ode_refinement_config(
+    max_time_per_point = 300.0,    # 5 minutes per point
+    f_tol = 1e-10,
+    max_iterations = 1000
+)
+```
+
+**Choosing refinement settings**:
+- **Quick tests**: Use fast refinement with relaxed tolerances
+- **Production runs**: Use default or precise config
+- **Expensive ODE models**: Increase `max_time_per_point` significantly
+- **HPC batch jobs**: Disable `show_progress` to avoid log spam
 
 ## Output Files
 
@@ -372,6 +446,94 @@ best_params = refined[:refined_points][refined[:best_refined_idx]]  # ✅ Refine
 2. **Reduce degree_range**: Use 4:6 instead of 4:12
 3. **Increase eval_timeout**: Prevent timeouts on expensive ODE solves
 4. **Run verify_model.jl first**: Get performance estimates before expensive runs
+
+### ODE Integration Failures
+
+**Problem**: Many NaN or Inf values during grid evaluation
+
+**Symptoms**:
+```
+Warning: Objective returned NaN at point [...]
+Warning: ODE integration failed
+```
+
+**Solutions**:
+1. **Check initial conditions**: Ensure IC is in valid state space region
+2. **Check parameter bounds**: May be exploring unphysical parameter regions
+3. **Increase eval_timeout**: ODE solver may need more time for stiff systems
+4. **Use tighter ODE tolerances**: Adjust in `make_error_distance()` if available
+5. **Narrow domain_size**: Reduce search space to more reasonable parameter regions
+
+**Example fix**:
+```julia
+# Before: Too wide, includes unphysical regions
+bounds = [(0.0, 10.0), (0.0, 10.0)]
+
+# After: Narrower, focused on realistic parameters
+bounds = [(0.1, 3.0), (0.1, 2.0)]  # Exclude zero and extreme values
+```
+
+### No Critical Points Found
+
+**Problem**: HomotopyContinuation finds no critical points for some degrees
+
+**Solutions**:
+1. **Check domain bounds**: May be excluding regions with critical points
+2. **Increase GN**: More grid points = better polynomial approximation
+3. **Expand degree_range**: Try higher degrees
+4. **Check objective function**: Ensure it's well-behaved (smooth, finite everywhere)
+
+**Diagnostic**:
+```bash
+# Check CSV files - if empty, no critical points found
+ls -lh output_dir/critical_points_raw_deg_*.csv
+```
+
+### Poor Parameter Recovery
+
+**Problem**: Best refined point is far from p_true
+
+**Diagnostic steps**:
+1. **Check raw results**: Are raw critical points close to p_true?
+   - If YES: Refinement problem → increase refinement timeout or adjust tolerances
+   - If NO: Stage 1 problem → increase GN or expand degree_range
+
+2. **Check convergence**: Did refinement converge?
+   ```julia
+   # Look at refinement comparison file
+   df = CSV.read("output_dir/refinement_comparison_deg_6.csv", DataFrame)
+   # Check "converged" column - how many refined points converged?
+   ```
+
+3. **Visualize**: Are there multiple local minima?
+
+**Solutions**:
+- **Increase GN**: Better initial polynomial approximation
+- **Expand degree_range**: Higher degrees capture more complexity
+- **Increase refinement timeout**: Give BFGS more time to converge
+- **Check objective function**: May have many similar local minima (identifiability issue)
+
+### MethodError or Type Issues
+
+**Problem**: MethodError when calling globtimcore functions
+
+**Common causes**:
+1. **Outdated globtimcore**: Pull latest changes
+   ```bash
+   cd ../globtimcore && git pull
+   julia --project=. -e 'using Pkg; Pkg.resolve(); Pkg.precompile()'
+   ```
+
+2. **Wrong function signature**: Ensure you're using 1-argument objective
+   ```julia
+   # WRONG: Returns (value, gradient)
+   objective(p) = (compute_cost(p), compute_grad(p))
+
+   # CORRECT: Returns scalar value only
+   objective(p) = compute_cost(p)
+   ```
+
+3. **Missing problem_params**: Always specify `problem_params = nothing` for 1-arg functions
 
 ## Performance Tips
 
