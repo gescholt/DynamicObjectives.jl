@@ -182,6 +182,23 @@ Dynamic_objectives = {path = "../Dynamic_objectives"}
 
 ## Testing
 
+### Setup Required for Integration Tests
+
+**IMPORTANT**: Dynamic_objectives is standalone (no package dependencies), but integration tests require local dev versions of globtimcore and globtimpostprocessing.
+
+**Easy setup** (recommended):
+```bash
+cd /Users/ghscholt/GlobalOptim/Dynamic_objectives
+./setup_dev_packages.jl
+```
+
+**Manual setup** (if needed):
+```bash
+julia --project=. -e 'using Pkg; Pkg.develop(path="../globtimcore"); Pkg.develop(path="../globtimpostprocessing")'
+```
+
+This allows the integration tests to find the local development versions of both packages. **Only needs to be done ONCE.**
+
 ### Quick Test Script (Recommended)
 
 ```bash
@@ -203,6 +220,19 @@ Pkg.test("Dynamic_objectives")
 # Comprehensive validation of all 13 models
 include("test/validate_all_models.jl")
 ```
+
+## Integration with globtim
+
+For integrating Dynamic_objectives with globtimcore and globtimpostprocessing, see **[INTEGRATION.md](INTEGRATION.md)** which covers:
+
+- **2-stage pipeline**: globtimcore (finding raw critical points) → globtimpostprocessing (refinement)
+- **Phase 2 compatibility**: 1-argument functions work directly (no wrappers needed)
+- **Quick start guide**: Minimal working example
+- **Integration patterns**: Simple, Pipeline, and Advanced workflows
+- **Configuration**: ExperimentParams and RefinementConfig
+- **Example scripts**: verify_model.jl, test_simple_workflow.jl, test_globtim_integration.jl
+- **Performance tips**: Grid size selection and timing estimates
+- **Troubleshooting**: Common pitfalls and anti-patterns
 
 ## Testing with globtim
 

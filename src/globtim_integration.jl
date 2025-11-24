@@ -1,17 +1,31 @@
 """
 Integration utilities for using Dynamic_objectives with globtim optimizer.
 
-This module provides a helper function to create globtim-compatible objectives from
-Dynamic_objectives parameter estimation models.
+# Architecture - Standalone Design
 
-# Architecture
+Dynamic_objectives is **standalone** with zero package dependencies on globtimcore
+or globtimpostprocessing. Integration is achieved through:
+- Local dev setup using `Pkg.develop()`  (see `setup_dev_packages.jl`)
+- Environment activation patterns
+- File-based data exchange (CSV files)
 
-The key challenge is signature compatibility:
-- Dynamic_objectives: `error_func(p::Vector{Float64}) -> Float64`
-- globtimcore expects: `objective(point::Vector{Float64}, params) -> Float64`
+See ARCHITECTURE.md and REFINEMENT_INTEGRATION_GUIDE.md for complete integration patterns.
 
-The helper function bridges this gap by creating a closure that captures the model
-configuration and adapts the function signature.
+# Phase 2 Update: No Wrappers Needed!
+
+After globtimcore Phase 2, 1-argument functions work directly:
+
+```julia
+# Dynamic_objectives creates 1-arg functions
+objective = make_error_distance(model, outputs, ic, p_true, [0.0, 20.0], 30,
+                                L2_norm, first, nothing; eval_timeout=10.0)
+
+# Works directly with globtimcore (no wrapper needed!)
+using Globtim
+result = run_standard_experiment(objective, bounds, config)
+```
+
+**Note**: `create_globtim_objective()` is now **deprecated** but kept for backwards compatibility.
 
 # Limitations
 
@@ -21,31 +35,39 @@ cannot propagate ForwardDiff.Dual types for automatic differentiation. Therefore
 - Hessian computation must be disabled (enable_hessian_computation = false)
 - BFGS refinement must be disabled (enable_bfgs_refinement = false)
 
-See examples/globtim_integration/run_single_model.jl for configuration.
+# Integration Patterns
 
-# Usage
-
-This module is lightweight and only provides the objective adapter. To run full
-globtim experiments, use the standalone scripts in `examples/globtim_integration/`:
+## Pattern 1: Manual 2-Stage Pipeline
 
 ```julia
-# In Dynamic_objectives environment
+using Pkg
 using Dynamic_objectives
 
-model, params, states, outputs = define_lotka_volterra_2D_model_v3_two_outputs()
-p_true = [1.0, 0.5]
-ic = [1.0, 0.5]
+# Create objective (1-arg, works directly!)
+objective = make_error_distance(...)
 
-# Create globtim-compatible objective
-objective = create_globtim_objective(
-    model, outputs, ic, p_true,
-    [0.0, 20.0], 30
-)
+# Stage 1: Find raw critical points
+Pkg.activate("../globtimcore")
+using Globtim
+raw = run_standard_experiment(objective, bounds, config)
 
-# Use objective in globtimcore environment (see examples/globtim_integration/)
+# Stage 2: Refine critical points
+Pkg.activate("../globtimpostprocessing")
+using GlobtimPostProcessing
+refined = refine_experiment_results(raw.output_dir, objective, ode_config)
 ```
 
-See `examples/globtim_integration/run_single_model.jl` for complete workflow.
+## Pattern 2: Standalone (No globtim)
+
+```julia
+using Dynamic_objectives
+using Optim  # Or any other optimizer
+
+objective = make_error_distance(...)
+result = optimize(objective, lower, upper, ParticleSwarm())
+```
+
+See REFINEMENT_INTEGRATION_GUIDE.md for complete examples.
 """
 
 using LinearAlgebra
@@ -56,7 +78,25 @@ export create_globtim_objective, run_globtim_optimization
 """
     create_globtim_objective(model, outputs, ic, p_true, time_interval, numpoints; kwargs...)
 
-Create a globtim-compatible objective function from a Dynamic_objectives model.
+**DEPRECATED after Phase 2**: globtimcore now auto-detects 1-argument functions.
+
+This function is kept for backwards compatibility. You can now use `make_error_distance()`
+directly with globtimcore without any wrapper!
+
+# Migration Guide
+
+Instead of:
+```julia
+globtim_obj = create_globtim_objective(model, outputs, ic, p_true, [0.0, 20.0], 30)
+result = run_standard_experiment(globtim_obj, bounds, config)
+```
+
+Use directly:
+```julia
+objective = make_error_distance(model, outputs, ic, p_true, [0.0, 20.0], 30,
+                                L2_norm, first, nothing; eval_timeout=10.0)
+result = run_standard_experiment(objective, bounds, config)  # Works directly!
+```
 
 # Arguments
 - `model::ODESystem`: ModelingToolkit ODE system
@@ -435,7 +475,133 @@ function run_globtim_optimization(
     )
 end
 
-# Note: For complete workflow including optimization, see standalone scripts:
-# - examples/globtim_integration/run_single_model.jl
-# - examples/globtim_integration/run_batch_models.jl
-# These scripts use globtimcore's StandardExperiment infrastructure directly.
+# Note: For complete 2-stage pipeline with refinement, see:
+# - REFINEMENT_INTEGRATION_GUIDE.md
+# - ARCHITECTURE.md
+# - setup_dev_packages.jl (one-time dev setup)
+# Refinement requires globtimpostprocessing package (set up via `./setup_dev_packages.jl`)
+
+"""
+    run_globtim_pipeline(objective, bounds, config; output_dir=".", metadata=Dict(), true_params=nothing, refine=true, refinement_config=nothing)
+
+Convenience function for running the complete 2-stage globtim pipeline (Phase 2 compatible).
+
+This function combines globtimcore (raw critical point finding) with
+globtimpostprocessing (local refinement) in a single call.
+
+**Phase 2 Update (2025-11-23):**
+- Now uses keyword arguments for run_standard_experiment
+- Returns updated schema with :total_critical_points and :degree_results
+- Compatible with ExperimentParams configuration
+
+# Arguments
+- `objective::Function`: Objective function with signature `f(p::Vector{Float64}, problem_params) -> Float64`
+- `bounds::Vector{Tuple}`: Parameter bounds as vector of (min, max) tuples
+- `config`: ExperimentParams for globtimcore (or NamedTuple with compatible fields)
+
+# Keyword Arguments
+- `output_dir::String = "."`: Directory for saving results
+- `metadata::Dict = Dict()`: Experiment metadata
+- `true_params::Union{Vector{Float64}, Nothing} = nothing`: True parameters (for recovery analysis)
+- `refine::Bool = true`: Whether to refine critical points after finding them
+- `refinement_config = nothing`: RefinementConfig for postprocessing (uses default if nothing)
+
+# Returns
+If `refine=true`: Tuple `(raw_result, refined_result)`
+If `refine=false`: Just `raw_result`
+
+# Example
+```julia
+using Dynamic_objectives, Globtim, GlobtimPostProcessing
+
+# Include ExperimentCLI for config
+include(joinpath(dirname(@__DIR__), "..", "globtimcore", "src", "ExperimentCLI.jl"))
+using .ExperimentCLI
+
+# Create objective
+objective = make_error_distance(model, outputs, ic, p_true, [0.0, 20.0], 30,
+                                L2_norm, first, nothing; eval_timeout=10.0)
+
+# Create config (Phase 2)
+config = ExperimentParams(
+    domain_size = 1.5,
+    GN = 50,
+    degree_range = 4:8,
+    basis = :chebyshev
+)
+
+# Run 2-stage pipeline
+output_dir = mkpath("results/my_experiment")
+raw, refined = run_globtim_pipeline(
+    objective, bounds, config;
+    output_dir = output_dir,
+    true_params = p_true
+)
+
+# Access results
+println("Total critical points: ", raw[:total_critical_points])
+println("Best refined: ", refined[:refined_points][refined[:best_refined_idx]])
+```
+
+# Note
+Requires Globtim and GlobtimPostProcessing packages to be available.
+Run `./setup_dev_packages.jl` first if using local dev versions.
+
+See also: `examples/templates/integration_template_pipeline.jl`
+"""
+function run_globtim_pipeline(
+    objective::Function,
+    bounds::Vector{<:Tuple},
+    config;
+    output_dir::String = ".",
+    metadata::Dict{String, Any} = Dict{String, Any}(),
+    true_params::Union{Vector{Float64}, Nothing} = nothing,
+    refine::Bool = true,
+    refinement_config = nothing
+)
+    # Check if packages are available
+    if !@isdefined(Globtim)
+        error("Globtim package not found. Run ./setup_dev_packages.jl or add as dependency.")
+    end
+
+    if refine && !@isdefined(GlobtimPostProcessing)
+        error("GlobtimPostProcessing package not found. Run ./setup_dev_packages.jl or add as dependency.")
+    end
+
+    # Stage 1: Find raw critical points with globtimcore (Phase 2)
+    println("Stage 1: Finding raw critical points...")
+    raw_result = Globtim.run_standard_experiment(
+        objective_function = objective,
+        problem_params = nothing,
+        domain_bounds = bounds,
+        experiment_config = config,
+        output_dir = output_dir,
+        metadata = metadata,
+        true_params = true_params
+    )
+    println("  ✓ Found $(raw_result[:total_critical_points]) critical points across $(raw_result[:degrees_processed]) degrees")
+
+    if !refine
+        return raw_result
+    end
+
+    # Stage 2: Refine critical points with globtimpostprocessing
+    println("\nStage 2: Refining critical points...")
+
+    # Use default config if not provided
+    if refinement_config === nothing
+        refinement_config = GlobtimPostProcessing.ode_refinement_config(verbose=false)
+    end
+
+    refined_result = GlobtimPostProcessing.refine_experiment_results(
+        raw_result[:output_dir],
+        objective,
+        refinement_config
+    )
+    println("  ✓ Refined $(refined_result[:n_converged])/$(refined_result[:n_raw]) points")
+
+    return (raw_result, refined_result)
+end
+
+export run_globtim_pipeline
+

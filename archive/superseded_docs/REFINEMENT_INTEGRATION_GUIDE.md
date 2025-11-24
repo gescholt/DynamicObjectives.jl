@@ -4,6 +4,55 @@
 
 **Updated**: 2025-11-22
 
+## Testing Setup - REQUIRED FIRST STEP
+
+**Dynamic_objectives is intentionally standalone** (no package dependencies on globtimcore or globtimpostprocessing). To run integration tests or use the refinement pipeline, you must first set up local dev versions:
+
+### For Running Integration Tests
+
+```bash
+cd /Users/ghscholt/GlobalOptim/Dynamic_objectives
+
+# Activate Dynamic_objectives environment
+julia --project=. -e '
+using Pkg
+
+# Dev the local versions of globtimcore and globtimpostprocessing
+Pkg.develop(path="../globtimcore")
+Pkg.develop(path="../globtimpostprocessing")
+
+# Verify they are available
+using Globtim
+using GlobtimPostProcessing
+println("✅ Integration packages loaded successfully!")
+'
+```
+
+**After this one-time setup**, the integration tests will work:
+```bash
+./run_tests.sh
+# or
+julia --project=. -e 'using Pkg; Pkg.test()'
+```
+
+### For Using Refinement Pipeline in Scripts
+
+Once dev versions are set up (above), you can use the simple pattern:
+
+```julia
+using Pkg
+Pkg.activate(".")  # Dynamic_objectives environment
+using Dynamic_objectives
+using Globtim  # Now available via dev
+using GlobtimPostProcessing  # Now available via dev
+
+# Your integration code here...
+```
+
+**IMPORTANT**: The `Pkg.develop()` commands only need to be run ONCE. After that, Dynamic_objectives will always find the local dev versions.
+
+---
+
 ## Overview
 
 This guide shows how to integrate Dynamic_objectives with the new 2-stage critical point refinement pipeline:
