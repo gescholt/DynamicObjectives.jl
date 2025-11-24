@@ -4,7 +4,8 @@
       "Bash(julia:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(find /Users/ghscholt/GlobalOptim/Dynamic_objectives -name \"*.jl\" -type f -exec grep -l \"Revise\" {} ;)"
+      "Bash(find /Users/ghscholt/GlobalOptim/Dynamic_objectives -name \"*.jl\" -type f -exec grep -l \"Revise\" {} ;)",
+      "Bash(git merge:*)"
     ],
     "deny": [],
     "ask": []
