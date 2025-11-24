@@ -194,11 +194,11 @@ refined = refine_experiment_results(
 stage2_time = time() - stage2_start
 
 println("\nStage 2 Results:")
-println("  Raw points:          $(refined[:n_raw])")
-println("  Converged points:    $(refined[:n_converged])")
-println("  Convergence rate:    $(round(100*refined[:n_converged]/refined[:n_raw], digits=1))%")
-println("  Best refined value:  $(round(refined[:best_refined_value], digits=8))")
-println("  Mean improvement:    $(round(refined[:mean_improvement], digits=2))x")
+println("  Raw points:          $(refined.n_raw)")
+println("  Converged points:    $(refined.n_converged)")
+println("  Convergence rate:    $(round(100*refined.n_converged/refined.n_raw, digits=1))%")
+println("  Best refined value:  $(round(refined.best_refined_value, digits=8))")
+println("  Mean improvement:    $(round(refined.mean_improvement, digits=2))x")
 println("  Computation time:    $(round(stage2_time, digits=2))s")
 
 #===============================================================================
@@ -209,29 +209,41 @@ println("\n" * "="^80)
 println("Final Analysis")
 println("="^80)
 
-best_params = refined[:refined_points][refined[:best_refined_idx]]
-recovery_error = norm(best_params .- p_true) / norm(p_true)
+# Check if any points converged
+if refined.n_converged > 0
+    best_params = refined.refined_points[refined.best_refined_idx]
+    recovery_error = norm(best_params .- p_true) / norm(p_true)
 
-println("True parameters:        $p_true")
-println("Best recovered params:  $best_params")
-println("Recovery error:         $(round(100*recovery_error, digits=3))%")
-println()
-println("Total pipeline time:    $(round(stage1_time + stage2_time, digits=2))s")
-println("  Stage 1 (raw):        $(round(stage1_time, digits=2))s ($(round(100*stage1_time/(stage1_time+stage2_time), digits=1))%)")
-println("  Stage 2 (refine):     $(round(stage2_time, digits=2))s ($(round(100*stage2_time/(stage1_time+stage2_time), digits=1))%)")
+    println("True parameters:        $p_true")
+    println("Best recovered params:  $best_params")
+    println("Recovery error:         $(round(100*recovery_error, digits=3))%")
+    println()
+    println("Total pipeline time:    $(round(stage1_time + stage2_time, digits=2))s")
+    println("  Stage 1 (raw):        $(round(stage1_time, digits=2))s ($(round(100*stage1_time/(stage1_time+stage2_time), digits=1))%)")
+    println("  Stage 2 (refine):     $(round(stage2_time, digits=2))s ($(round(100*stage2_time/(stage1_time+stage2_time), digits=1))%)")
 
-if recovery_error < 0.01
-    println("\n✅ Excellent recovery (< 1% error)")
-elseif recovery_error < 0.05
-    println("\n✅ Good recovery (< 5% error)")
-elseif recovery_error < 0.10
-    println("\n✓ Acceptable recovery (< 10% error)")
+    if recovery_error < 0.01
+        println("\n✅ Excellent recovery (< 1% error)")
+    elseif recovery_error < 0.05
+        println("\n✅ Good recovery (< 5% error)")
+    elseif recovery_error < 0.10
+        println("\n✓ Acceptable recovery (< 10% error)")
+    else
+        println("\n⚠️  Poor recovery - consider:")
+        println("   - Increasing domain_size")
+        println("   - Increasing GN (grid size)")
+        println("   - Expanding degree_range")
+        println("   - Checking if objective is well-behaved")
+    end
 else
-    println("\n⚠️  Poor recovery - consider:")
-    println("   - Increasing domain_size")
-    println("   - Increasing GN (grid size)")
-    println("   - Expanding degree_range")
-    println("   - Checking if objective is well-behaved")
+    # No points converged - refinement needs improvement
+    # TODO: Investigate postprocessing step - understand optimization methods,
+    #       convergence criteria, and alternative refinement approaches
+    println("⚠️  Refinement did not converge for any of the $(refined.n_raw) raw critical points")
+    println()
+    println("Total pipeline time:    $(round(stage1_time + stage2_time, digits=2))s")
+    println("  Stage 1 (raw):        $(round(stage1_time, digits=2))s")
+    println("  Stage 2 (refine):     $(round(stage2_time, digits=2))s")
 end
 
 #===============================================================================

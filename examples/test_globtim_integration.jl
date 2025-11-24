@@ -166,11 +166,11 @@ stage2_time = time() - t_start
 
 println()
 println("✓ Stage 2 Complete")
-println("  Raw points: $(refined[:n_raw])")
-println("  Converged: $(refined[:n_converged])")
-println("  Success rate: $(round(100*refined[:n_converged]/refined[:n_raw], digits=1))%")
-println("  Mean improvement: $(round(refined[:mean_improvement], digits=2))x")
-println("  Best refined value: $(round(refined[:best_refined_value], digits=8))")
+println("  Raw points: $(refined.n_raw)")
+println("  Converged: $(refined.n_converged)")
+println("  Success rate: $(round(100*refined.n_converged/refined.n_raw, digits=1))%")
+println("  Mean improvement: $(round(refined.mean_improvement, digits=2))x")
+println("  Best refined value: $(round(refined.best_refined_value, digits=8))")
 println("  Time elapsed: $(round(stage2_time, digits=1))s")
 println()
 
@@ -181,32 +181,41 @@ println()
 println("Step 5: Parameter Recovery Verification")
 println("-"^80)
 
-# Get best refined parameters
-best_params = refined[:refined_points][refined[:best_refined_idx]]
-recovery_error = norm(best_params .- p_true) / norm(p_true)
+# Check if any points converged
+if refined.n_converged > 0
+    # Get best refined parameters
+    best_params = refined.refined_points[refined.best_refined_idx]
+    recovery_error = norm(best_params .- p_true) / norm(p_true)
 
-# Display parameter comparison
-display_parameters(
-    [Symbol("α"), Symbol("β")],
-    hcat(p_true, best_params),
-    labels=["True", "Recovered"]
-)
-println()
+    # Display parameter comparison
+    display_parameters(
+        [Symbol("α"), Symbol("β")],
+        hcat(p_true, best_params),
+        labels=["True", "Recovered"]
+    )
+    println()
 
-println("Recovery metrics:")
-println("  Relative error: $(round(100*recovery_error, digits=2))%")
-println("  Objective value: $(round(refined[:best_refined_value], digits=8))")
-println("  Total time: $(round(stage1_time + stage2_time, digits=1))s")
-println("  Stage 1/Stage 2 ratio: $(round(stage1_time/stage2_time, digits=2))")
-println()
+    println("Recovery metrics:")
+    println("  Relative error: $(round(100*recovery_error, digits=2))%")
+    println("  Objective value: $(round(refined.best_refined_value, digits=8))")
+    println("  Total time: $(round(stage1_time + stage2_time, digits=1))s")
+    println("  Stage 1/Stage 2 ratio: $(round(stage1_time/stage2_time, digits=2))")
+    println()
 
-# Success criteria
-if recovery_error < 0.01
-    println("✅ SUCCESS: Excellent recovery (< 1% error)")
-elseif recovery_error < 0.05
-    println("✅ SUCCESS: Good recovery (< 5% error)")
+    # Success criteria
+    if recovery_error < 0.01
+        println("✅ SUCCESS: Excellent recovery (< 1% error)")
+    elseif recovery_error < 0.05
+        println("✅ SUCCESS: Good recovery (< 5% error)")
+    else
+        println("⚠️  Needs improvement (> 5% error)")
+    end
 else
-    println("⚠️  Needs improvement (> 5% error)")
+    # No points converged - refinement needs improvement
+    # TODO: Investigate postprocessing step - understand optimization methods,
+    #       convergence criteria, and alternative refinement approaches
+    println("⚠️  Refinement did not converge for any of the $(refined.n_raw) raw critical points")
+    println("  Total time: $(round(stage1_time + stage2_time, digits=1))s")
 end
 println()
 
