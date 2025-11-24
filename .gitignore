@@ -6,3 +6,6 @@
 /docs/build/
 /docs/site/
 .DS_Store
+
+# Test output
+test_results/
