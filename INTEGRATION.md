@@ -161,7 +161,7 @@ refined = refine_experiment_results(
 )
 
 # Verify
-best_params = refined[:refined_points][refined[:best_refined_idx]]
+best_params = refined.refined_points[refined.best_refined_idx]
 recovery_error = norm(best_params .- p_true) / norm(p_true)
 println("Recovery error: $(round(100*recovery_error, digits=2))%")
 ```
@@ -434,7 +434,7 @@ result = run_standard_experiment(...)
 
 # Stage 2: Refine
 refined = refine_experiment_results(result[:output_dir], objective, config)
-best_params = refined[:refined_points][refined[:best_refined_idx]]  # ✅ Refined
+best_params = refined.refined_points[refined.best_refined_idx]  # ✅ Refined
 ```
 
 ### Slow Grid Evaluation

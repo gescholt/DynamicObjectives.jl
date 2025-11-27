@@ -605,3 +605,149 @@ function display_optimization_progress(
     end
     flush(stdout)
 end
+
+"""
+    display_section(title; subtitle="", config=DEFAULT_CONFIG)
+
+Display a workflow section header with consistent styling.
+
+# Arguments
+- `title`: Main section title
+- `subtitle`: Optional subtitle or description
+- `config`: DisplayConfig instance (optional)
+
+# Examples
+```julia
+display_section("Step 1: Model Setup")
+display_section("RESULTS", subtitle="Parameter Recovery Analysis")
+```
+"""
+function display_section(
+    title::String;
+    subtitle::String="",
+    config::DisplayConfig=DEFAULT_CONFIG
+)
+    content = subtitle == "" ? title : "$title\n$subtitle"
+
+    if config.use_color
+        panel = Panel(
+            content,
+            title_style="bold white",
+            style="bold blue",
+            fit=true,
+            width=80
+        )
+        println()
+        println(panel)
+    else
+        println()
+        println("="^80)
+        println(title)
+        if subtitle != ""
+            println(subtitle)
+        end
+        println("="^80)
+    end
+end
+
+"""
+    display_subsection(title; config=DEFAULT_CONFIG)
+
+Display a workflow subsection header with consistent styling.
+
+# Arguments
+- `title`: Subsection title
+- `config`: DisplayConfig instance (optional)
+
+# Examples
+```julia
+display_subsection("Configuring experiment parameters")
+```
+"""
+function display_subsection(
+    title::String;
+    config::DisplayConfig=DEFAULT_CONFIG
+)
+    if config.use_color
+        println()
+        println(apply_style("▶ $title", "bold cyan"))
+        println(apply_style("─"^80, "dim"))
+    else
+        println()
+        println(title)
+        println("-"^80)
+    end
+end
+
+"""
+    display_results(results; title="Results", config=DEFAULT_CONFIG)
+
+Display stage/workflow results as a formatted key-value table.
+
+# Arguments
+- `results`: Vector of Pairs (key => value) or Dict
+- `title`: Table title (default: "Results")
+- `config`: DisplayConfig instance (optional)
+
+# Examples
+```julia
+display_results([
+    "Critical points found" => 42,
+    "Best objective value" => 1.23e-6,
+    "Time elapsed (s)" => 12.5
+], title="Stage 1 Results")
+```
+"""
+function display_results(
+    results::Union{Vector{<:Pair}, AbstractDict};
+    title::String="Results",
+    config::DisplayConfig=DEFAULT_CONFIG
+)
+    # Convert to vector of pairs if dict
+    pairs = results isa AbstractDict ? collect(results) : results
+
+    # Build data matrix
+    data = Matrix{Any}(undef, length(pairs), 2)
+    for (i, (key, value)) in enumerate(pairs)
+        data[i, 1] = string(key)
+        if value isa AbstractFloat
+            if abs(value) < 1e-3 || abs(value) > 1e4
+                data[i, 2] = @sprintf("%.4e", value)
+            else
+                data[i, 2] = round(value, digits=config.precision)
+            end
+        else
+            data[i, 2] = value
+        end
+    end
+
+    backend_map = Dict(
+        :text => Val(:text),
+        :ascii => Val(:ascii),
+        :markdown => Val(:markdown)
+    )
+    backend = get(backend_map, config.table_backend, Val(:text))
+
+    println()
+    if config.use_color
+        pretty_table(
+            data,
+            header=["Metric", "Value"],
+            header_crayon=crayon"bold cyan",
+            border_crayon=crayon"cyan",
+            backend=backend,
+            alignment=[:l, :r],
+            title=title,
+            title_crayon=crayon"bold white"
+        )
+    else
+        pretty_table(
+            data,
+            header=["Metric", "Value"],
+            backend=backend,
+            alignment=[:l, :r],
+            title=title
+        )
+    end
+    println()
+end

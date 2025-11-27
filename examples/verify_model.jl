@@ -15,18 +15,15 @@ Pkg.activate(dirname(@__DIR__))
 
 using Dynamic_objectives
 using LinearAlgebra
+using ModelingToolkit: complete, ODEProblem
 
-println("="^80)
-println("Model Verification with Rich Display")
-println("="^80)
-println()
+display_section("Model Verification with Rich Display")
 
 # ==============================================================================
 # Step 1: Create model and display summary
 # ==============================================================================
 
-println("Step 1: Model Setup")
-println("-"^80)
+display_section("Step 1: Model Setup")
 
 model, params, states, outputs = define_lotka_volterra_2D_model_v3_two_outputs()
 p_true = [1.0, 0.5]
@@ -35,7 +32,6 @@ bounds = [(0.0, 3.0), (0.0, 2.0)]
 
 # Display model summary with rich formatting
 display_model_summary(model)
-println()
 
 # Display parameters
 display_parameters(
@@ -43,46 +39,58 @@ display_parameters(
     hcat(p_true),
     labels=["True Values"]
 )
-println()
 
 # ==============================================================================
 # Step 2: Generate and visualize time series
 # ==============================================================================
 
-println("Step 2: Visualizing Model Response")
-println("-"^80)
+display_section("Step 2: Visualizing Model Response")
 
 # Generate time series data
 time_interval = [0.0, 20.0]
 numpoints = 30
 
+# Create ODEProblem for sample_data
+problem = ODEProblem(
+    complete(model),
+    merge(
+        Dict(states .=> ic),
+        Dict(params .=> p_true)
+    ),
+    time_interval
+)
+
 data = sample_data(
-    model, outputs, ic, p_true,
-    time_interval, numpoints
+    problem,
+    model,
+    outputs,
+    time_interval,
+    p_true,
+    ic,
+    numpoints
 )
 
 # Display time series with terminal plots
-println("Time series for true parameters:")
+display_subsection("Time series for true parameters")
 display_time_series(data)
-println()
 
 # ==============================================================================
 # Step 3: Test objective function
 # ==============================================================================
 
-println("Step 3: Testing Objective Function")
-println("-"^80)
+display_section("Step 3: Testing Objective Function")
 
 # Create objective function
+# Note: eval_timeout removed - it adds 30x overhead per call due to @async/timedwait
 objective = make_error_distance(
     model, outputs, ic, p_true,
     time_interval, numpoints,
     L2_norm, first, nothing;
-    eval_timeout = 10.0
+    return_inf_on_error = true
 )
 
 # Test at true parameters (should be ~0)
-println("Evaluating objective at different parameter values...")
+display_subsection("Evaluating objective at different parameter values")
 test_points = [
     (p_true, "True parameters"),
     ([1.1, 0.6], "Slightly perturbed"),
@@ -97,17 +105,15 @@ for (p, label) in test_points
     elapsed = time() - t_start
     push!(results, (label, p, obj_val, elapsed))
 
-    status = obj_val < 1e-6 ? "✓" : obj_val == Inf ? "✗" : "○"
-    println("  $status $label: $(round(obj_val, digits=8)) ($(round(1000*elapsed, digits=1))ms)")
+    status = obj_val < 1e-6 ? "PASS" : obj_val == Inf ? "FAIL" : "OK"
+    println("  [$status] $label: $(round(obj_val, digits=8)) ($(round(1000*elapsed, digits=1))ms)")
 end
-println()
 
 # ==============================================================================
 # Step 4: Performance estimate for grid search
 # ==============================================================================
 
-println("Step 4: Grid Search Performance Estimates")
-println("-"^80)
+display_section("Step 4: Grid Search Performance Estimates")
 
 # Use average timing from test evaluations
 avg_time_per_eval = sum(r[4] for r in results) / length(results)
@@ -121,11 +127,10 @@ grid_configs = [
     (100, "Production (very slow!)")
 ]
 
-println("Estimated time for different grid sizes (2D problem):")
-println()
-println("  GN  │  Grid Points  │  Est. Time  │  Recommendation")
-println("  ────┼───────────────┼─────────────┼─────────────────")
+display_subsection("Estimated time for different grid sizes (2D problem)")
 
+# Build results for display
+grid_results = Pair{String,Any}[]
 for (GN, desc) in grid_configs
     n_points = GN^2
     est_time = avg_time_per_eval * n_points
@@ -138,40 +143,29 @@ for (GN, desc) in grid_configs
         "$(round(est_time/3600, digits=1))hr"
     end
 
-    recommendation = if GN <= 10
-        "✓ Quick test"
-    elseif GN <= 20
-        "○ Reasonable"
-    else
-        "⚠ Slow"
-    end
-
-    println("  $(lpad(GN, 3)) │ $(lpad(n_points, 13)) │ $(lpad(time_str, 11)) │  $recommendation")
+    push!(grid_results, "GN=$GN ($n_points pts)" => time_str)
 end
-println()
+
+display_results(grid_results, title="Grid Size Estimates")
 
 # ==============================================================================
 # Step 5: Recommendations
 # ==============================================================================
 
-println("="^80)
-println("Recommendations")
-println("="^80)
-println()
+display_section("Recommendations")
 
-println("Based on performance analysis:")
-println("  • Average time per ODE evaluation: $(round(1000*avg_time_per_eval, digits=1))ms")
-println("  • Recommended for quick test: GN = 10 (≈$(round(avg_time_per_eval*100, digits=1))s)")
-println("  • Recommended for accuracy: GN = 50 (≈$(round(avg_time_per_eval*2500/60, digits=1))min)")
-println()
+display_results([
+    "Avg time per ODE eval" => "$(round(1000*avg_time_per_eval, digits=1))ms",
+    "Quick test (GN=10)" => "$(round(avg_time_per_eval*100, digits=1))s",
+    "Accurate (GN=50)" => "$(round(avg_time_per_eval*2500/60, digits=1))min"
+], title="Performance Summary")
 
 # Calculate multi-degree estimate
-println("For degree_range = 4:6 (3 degrees):")
 single_degree_time = avg_time_per_eval * 100  # GN=10
 total_time = single_degree_time * 3
-println("  • Total time estimate: $(round(total_time, digits=1))s")
-println()
+println("\nFor degree_range = 4:6 (3 degrees) with GN=10:")
+println("  Total time estimate: $(round(total_time, digits=1))s")
 
-println("✓ Verification complete! Model is working correctly.")
-println("  You can now run: julia --project=. examples/test_simple_workflow.jl")
-println()
+display_section("Verification Complete")
+println("Model is working correctly.")
+println("Next: julia --project=. examples/test_simple_workflow.jl")

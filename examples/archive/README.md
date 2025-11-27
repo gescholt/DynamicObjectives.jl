@@ -16,6 +16,10 @@ Scripts from Phase 2 (wrapper-based integration).
 - **globtim_single_test.jl**: Single model test with old wrapper pattern
 - **globtim_integration/run_single_model.jl**: Legacy integration test
 
+### Superseded Documentation
+
+- **OUTPUT_FORMAT_IMPROVEMENTS.md**: Rich output recommendations (implemented in src/display.jl)
+
 ## Current Examples (Phase 3)
 
 Use the examples in the parent directory:
