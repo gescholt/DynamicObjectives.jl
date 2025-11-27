@@ -751,3 +751,169 @@ function display_results(
     end
     println()
 end
+
+"""
+    display_gradient_analysis(norms; tolerance=1e-6, title="Gradient Norm Analysis", config=DEFAULT_CONFIG)
+
+Display gradient norm analysis table showing validation metrics.
+
+# Arguments
+- `norms`: Vector of gradient norms (Float64)
+- `tolerance`: Threshold for valid gradient (default: 1e-6)
+- `title`: Table title (default: "Gradient Norm Analysis")
+- `config`: DisplayConfig instance (optional)
+
+# Examples
+```julia
+grad_norms = [1.2e-12, 3.4e-09, 2.1e-05, 8.7e-08]
+display_gradient_analysis(grad_norms, tolerance=1e-6)
+```
+"""
+function display_gradient_analysis(
+    norms::Vector{Float64};
+    tolerance::Float64 = 1e-6,
+    title::String = "Gradient Norm Analysis",
+    config::DisplayConfig=DEFAULT_CONFIG
+)
+    # Count valid and invalid points
+    valid_count = count(n -> n <= tolerance, norms)
+    invalid_count = length(norms) - valid_count
+    total_count = length(norms)
+
+    # Compute statistics
+    min_norm = minimum(norms)
+    mean_norm = sum(norms) / length(norms)
+    max_norm = maximum(norms)
+
+    # Build results
+    results = [
+        "Valid points" => "$valid_count/$total_count",
+        "Invalid points" => "$invalid_count/$total_count",
+        "Min ||∇f||" => min_norm,
+        "Mean ||∇f||" => mean_norm,
+        "Max ||∇f||" => max_norm,
+        "Tolerance" => tolerance
+    ]
+
+    display_results(results; title=title, config=config)
+end
+
+"""
+    display_quality_summary(refined_results; title="Critical Point Quality", config=DEFAULT_CONFIG)
+
+Display critical point quality summary with combined metrics.
+
+# Arguments
+- `refined_results`: NamedTuple with refinement results (must have fields: n_raw, n_converged, best_refined_value, mean_improvement)
+- `title`: Table title (default: "Critical Point Quality")
+- `config`: DisplayConfig instance (optional)
+
+# Examples
+```julia
+results = (
+    n_raw=81,
+    n_converged=78,
+    best_refined_value=1.23e-8,
+    mean_improvement=2.5,
+    best_refined_idx=15,
+    refined_points=...
+)
+display_quality_summary(results)
+```
+"""
+function display_quality_summary(
+    refined_results;
+    title::String = "Critical Point Quality",
+    config::DisplayConfig=DEFAULT_CONFIG
+)
+    # Extract metrics
+    n_raw = refined_results.n_raw
+    n_converged = refined_results.n_converged
+    success_rate = 100.0 * n_converged / n_raw
+    best_value = refined_results.best_refined_value
+    mean_improvement = refined_results.mean_improvement
+
+    # Build results
+    results = [
+        "Raw critical points" => n_raw,
+        "Converged points" => n_converged,
+        "Success rate (%)" => success_rate,
+        "Mean improvement" => mean_improvement,
+        "Best objective value" => best_value
+    ]
+
+    display_results(results; title=title, config=config)
+end
+
+"""
+    display_degree_comparison(degree_results; title="Degree Comparison", config=DEFAULT_CONFIG)
+
+Display degree-by-degree comparison table showing critical points and quality per degree.
+
+# Arguments
+- `degree_results`: Vector of results per degree (each must have: degree, n_critical_points, best_objective)
+- `title`: Table title (default: "Degree Comparison")
+- `config`: DisplayConfig instance (optional)
+
+# Examples
+```julia
+degree_results = [
+    (degree=4, n_critical_points=15, best_objective=2.3e-5),
+    (degree=5, n_critical_points=28, best_objective=1.1e-6),
+    (degree=6, n_critical_points=38, best_objective=3.4e-8)
+]
+display_degree_comparison(degree_results)
+```
+"""
+function display_degree_comparison(
+    degree_results::Vector;
+    title::String = "Degree Comparison",
+    config::DisplayConfig=DEFAULT_CONFIG
+)
+    # Build data matrix
+    n_degrees = length(degree_results)
+    data = Matrix{Any}(undef, n_degrees, 3)
+
+    for (i, result) in enumerate(degree_results)
+        data[i, 1] = result.degree
+        data[i, 2] = result.n_critical_points
+
+        # Format objective value
+        best_obj = result.best_objective
+        if abs(best_obj) < 1e-3 || abs(best_obj) > 1e4
+            data[i, 3] = @sprintf("%.4e", best_obj)
+        else
+            data[i, 3] = round(best_obj, digits=config.precision)
+        end
+    end
+
+    backend_map = Dict(
+        :text => Val(:text),
+        :ascii => Val(:ascii),
+        :markdown => Val(:markdown)
+    )
+    backend = get(backend_map, config.table_backend, Val(:text))
+
+    println()
+    if config.use_color
+        pretty_table(
+            data,
+            header=["Degree", "Critical Points", "Best Objective"],
+            header_crayon=crayon"bold cyan",
+            border_crayon=crayon"cyan",
+            backend=backend,
+            alignment=[:c, :c, :r],
+            title=title,
+            title_crayon=crayon"bold white"
+        )
+    else
+        pretty_table(
+            data,
+            header=["Degree", "Critical Points", "Best Objective"],
+            backend=backend,
+            alignment=[:c, :c, :r],
+            title=title
+        )
+    end
+    println()
+end
