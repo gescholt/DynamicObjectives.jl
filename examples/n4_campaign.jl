@@ -444,11 +444,11 @@ Models: $(join(selected_models, ", "))""")
     end
 
     summary_file = joinpath(output_dir, "campaign_summary.csv")
-    CSV.write(summary_file, results_df)
+    CSV.write(summary_file, results_df; transform=(col, val) -> something(val, missing))
 
     timing_df = DataFrame(timings)
     timing_file = joinpath(output_dir, "timing_breakdown.csv")
-    CSV.write(timing_file, timing_df)
+    CSV.write(timing_file, timing_df; transform=(col, val) -> something(val, missing))
 
     # Display output files
     display_results([
