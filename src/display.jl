@@ -917,3 +917,422 @@ function display_degree_comparison(
     end
     println()
 end
+
+# ==============================================================================
+# Progress Bar Infrastructure
+# ==============================================================================
+
+"""
+    ProgressBar
+
+Mutable struct for tracking and displaying progress of iterative operations.
+
+# Fields
+- `total`: Total number of steps
+- `current`: Current step (0-based internally)
+- `description`: Description shown before the bar
+- `width`: Width of the progress bar in characters
+- `start_time`: Time when progress started
+- `config`: DisplayConfig for styling
+"""
+mutable struct ProgressBar
+    total::Int
+    current::Int
+    description::String
+    width::Int
+    start_time::Float64
+    config::DisplayConfig
+    finished::Bool
+end
+
+"""
+    progress_bar(total; description="Progress", width=40, config=DEFAULT_CONFIG)
+
+Create a new progress bar.
+
+# Arguments
+- `total`: Total number of steps
+- `description`: Text shown before the bar (default: "Progress")
+- `width`: Width of the bar in characters (default: 40)
+- `config`: DisplayConfig instance (optional)
+
+# Returns
+- `ProgressBar` instance
+
+# Examples
+```julia
+pb = progress_bar(100, description="Processing models")
+for i in 1:100
+    # do work
+    update_progress!(pb)
+end
+finish_progress!(pb)
+```
+"""
+function progress_bar(
+    total::Int;
+    description::String="Progress",
+    width::Int=40,
+    config::DisplayConfig=DEFAULT_CONFIG
+)
+    pb = ProgressBar(total, 0, description, width, time(), config, false)
+    render_progress(pb)
+    return pb
+end
+
+"""
+    update_progress!(pb::ProgressBar; increment=1, description=nothing)
+
+Update the progress bar by incrementing the current count.
+
+# Arguments
+- `pb`: ProgressBar instance
+- `increment`: Amount to increment (default: 1)
+- `description`: Optionally update the description
+"""
+function update_progress!(pb::ProgressBar; increment::Int=1, description::Union{String,Nothing}=nothing)
+    pb.current = min(pb.current + increment, pb.total)
+    if description !== nothing
+        pb.description = description
+    end
+    render_progress(pb)
+end
+
+"""
+    finish_progress!(pb::ProgressBar; description=nothing)
+
+Complete the progress bar and move to next line.
+
+# Arguments
+- `pb`: ProgressBar instance
+- `description`: Optional final description
+"""
+function finish_progress!(pb::ProgressBar; description::Union{String,Nothing}=nothing)
+    pb.current = pb.total
+    pb.finished = true
+    if description !== nothing
+        pb.description = description
+    end
+    render_progress(pb)
+    println()  # Move to next line
+end
+
+"""Internal: Render the progress bar to terminal"""
+function render_progress(pb::ProgressBar)
+    pct = pb.current / pb.total
+    filled = round(Int, pct * pb.width)
+    empty = pb.width - filled
+
+    # Calculate ETA
+    elapsed = time() - pb.start_time
+    if pb.current > 0 && !pb.finished
+        eta = elapsed / pb.current * (pb.total - pb.current)
+        eta_str = format_duration(eta)
+    else
+        eta_str = "--:--"
+    end
+
+    elapsed_str = format_duration(elapsed)
+
+    # Build bar string
+    if pb.config.use_color
+        bar_filled = apply_style("█"^filled, "bold green")
+        bar_empty = apply_style("░"^empty, "dim")
+        pct_str = apply_style(@sprintf("%5.1f%%", pct * 100), "bold cyan")
+        count_str = apply_style("[$(pb.current)/$(pb.total)]", "bold white")
+        time_str = apply_style("$(elapsed_str)<$(eta_str)", "dim")
+        desc_str = apply_style(pb.description, "bold")
+    else
+        bar_filled = "█"^filled
+        bar_empty = "░"^empty
+        pct_str = @sprintf("%5.1f%%", pct * 100)
+        count_str = "[$(pb.current)/$(pb.total)]"
+        time_str = "$(elapsed_str)<$(eta_str)"
+        desc_str = pb.description
+    end
+
+    # Render
+    print("\r")
+    print("$desc_str $count_str |$bar_filled$bar_empty| $pct_str $time_str")
+    print(" "^10)  # Clear any trailing characters
+    flush(stdout)
+end
+
+"""
+    format_duration(seconds)
+
+Format seconds into MM:SS or HH:MM:SS string.
+"""
+function format_duration(seconds::Real)
+    if !isfinite(seconds) || seconds < 0
+        return "--:--"
+    end
+
+    total_secs = round(Int, seconds)
+    hours = total_secs ÷ 3600
+    mins = (total_secs % 3600) ÷ 60
+    secs = total_secs % 60
+
+    if hours > 0
+        return @sprintf("%02d:%02d:%02d", hours, mins, secs)
+    else
+        return @sprintf("%02d:%02d", mins, secs)
+    end
+end
+
+"""
+    with_progress(f, collection; description="Progress", config=DEFAULT_CONFIG)
+
+Execute a function over a collection with automatic progress tracking.
+
+# Arguments
+- `f`: Function to apply to each element (receives element and index)
+- `collection`: Iterable collection
+- `description`: Progress bar description
+- `config`: DisplayConfig instance
+
+# Returns
+- Vector of results from applying f to each element
+
+# Examples
+```julia
+results = with_progress(models, description="Testing models") do model, i
+    run_test(model)
+end
+```
+"""
+function with_progress(
+    f::Function,
+    collection;
+    description::String="Progress",
+    config::DisplayConfig=DEFAULT_CONFIG
+)
+    n = length(collection)
+    pb = progress_bar(n; description=description, config=config)
+    results = []
+
+    for (i, item) in enumerate(collection)
+        result = f(item, i)
+        push!(results, result)
+        update_progress!(pb)
+    end
+
+    finish_progress!(pb)
+    return results
+end
+
+# ==============================================================================
+# Spinner for Indeterminate Progress
+# ==============================================================================
+
+const SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
+
+"""
+    Spinner
+
+Mutable struct for displaying an animated spinner for indeterminate progress.
+
+# Fields
+- `message`: Message to display
+- `frame`: Current animation frame
+- `start_time`: When spinner started
+- `config`: DisplayConfig for styling
+- `active`: Whether spinner is active
+"""
+mutable struct Spinner
+    message::String
+    frame::Int
+    start_time::Float64
+    config::DisplayConfig
+    active::Bool
+end
+
+"""
+    spinner(message; config=DEFAULT_CONFIG)
+
+Create and start a new spinner for indeterminate progress.
+
+# Arguments
+- `message`: Message to display next to spinner
+- `config`: DisplayConfig instance
+
+# Returns
+- `Spinner` instance
+
+# Examples
+```julia
+sp = spinner("Loading data...")
+# do work
+stop_spinner!(sp, "Done!")
+```
+"""
+function spinner(message::String; config::DisplayConfig=DEFAULT_CONFIG)
+    sp = Spinner(message, 1, time(), config, true)
+    render_spinner(sp)
+    return sp
+end
+
+"""
+    spin!(sp::Spinner; message=nothing)
+
+Advance the spinner animation by one frame.
+
+# Arguments
+- `sp`: Spinner instance
+- `message`: Optionally update the message
+"""
+function spin!(sp::Spinner; message::Union{String,Nothing}=nothing)
+    if !sp.active
+        return
+    end
+    sp.frame = (sp.frame % length(SPINNER_FRAMES)) + 1
+    if message !== nothing
+        sp.message = message
+    end
+    render_spinner(sp)
+end
+
+"""
+    stop_spinner!(sp::Spinner; message=nothing, success=true)
+
+Stop the spinner and display final status.
+
+# Arguments
+- `sp`: Spinner instance
+- `message`: Final message (optional, uses current if not provided)
+- `success`: Whether operation succeeded (affects icon)
+"""
+function stop_spinner!(sp::Spinner; message::Union{String,Nothing}=nothing, success::Bool=true)
+    sp.active = false
+    final_msg = message !== nothing ? message : sp.message
+    elapsed = time() - sp.start_time
+
+    icon = success ? "✓" : "✗"
+    icon_style = success ? "bold green" : "bold red"
+
+    print("\r")
+    if sp.config.use_color
+        print(apply_style(icon, icon_style), " ")
+        print(apply_style(final_msg, "bold"), " ")
+        print(apply_style("($(format_duration(elapsed)))", "dim"))
+    else
+        print("$icon $final_msg ($(format_duration(elapsed)))")
+    end
+    print(" "^20)
+    println()
+    flush(stdout)
+end
+
+"""Internal: Render the spinner to terminal"""
+function render_spinner(sp::Spinner)
+    elapsed = time() - sp.start_time
+    frame_char = SPINNER_FRAMES[sp.frame]
+
+    print("\r")
+    if sp.config.use_color
+        print(apply_style(frame_char, "bold cyan"), " ")
+        print(sp.message, " ")
+        print(apply_style("($(format_duration(elapsed)))", "dim"))
+    else
+        print("$frame_char $(sp.message) ($(format_duration(elapsed)))")
+    end
+    print(" "^10)
+    flush(stdout)
+end
+
+"""
+    with_spinner(f, message; config=DEFAULT_CONFIG)
+
+Execute a function while displaying a spinner.
+
+# Arguments
+- `f`: Function to execute (no arguments)
+- `message`: Message to display
+- `config`: DisplayConfig instance
+
+# Returns
+- Result of function f
+
+# Examples
+```julia
+result = with_spinner("Computing gradients...") do
+    expensive_computation()
+end
+```
+"""
+function with_spinner(
+    f::Function,
+    message::String;
+    config::DisplayConfig=DEFAULT_CONFIG
+)
+    sp = spinner(message; config=config)
+
+    # Start a background task to animate the spinner
+    spinner_task = @async begin
+        while sp.active
+            sleep(0.1)
+            spin!(sp)
+        end
+    end
+
+    try
+        result = f()
+        stop_spinner!(sp; success=true)
+        return result
+    catch e
+        stop_spinner!(sp; message="Failed: $message", success=false)
+        rethrow(e)
+    end
+end
+
+# ==============================================================================
+# Step Progress for Multi-Stage Workflows
+# ==============================================================================
+
+"""
+    display_step(step_num, total_steps, title; status=:pending, config=DEFAULT_CONFIG)
+
+Display a workflow step with status indicator.
+
+# Arguments
+- `step_num`: Current step number
+- `total_steps`: Total number of steps
+- `title`: Step title/description
+- `status`: One of :pending, :running, :completed, :failed
+- `config`: DisplayConfig instance
+
+# Examples
+```julia
+display_step(1, 3, "Model Setup", status=:completed)
+display_step(2, 3, "Running Optimization", status=:running)
+display_step(3, 3, "Analyzing Results", status=:pending)
+```
+"""
+function display_step(
+    step_num::Int,
+    total_steps::Int,
+    title::String;
+    status::Symbol=:pending,
+    config::DisplayConfig=DEFAULT_CONFIG
+)
+    icons = Dict(
+        :pending => ("○", "dim"),
+        :running => ("◐", "bold yellow"),
+        :completed => ("●", "bold green"),
+        :failed => ("✗", "bold red")
+    )
+
+    icon, style = get(icons, status, ("?", "dim"))
+
+    step_str = "[$step_num/$total_steps]"
+
+    if config.use_color
+        println(
+            apply_style(icon, style), " ",
+            apply_style(step_str, "bold cyan"), " ",
+            apply_style(title, status == :running ? "bold" : "default")
+        )
+    else
+        println("$icon $step_str $title")
+    end
+end

@@ -182,22 +182,27 @@ display_section("Step 4.5: Gradient Validation")
 
 # Compute gradient norms for all converged points
 if refined.n_converged > 0
-    println("Computing gradient norms for $(refined.n_converged) converged points...")
-
+    # Use progress bar for gradient computation
+    pb = progress_bar(refined.n_converged; description="Computing gradients", width=30)
     grad_norms = Float64[]
+
     for i in 1:refined.n_converged
         params = refined.refined_points[i]
         grad = ForwardDiff.gradient(objective, params)
         grad_norm = norm(grad)
         push!(grad_norms, grad_norm)
+        update_progress!(pb)
     end
+    finish_progress!(pb; description="Gradients computed")
 
     # Display gradient analysis
     display_gradient_analysis(grad_norms, tolerance=1e-6)
 
     # Show best point gradient
     best_grad = ForwardDiff.gradient(objective, refined.refined_points[refined.best_refined_idx])
-    println("Best point gradient: ||∇f|| = $(norm(best_grad))")
+    display_results([
+        "Best point ||∇f||" => norm(best_grad)
+    ], title="Best Point Gradient")
 else
     println("No converged points to validate")
 end

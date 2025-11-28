@@ -391,15 +391,12 @@ function main()
     # Get selected models
     selected_models = get_selected_models()
 
-    # Header
-    println("=" ^ 80)
-    println("N=4 HPC Testing Campaign")
-    println("=" ^ 80)
-    println("  Start time: $campaign_start")
-    println("  Output directory: $output_dir")
-    println("  Configuration: GN=$GN, degrees=$DEGREE_RANGE, max_time=$(MAX_TIME)s")
-    println("  Models: $(join(selected_models, ", "))")
-    println("=" ^ 80)
+    # Header with rich display
+    display_section("N=4 Testing Campaign", subtitle="""
+Start time: $campaign_start
+Output: $output_dir
+Config: GN=$GN, degrees=$DEGREE_RANGE, max_time=$(MAX_TIME)s
+Models: $(join(selected_models, ", "))""")
 
     # Get configurations for selected models
     test_configs_selected = [configs_by_name[name] for name in selected_models if haskey(configs_by_name, name)]
@@ -408,31 +405,27 @@ function main()
         error("No valid model configurations found for: $selected_models")
     end
 
-    println("\nRunning $(length(test_configs_selected)) model(s)...")
+    n_models = length(test_configs_selected)
+    display_subsection("Running $n_models model(s)")
 
-    # Run tests
+    # Run tests with progress bar
     results = []
     timings = NamedTuple[]
 
+    pb = progress_bar(n_models; description="Testing models", width=30)
+
     for (i, config) in enumerate(test_configs_selected)
-        println("\n" * "-" ^ 80)
-        println("[$i/$(length(test_configs_selected))] Testing: $(config.name)")
-        println("  Description: $(config.description)")
-        println("  Parameters: $(length(config.p_true))D")
-        println("-" ^ 80)
+        # Update progress bar description with current model
+        update_progress!(pb; increment=0, description="Testing: $(config.name)")
 
         result, timing = test_model_with_timing(config, output_dir)
         push!(results, result)
         push!(timings, timing)
 
-        # Print immediate feedback
-        @printf "  Status: %s\n" result.status
-        @printf "  Total time: %.2fs\n" result.time_seconds
-        if result.success
-            @printf "  Recovery error: %.6e\n" result.recovery_error
-            @printf "  Objective: %.6e\n" result.objective_value
-        end
+        update_progress!(pb)
     end
+
+    finish_progress!(pb; description="Models tested")
 
     campaign_end = now()
 
@@ -440,9 +433,7 @@ function main()
     results_df = DataFrame(results)
 
     # Generate Markdown report
-    println("\n" * "=" ^ 80)
-    println("Generating Reports...")
-    println("=" ^ 80)
+    display_subsection("Generating Reports")
 
     markdown_report = generate_markdown_report(results_df, timings, campaign_start, campaign_end, selected_models)
 
@@ -451,40 +442,34 @@ function main()
     open(report_file, "w") do f
         write(f, markdown_report)
     end
-    println("  Markdown report: $report_file")
 
     summary_file = joinpath(output_dir, "campaign_summary.csv")
     CSV.write(summary_file, results_df)
-    println("  Summary CSV: $summary_file")
 
     timing_df = DataFrame(timings)
     timing_file = joinpath(output_dir, "timing_breakdown.csv")
     CSV.write(timing_file, timing_df)
-    println("  Timing CSV: $timing_file")
+
+    # Display output files
+    display_results([
+        "Markdown report" => report_file,
+        "Summary CSV" => summary_file,
+        "Timing CSV" => timing_file
+    ], title="Output Files")
 
     # Print summary to console
-    println("\n" * "=" ^ 80)
-    println("CAMPAIGN COMPLETE")
-    println("=" ^ 80)
-
     n_total = nrow(results_df)
     n_success = sum(results_df.success)
-
-    println("\nResults:")
-    @printf "  Total: %d models\n" n_total
-    @printf "  Successful: %d (%.1f%%)\n" n_success (n_success / n_total * 100)
-    @printf "  Failed: %d (%.1f%%)\n" (n_total - n_success) ((n_total - n_success) / n_total * 100)
-
-    println("\nTiming:")
     total_campaign_time = (campaign_end - campaign_start).value / 1000
-    @printf "  Total campaign time: %.2f seconds (%.2f minutes)\n" total_campaign_time (total_campaign_time / 60)
 
-    println("\nOutput files:")
-    println("  $report_file")
-    println("  $summary_file")
-    println("  $timing_file")
+    display_section("Campaign Complete")
 
-    println("\n" * "=" ^ 80)
+    display_results([
+        "Total models" => n_total,
+        "Successful" => "$n_success ($(round(n_success/n_total*100, digits=1))%)",
+        "Failed" => "$(n_total - n_success) ($(round((n_total-n_success)/n_total*100, digits=1))%)",
+        "Total time" => "$(round(total_campaign_time, digits=2))s ($(round(total_campaign_time/60, digits=2)) min)"
+    ], title="Results Summary")
 
     return results_df, timings
 end

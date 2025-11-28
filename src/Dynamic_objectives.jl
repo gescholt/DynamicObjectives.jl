@@ -64,7 +64,20 @@ export DisplayConfig,
     display_results,
     display_gradient_analysis,
     display_quality_summary,
-    display_degree_comparison
+    display_degree_comparison,
+    # Progress bars and spinners
+    ProgressBar,
+    progress_bar,
+    update_progress!,
+    finish_progress!,
+    with_progress,
+    format_duration,
+    Spinner,
+    spinner,
+    spin!,
+    stop_spinner!,
+    with_spinner,
+    display_step
 
 # Globtim integration
 export create_globtim_objective,
