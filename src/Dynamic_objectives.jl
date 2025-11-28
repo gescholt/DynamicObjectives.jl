@@ -58,7 +58,13 @@ export DisplayConfig,
     display_comparison,
     display_error_metrics,
     display_optimization_result,
-    display_optimization_progress
+    display_optimization_progress,
+    display_section,
+    display_subsection,
+    display_results,
+    display_gradient_analysis,
+    display_quality_summary,
+    display_degree_comparison
 
 # Globtim integration
 export create_globtim_objective,

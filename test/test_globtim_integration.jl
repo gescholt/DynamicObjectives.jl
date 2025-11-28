@@ -101,7 +101,7 @@ end
             model, params, states, outputs = define_lotka_volterra_2D_model_v3_two_outputs()
             p_true = [1.0, 0.5]
             ic = [1.0, 0.5]
-            bounds = [(0.0, 3.0), (0.0, 2.0)]
+            bounds = [(0.5, 1.5), (0.25, 0.75)]  # Tighter domain around true params
             time_interval = [0.0, 20.0]
             numpoints = 30
 

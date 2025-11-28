@@ -1,21 +1,32 @@
 #!/usr/bin/env julia
 # Quick Start: Your First Test with globtim
 # Usage: julia --project=. examples/quick_start.jl
+#
+# Prerequisites: Run setup_dev_packages.jl once to install globtimcore
+
+using Pkg
+Pkg.activate(dirname(@__DIR__))
 
 using Dynamic_objectives
+using Globtim: Globtim, run_standard_experiment
+using GlobtimPostProcessing: GlobtimPostProcessing, refine_experiment_results, ode_refinement_config
 using LinearAlgebra
 using Printf
 
-println("="^80)
-println("Quick Start: Testing Dynamic_objectives with globtim")
-println("="^80)
+# Load ExperimentCLI for configuration
+if !isdefined(Main, :ExperimentCLI)
+    globtimcore_path = joinpath(dirname(@__DIR__), "..", "globtimcore")
+    include(joinpath(globtimcore_path, "src", "ExperimentCLI.jl"))
+end
+using .ExperimentCLI
+
+display_section("Quick Start: Testing Dynamic_objectives with globtim")
 
 # ==============================================================================
 # STEP 1: Choose a Model (starting with easiest)
 # ==============================================================================
 
-println("\nSTEP 1: Setting up model")
-println("-"^80)
+display_section("Step 1: Setting up model")
 
 model, params, states, outputs = define_lotka_volterra_2D_model_v3_two_outputs()
 
@@ -23,18 +34,19 @@ p_true = [1.0, 0.5]
 ic = [1.0, 0.5]
 bounds = [(0.0, 3.0), (0.0, 2.0)]
 
-println("Model: LV 2D v3 with 2 outputs (EASIEST)")
-println("  Parameters: 2")
-println("  Outputs: 2 (full observability)")
-println("  True params: $p_true")
-println("  Bounds: $bounds")
+display_results([
+    "Model" => "LV 2D v3 with 2 outputs (EASIEST)",
+    "Parameters" => 2,
+    "Outputs" => "2 (full observability)",
+    "True params" => "[$(p_true[1]), $(p_true[2])]",
+    "Bounds" => "[($(bounds[1][1]), $(bounds[1][2])), ($(bounds[2][1]), $(bounds[2][2]))]"
+], title="Model Configuration")
 
 # ==============================================================================
 # STEP 2: Create Objective Function
 # ==============================================================================
 
-println("\nSTEP 2: Creating objective function")
-println("-"^80)
+display_section("Step 2: Creating objective function")
 
 error_func = make_error_distance(
     model,
@@ -50,26 +62,25 @@ error_func = make_error_distance(
     eval_timeout = nothing
 )
 
-println("✓ Objective function created")
+println("Objective function created")
 
 # ==============================================================================
 # STEP 3: Verify Setup
 # ==============================================================================
 
-println("\nSTEP 3: Verifying setup")
-println("-"^80)
+display_section("Step 3: Verifying setup")
 
 error_at_true = error_func(p_true)
 @printf "Error at true parameters: %.6e\n" error_at_true
 
 if error_at_true < 1e-6
-    println("✓ Setup verified (error ≈ 0)")
+    println("Setup verified (error near 0)")
 else
     error("Setup failed - error should be near 0 at true parameters")
 end
 
 # Test a few points
-println("\nTesting objective function at different points:")
+display_subsection("Testing objective function at different points")
 test_points = [
     [1.0, 0.5],    # true
     [1.1, 0.5],    # perturb p1
@@ -80,124 +91,125 @@ test_points = [
 
 for p in test_points
     err = error_func(p)
-    @printf "  p = [%.1f, %.1f]  →  error = %.6e\n" p[1] p[2] err
+    @printf "  p = [%.1f, %.1f]  ->  error = %.6e\n" p[1] p[2] err
 end
 
-println("\n✓ Objective function responds correctly to parameter changes")
+println("\nObjective function responds correctly to parameter changes")
 
 # ==============================================================================
-# STEP 4: INTEGRATE WITH YOUR OPTIMIZER
+# STEP 4: Run globtimcore Optimization
 # ==============================================================================
 
-println("\n" * "="^80)
-println("STEP 4: Integrate with globtim")
-println("="^80)
+display_section("Step 4: Running globtimcore optimization")
 
-println("""
-The objective function is ready to use with your globtim optimizer.
-
-Replace the code below with your actual globtim call:
-
-```julia
-using Globtim  # Your optimizer package
-
-# Run optimization
-result = your_globtim_function(
-    objective = error_func,
-    bounds = bounds,
-    # ... your specific options ...
+# Configure experiment (fast settings for quick start)
+config = ExperimentParams(
+    domain_size = 1.5,
+    GN = 12,              # Grid resolution (fast)
+    degree_range = 4:6,   # Polynomial degrees
+    max_time = 3600.0,
+    basis = :chebyshev
 )
 
-# Extract results
-p_best = result.minimizer      # Best parameters found
-error_best = result.minimum    # Best error value
-n_evals = result.f_calls       # Number of function evaluations
+# Create output directory
+output_dir = mktempdir()
 
-# Compare with true solution
-println("Results:")
-println("  Best params: \$p_best")
-println("  True params: \$p_true")
-println("  Best error: \$error_best")
-println("  Parameter error: \$(norm(p_best - p_true))")
-```
+display_results([
+    "GN" => config.GN,
+    "Degree range" => "$(config.degree_range)",
+    "Output dir" => output_dir
+], title="Experiment Config")
 
-Expected Results:
-  - p_best should be close to [1.0, 0.5]
-  - error_best should be < 1e-6
-  - parameter error should be < 0.01
-""")
+# Stage 1: Find raw critical points using polynomial approximation + HomotopyContinuation
+display_subsection("Stage 1: Finding critical points via polynomial approximation")
+raw_result = run_standard_experiment(
+    objective_function = error_func,
+    problem_params = nothing,  # 1-arg function
+    domain_bounds = bounds,
+    experiment_config = config,
+    output_dir = output_dir,
+    metadata = Dict{String, Any}("experiment_type" => "quick_start_lv2d"),
+    true_params = p_true
+)
+
+n_raw = raw_result[:total_critical_points]
+best_raw = minimum([r.best_objective for r in raw_result[:degree_results]])
+
+display_results([
+    "Critical points found" => n_raw,
+    "Degrees processed" => raw_result[:degrees_processed],
+    "Best raw objective" => best_raw
+], title="Stage 1 Results")
+
+# Stage 2: Refine critical points using local BFGS optimization
+display_subsection("Stage 2: Refining critical points with BFGS")
+refinement_config = ode_refinement_config(
+    max_time_per_point = 30.0,
+    f_abstol = 1e-10,
+    show_progress = false
+)
+
+refined_result = refine_experiment_results(
+    raw_result[:output_dir],
+    error_func,
+    refinement_config
+)
+
+display_results([
+    "Refined points" => "$(refined_result.n_converged)/$(refined_result.n_raw)",
+    "Best refined value" => refined_result.best_refined_value,
+    "Mean improvement" => "$(round(refined_result.mean_improvement, digits=1))x"
+], title="Stage 2 Results")
 
 # ==============================================================================
-# DEMO: Simple Random Search (for testing without globtim)
+# STEP 5: Analyze Results
 # ==============================================================================
 
-println("\n" * "="^80)
-println("DEMO: Simple Random Search (replace with globtim)")
-println("="^80)
+display_section("Step 5: Results Analysis")
 
-function simple_random_search(error_func, bounds, n_samples=100)
-    best_p = nothing
-    best_error = Inf
-
-    for i in 1:n_samples
-        # Random sample within bounds
-        p = [bounds[j][1] + rand() * (bounds[j][2] - bounds[j][1]) for j in 1:length(bounds)]
-
-        # Evaluate
-        err = error_func(p)
-
-        if err < best_error
-            best_error = err
-            best_p = p
-        end
-    end
-
-    return best_p, best_error
-end
-
-println("\nRunning simple random search (100 samples)...")
-p_best, error_best = simple_random_search(error_func, bounds, 100)
-
-println("\nResults:")
-@printf "  Best params: [%.4f, %.4f]\n" p_best[1] p_best[2]
-@printf "  True params: [%.4f, %.4f]\n" p_true[1] p_true[2]
-@printf "  Best error: %.6e\n" error_best
-@printf "  Parameter error: %.6e\n" norm(p_best - p_true)
-
-if error_best < 1e-3
-    println("\n✓ Random search found a good solution!")
-    println("  (Your globtim optimizer should do much better)")
+# Extract best parameters
+if refined_result.n_converged > 0
+    p_best = refined_result.refined_points[refined_result.best_refined_idx]
+    error_best = refined_result.best_refined_value
+    recovery_error = norm(p_best .- p_true) / norm(p_true)
+    used_refined = true
 else
-    println("\n⚠ Random search did not find optimal (expected)")
-    println("  Use proper optimizer to find true parameters")
+    # Fall back to best raw point if no refinement converged
+    raw_points = Vector{Float64}[]
+    for dr in raw_result[:degree_results]
+        append!(raw_points, dr.critical_points)
+    end
+    if isempty(raw_points)
+        error("No critical points found in any degree result")
+    end
+    raw_errors = [error_func(p) for p in raw_points]
+    best_raw_local_idx = argmin(raw_errors)
+    p_best = raw_points[best_raw_local_idx]
+    error_best = raw_errors[best_raw_local_idx]
+    recovery_error = norm(p_best .- p_true) / norm(p_true)
+    used_refined = false
+    println("WARNING: No refinement converged, using best raw critical point")
 end
 
-# ==============================================================================
-# NEXT STEPS
-# ==============================================================================
+display_parameters(
+    [Symbol("α"), Symbol("β")],
+    hcat(p_true, p_best),
+    labels=["True", "Recovered"]
+)
 
-println("\n" * "="^80)
-println("Next Steps")
-println("="^80)
+display_results([
+    "Objective at solution" => error_best,
+    "Relative param error" => "$(round(100*recovery_error, digits=4))%",
+    "Source" => used_refined ? "refined" : "raw",
+    "Raw critical points" => n_raw,
+    "Refined points" => refined_result.n_converged,
+    "Stage 1 time (s)" => raw_result[:total_time]
+], title="Recovery Summary")
 
-println("""
-1. Replace the demo above with your globtim optimizer
-
-2. Once that works, try more models:
-   - examples/single_test_template.jl - Test any single model
-   - examples/batch_test_campaign.jl - Run full test suite
-   - examples/test_configs.jl - Pre-configured test cases
-
-3. See documentation:
-   - TESTING_GUIDE.md - Complete guide for all 13 models
-   - MODEL_CATALOG.md - Quick reference table
-   - README.md - Package overview
-
-4. Progressive difficulty:
-   Easy (2D)   → LV_2D models
-   Medium (3-4D) → LV_3D, DAISY models
-   Hard → FitzHugh-Nagumo, identifiability tests
-   Very Hard → 20D Generalized LV
-
-Good luck with your testing campaign! 🚀
-""")
+if recovery_error < 0.01
+    println("\nSUCCESS - Excellent parameter recovery (<1% error)")
+elseif recovery_error < 0.05
+    println("\nGood parameter recovery (<5% error)")
+else
+    println("\nPoor recovery - consider increasing GN or degree_range")
+end
