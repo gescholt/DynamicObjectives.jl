@@ -434,116 +434,261 @@ function generate_test_report(
 )
     io = IOBuffer()
     n_params = length(config.p_true)
+    total_time = stage1_time + stage2_time
+
+    # Compute recovery metrics
+    recovery_error = Inf
+    best_params = Float64[]
+    if refined.n_converged > 0
+        best_params = refined.refined_points[refined.best_refined_idx]
+        recovery_error = norm(best_params .- config.p_true) / norm(config.p_true)
+    end
+
+    # Determine overall status
+    status_emoji, status_text = if recovery_error < 0.01
+        ("✅", "EXCELLENT")
+    elseif recovery_error < 0.05
+        ("✅", "SUCCESS")
+    elseif recovery_error < 0.10
+        ("⚠️", "ACCEPTABLE")
+    else
+        ("❌", "NEEDS IMPROVEMENT")
+    end
+
+    # ===========================================================================
+    # Title and Executive Summary
+    # ===========================================================================
 
     println(io, "# Model Test Report: $(config.name)")
     println(io)
-    println(io, "**Generated:** $(Dates.format(now(), "yyyy-mm-dd HH:MM:SS"))")
+    println(io, "> **Generated:** $(Dates.format(now(), "yyyy-mm-dd HH:MM:SS"))")
     println(io)
+
+    # Executive Summary Box
+    println(io, "## $(status_emoji) Executive Summary")
+    println(io)
+    println(io, "| Metric | Value | Status |")
+    println(io, "| :--- | :---: | :---: |")
+
+    # Recovery error row
+    recovery_status = recovery_error < 0.01 ? "🟢" : recovery_error < 0.05 ? "🟢" : recovery_error < 0.10 ? "🟡" : "🔴"
+    println(io, "| **Parameter Recovery** | $(@sprintf("%.2f%%", recovery_error * 100)) error | $(recovery_status) |")
+
+    # Best objective row
+    obj_status = refined.best_refined_value < 1e-6 ? "🟢" : refined.best_refined_value < 1e-3 ? "🟡" : "🔴"
+    println(io, "| **Best Objective** | $(@sprintf("%.4e", refined.best_refined_value)) | $(obj_status) |")
+
+    # Convergence rate row
+    conv_rate = refined.n_converged / max(refined.n_raw, 1)
+    conv_status = conv_rate > 0.8 ? "🟢" : conv_rate > 0.5 ? "🟡" : "🔴"
+    println(io, "| **Refinement Convergence** | $(@sprintf("%.0f%%", conv_rate * 100)) ($(refined.n_converged)/$(refined.n_raw)) | $(conv_status) |")
+
+    # Total time
+    println(io, "| **Total Time** | $(round(total_time, digits=1))s | ⏱️ |")
+    println(io)
+
+    # Visual progress bar for convergence
+    conv_bar = _make_progress_bar(conv_rate, 20)
+    println(io, "**Convergence:** `$(conv_bar)` $(round(conv_rate * 100, digits=0))%")
+    println(io)
+
+    # ===========================================================================
+    # Model Information
+    # ===========================================================================
+
     println(io, "## Model Information")
     println(io)
+    println(io, "**$(config.description)**")
+    println(io)
     println(io, "| Property | Value |")
-    println(io, "| --- | --- |")
-    println(io, "| Name | $(config.name) |")
-    println(io, "| Description | $(config.description) |")
-    println(io, "| Parameters | $(n_params) |")
-    println(io, "| Time Interval | $(config.time_interval) |")
+    println(io, "| :--- | :--- |")
+    println(io, "| Dimensions | $(n_params) parameters |")
+    println(io, "| Time Interval | `[$(config.time_interval[1]), $(config.time_interval[2])]` |")
     println(io, "| Sample Points | $(config.numpoints) |")
     println(io)
 
-    println(io, "### True Parameters")
+    # Parameters table with bounds
+    println(io, "### Parameters and Bounds")
     println(io)
-    println(io, "```")
-    println(io, "p_true = $(config.p_true)")
-    println(io, "```")
+    println(io, "| Parameter | True Value | Lower | Upper | Range |")
+    println(io, "| :---: | ---: | ---: | ---: | :--- |")
+    for (i, name) in enumerate(param_names)
+        lower, upper = config.bounds[i]
+        range_width = upper - lower
+        true_pos = (config.p_true[i] - lower) / range_width
+        pos_bar = _make_position_bar(true_pos, 10)
+        println(io, "| **$(name)** | $(round(config.p_true[i], digits=4)) | $(lower) | $(upper) | $(pos_bar) |")
+    end
     println(io)
 
-    println(io, "### Bounds")
-    println(io)
-    println(io, "```")
-    for (i, b) in enumerate(config.bounds)
-        println(io, "p[$i]: $(b[1]) to $(b[2])")
-    end
-    println(io, "```")
-    println(io)
+    # ===========================================================================
+    # Optimization Configuration
+    # ===========================================================================
 
     println(io, "## Optimization Configuration")
     println(io)
     println(io, "| Parameter | Value |")
-    println(io, "| --- | --- |")
-    println(io, "| GN | $(config.GN) |")
-    println(io, "| Grid Points | $(config.GN^n_params) |")
-    println(io, "| Degree Range | $(config.degree_range) |")
-    println(io, "| Max Time | $(config.max_time)s |")
+    println(io, "| :--- | ---: |")
+    println(io, "| Grid Size (GN) | $(config.GN) |")
+    println(io, "| Total Grid Points | $(config.GN^n_params) |")
+    println(io, "| Polynomial Degrees | $(first(config.degree_range)) to $(last(config.degree_range)) |")
+    println(io, "| Stage 1 Max Time | $(config.max_time)s |")
     println(io, "| Refinement Time/Point | $(config.max_time_per_point)s |")
     println(io)
 
-    println(io, "## Stage 1: Raw Critical Points")
+    # ===========================================================================
+    # Stage 1 Results
+    # ===========================================================================
+
+    println(io, "## Stage 1: Global Search")
     println(io)
-    println(io, "| Metric | Value |")
-    println(io, "| --- | --- |")
-    println(io, "| Total Critical Points | $(result[:total_critical_points]) |")
 
     best_raw = minimum([dr.best_objective for dr in result[:degree_results]])
+
+    println(io, "| Metric | Value |")
+    println(io, "| :--- | ---: |")
+    println(io, "| Critical Points Found | $(result[:total_critical_points]) |")
     println(io, "| Best Raw Objective | $(@sprintf("%.4e", best_raw)) |")
     println(io, "| Time | $(round(stage1_time, digits=2))s |")
     println(io)
 
-    println(io, "### Per-Degree Results")
-    println(io)
-    println(io, "| Degree | Critical Points | Best Objective |")
-    println(io, "| ---: | ---: | ---: |")
-    for dr in result[:degree_results]
-        println(io, "| $(dr.degree) | $(dr.n_critical_points) | $(@sprintf("%.4e", dr.best_objective)) |")
-    end
+    # Convergence trend with sparkline
+    objectives = [dr.best_objective for dr in result[:degree_results]]
+    sparkline = _make_sparkline(objectives)
+    println(io, "**Convergence Trend:** $(sparkline)")
     println(io)
 
-    println(io, "## Stage 2: Refined Critical Points")
+    # Per-degree results in collapsible section
+    println(io, "<details>")
+    println(io, "<summary><strong>Per-Degree Results</strong> (click to expand)</summary>")
+    println(io)
+    println(io, "| Degree | Critical Points | Best Objective | Trend |")
+    println(io, "| ---: | ---: | ---: | :---: |")
+
+    prev_obj = Inf
+    for dr in result[:degree_results]
+        trend = dr.best_objective < prev_obj * 0.99 ? "↗" : dr.best_objective > prev_obj * 1.01 ? "↘" : "→"
+        println(io, "| $(dr.degree) | $(dr.n_critical_points) | $(@sprintf("%.4e", dr.best_objective)) | $(trend) |")
+        prev_obj = dr.best_objective
+    end
+    println(io)
+    println(io, "</details>")
+    println(io)
+
+    # ===========================================================================
+    # Stage 2 Results
+    # ===========================================================================
+
+    println(io, "## Stage 2: Local Refinement")
     println(io)
     println(io, "| Metric | Value |")
-    println(io, "| --- | --- |")
-    println(io, "| Raw Points | $(refined.n_raw) |")
+    println(io, "| :--- | ---: |")
+    println(io, "| Input Points | $(refined.n_raw) |")
     println(io, "| Converged | $(refined.n_converged) |")
-    println(io, "| Success Rate | $(round(100*refined.n_converged/max(refined.n_raw,1), digits=1))% |")
-    println(io, "| Mean Improvement | $(round(refined.mean_improvement, digits=2))x |")
+    println(io, "| Success Rate | $(round(100*conv_rate, digits=1))% |")
+    println(io, "| Mean Improvement | $(round(refined.mean_improvement, digits=1))× |")
     println(io, "| Best Refined Value | $(@sprintf("%.4e", refined.best_refined_value)) |")
     println(io, "| Time | $(round(stage2_time, digits=2))s |")
     println(io)
 
-    # Quality Diagnostics section
+    # Improvement visualization
+    if best_raw > 0 && refined.best_refined_value > 0
+        improvement = best_raw / refined.best_refined_value
+        println(io, "**Improvement:** Raw → Refined = $(@sprintf("%.4e", best_raw)) → $(@sprintf("%.4e", refined.best_refined_value)) ($(round(improvement, digits=1))× better)")
+        println(io)
+    end
+
+    # ===========================================================================
+    # Quality Diagnostics
+    # ===========================================================================
+
     has_diagnostics = !isnothing(l2_result) || !isnothing(stagnation_result) || !isnothing(dist_result)
     if has_diagnostics
         println(io, "## Quality Diagnostics")
         println(io)
-        println(io, "| Diagnostic | Result |")
-        println(io, "| --- | --- |")
 
+        # L2 Quality with star rating
         if !isnothing(l2_result)
-            grade_emoji = l2_result.grade == :excellent ? "✓" :
-                          l2_result.grade == :good ? "○" :
-                          l2_result.grade == :acceptable ? "△" : "✗"
-            println(io, "| L2 Approximation | $(grade_emoji) $(uppercase(string(l2_result.grade))) (error: $(@sprintf("%.4e", l2_result.l2_error))) |")
+            stars = l2_result.grade == :excellent ? "★★★★" :
+                    l2_result.grade == :good ? "★★★☆" :
+                    l2_result.grade == :acceptable ? "★★☆☆" : "★☆☆☆"
+            grade_emoji = l2_result.grade == :excellent ? "🟢" :
+                          l2_result.grade == :good ? "🟢" :
+                          l2_result.grade == :acceptable ? "🟡" : "🔴"
+            println(io, "### L2 Approximation Quality")
+            println(io)
+            println(io, "| Grade | Rating | Error |")
+            println(io, "| :--- | :---: | ---: |")
+            println(io, "| $(grade_emoji) **$(uppercase(string(l2_result.grade)))** | $(stars) | $(@sprintf("%.4e", l2_result.l2_error)) |")
+            println(io)
         end
 
+        # Stagnation Analysis
         if !isnothing(stagnation_result)
+            println(io, "### Convergence Analysis")
+            println(io)
             if stagnation_result.detected
-                println(io, "| Convergence | ⚠ Stagnation at degree $(stagnation_result.stagnation_degree) |")
+                println(io, "⚠️ **Stagnation detected** at degree $(stagnation_result.stagnation_degree)")
+                println(io)
+                println(io, "> Consider increasing the polynomial degree range or adjusting grid density.")
             else
-                println(io, "| Convergence | ✓ No stagnation |")
+                println(io, "✅ **No stagnation detected** - Convergence is healthy")
             end
+            println(io)
         end
 
+        # Distribution Quality
         if !isnothing(dist_result)
+            println(io, "### Objective Distribution")
+            println(io)
+            outlier_pct = dist_result.n_outliers / max(dist_result.n_points, 1) * 100
             if dist_result.is_healthy
-                println(io, "| Objective Distribution | ✓ Healthy ($(dist_result.n_outliers) outliers) |")
+                println(io, "✅ **Healthy distribution** ($(dist_result.n_outliers) outliers, $(@sprintf("%.1f%%", outlier_pct)))")
             else
-                println(io, "| Objective Distribution | ⚠ $(dist_result.n_outliers)/$(dist_result.n_points) outliers |")
+                println(io, "⚠️ **$(dist_result.n_outliers)/$(dist_result.n_points) outliers** ($(@sprintf("%.1f%%", outlier_pct)))")
+                println(io)
+                println(io, "> High outlier count may indicate numerical instability or difficult landscape.")
             end
+            println(io)
         end
-        println(io)
     end
 
+    # ===========================================================================
+    # Parameter Recovery (Enhanced)
+    # ===========================================================================
+
     if refined.n_converged > 0
-        println(io, "## Top 5 Critical Points")
+        println(io, "## Parameter Recovery")
+        println(io)
+
+        # Overall status
+        println(io, "**Status:** $(status_emoji) $(status_text) ($(@sprintf("%.2f%%", recovery_error * 100)) relative error)")
+        println(io)
+
+        # Detailed parameter table
+        println(io, "| Parameter | True | Recovered | Error | Position in Bounds |")
+        println(io, "| :---: | ---: | ---: | ---: | :--- |")
+        for (i, name) in enumerate(param_names)
+            err = abs(best_params[i] - config.p_true[i]) / max(abs(config.p_true[i]), 1e-10)
+            err_emoji = err < 0.01 ? "🟢" : err < 0.05 ? "🟡" : "🔴"
+
+            lower, upper = config.bounds[i]
+            range_width = upper - lower
+            rec_pos = clamp((best_params[i] - lower) / range_width, 0.0, 1.0)
+            true_pos = (config.p_true[i] - lower) / range_width
+            pos_bar = _make_comparison_bar(true_pos, rec_pos, 12)
+
+            println(io, "| **$(name)** | $(round(config.p_true[i], digits=4)) | $(round(best_params[i], digits=4)) | $(err_emoji) $(@sprintf("%.2f%%", err*100)) | $(pos_bar) |")
+        end
+        println(io)
+        println(io, "*Position bar: `○` = true value, `●` = recovered value*")
+        println(io)
+
+        # ===========================================================================
+        # Top Critical Points
+        # ===========================================================================
+
+        println(io, "## Top Critical Points")
         println(io)
         println(io, format_critical_points_markdown(
             refined.refined_points[1:refined.n_converged],
@@ -554,45 +699,136 @@ function generate_test_report(
         ))
         println(io)
 
-        println(io, "## Parameter Recovery")
-        println(io)
-        best_params = refined.refined_points[refined.best_refined_idx]
-        recovery_error = norm(best_params .- config.p_true) / norm(config.p_true)
-
-        println(io, "| Parameter | True | Recovered | Error |")
-        println(io, "| --- | ---: | ---: | ---: |")
-        for (i, name) in enumerate(param_names)
-            err = abs(best_params[i] - config.p_true[i]) / max(abs(config.p_true[i]), 1e-10)
-            println(io, "| $name | $(round(config.p_true[i], digits=4)) | $(round(best_params[i], digits=4)) | $(@sprintf("%.2f%%", err*100)) |")
-        end
-        println(io)
-        println(io, "**Overall Relative Error:** $(@sprintf("%.2f%%", recovery_error * 100))")
-        println(io)
+        # ===========================================================================
+        # Gradient Validation
+        # ===========================================================================
 
         if !isempty(grad_norms)
             println(io, "## Gradient Validation")
             println(io)
-            println(io, "| Metric | Value |")
-            println(io, "| --- | ---: |")
-            println(io, "| Valid points (||∇f|| < 1e-6) | $(count(n -> n < 1e-6, grad_norms))/$(length(grad_norms)) |")
-            println(io, "| Min ||∇f|| | $(@sprintf("%.4e", minimum(grad_norms))) |")
-            println(io, "| Mean ||∇f|| | $(@sprintf("%.4e", sum(grad_norms)/length(grad_norms))) |")
-            println(io, "| Max ||∇f|| | $(@sprintf("%.4e", maximum(grad_norms))) |")
+
+            n_valid = count(n -> n < 1e-6, grad_norms)
+            valid_pct = n_valid / length(grad_norms) * 100
+            valid_status = valid_pct > 90 ? "🟢" : valid_pct > 70 ? "🟡" : "🔴"
+
+            println(io, "| Metric | Value | Status |")
+            println(io, "| :--- | ---: | :---: |")
+            println(io, "| Valid points (‖∇f‖ < 1e-6) | $(n_valid)/$(length(grad_norms)) ($(@sprintf("%.0f%%", valid_pct))) | $(valid_status) |")
+            println(io, "| Min ‖∇f‖ | $(@sprintf("%.4e", minimum(grad_norms))) | |")
+            println(io, "| Mean ‖∇f‖ | $(@sprintf("%.4e", sum(grad_norms)/length(grad_norms))) | |")
+            println(io, "| Max ‖∇f‖ | $(@sprintf("%.4e", maximum(grad_norms))) | |")
             println(io)
         end
     end
 
+    # ===========================================================================
+    # Timing Summary (Visual)
+    # ===========================================================================
+
     println(io, "## Timing Summary")
     println(io)
-    println(io, "| Stage | Time |")
-    println(io, "| --- | ---: |")
-    println(io, "| Stage 1 | $(round(stage1_time, digits=2))s |")
-    println(io, "| Stage 2 | $(round(stage2_time, digits=2))s |")
-    println(io, "| **Total** | **$(round(stage1_time + stage2_time, digits=2))s** |")
+
+    stage1_pct = stage1_time / total_time
+    stage2_pct = stage2_time / total_time
+
+    println(io, "| Stage | Time | Share |")
+    println(io, "| :--- | ---: | :--- |")
+    println(io, "| Stage 1 (Global) | $(round(stage1_time, digits=2))s | $(_make_progress_bar(stage1_pct, 15)) $(@sprintf("%.0f%%", stage1_pct*100)) |")
+    println(io, "| Stage 2 (Local) | $(round(stage2_time, digits=2))s | $(_make_progress_bar(stage2_pct, 15)) $(@sprintf("%.0f%%", stage2_pct*100)) |")
+    println(io, "| **Total** | **$(round(total_time, digits=2))s** | |")
     println(io)
 
+    # Performance metrics
+    points_per_sec = result[:total_critical_points] / max(stage1_time, 0.1)
+    println(io, "**Performance:** $(@sprintf("%.1f", points_per_sec)) critical points/second")
+    println(io)
+
+    # ===========================================================================
+    # Output Files
+    # ===========================================================================
+
+    println(io, "## Output Files")
+    println(io)
+    println(io, "| File | Description |")
+    println(io, "| :--- | :--- |")
+    println(io, "| `report.md` | This report |")
+
+    # List CSV files
+    csv_files = filter(f -> endswith(f, ".csv"), readdir(output_dir))
+    for f in csv_files
+        desc = if contains(f, "refined")
+            "Refined critical points"
+        elseif contains(f, "critical")
+            "Raw critical points"
+        elseif contains(f, "comparison")
+            "Raw vs refined comparison"
+        else
+            "Data file"
+        end
+        println(io, "| `$(f)` | $(desc) |")
+    end
+
+    # List JSON files
+    json_files = filter(f -> endswith(f, ".json"), readdir(output_dir))
+    for f in json_files
+        desc = if contains(f, "summary")
+            "Refinement statistics"
+        elseif contains(f, "metadata")
+            "Experiment metadata"
+        else
+            "Configuration/results"
+        end
+        println(io, "| `$(f)` | $(desc) |")
+    end
+    println(io)
+
+    # ===========================================================================
+    # Recommendations
+    # ===========================================================================
+
+    recommendations = String[]
+
+    if recovery_error > 0.10
+        push!(recommendations, "❗ **High recovery error** - Consider increasing `GN` (grid density) or extending the `degree_range`")
+    end
+
+    if !isnothing(stagnation_result) && stagnation_result.detected
+        push!(recommendations, "⚠️ **Stagnation detected** - Try higher polynomial degrees or adjust domain bounds")
+    end
+
+    if !isnothing(dist_result) && !dist_result.is_healthy
+        push!(recommendations, "⚠️ **Outliers detected** - Check for numerical issues or narrow the search bounds")
+    end
+
+    if conv_rate < 0.5
+        push!(recommendations, "⚠️ **Low convergence rate** - Increase `max_time_per_point` for refinement")
+    end
+
+    if !isempty(grad_norms)
+        valid_pct = count(n -> n < 1e-6, grad_norms) / length(grad_norms)
+        if valid_pct < 0.7
+            push!(recommendations, "⚠️ **Gradient validation issues** - Some critical points may not be true minima")
+        end
+    end
+
+    if !isempty(recommendations)
+        println(io, "## Recommendations")
+        println(io)
+        for rec in recommendations
+            println(io, "- $(rec)")
+        end
+        println(io)
+    end
+
+    # ===========================================================================
+    # Footer
+    # ===========================================================================
+
     println(io, "---")
+    println(io)
     println(io, "*Generated by Dynamic_objectives model test framework*")
+    println(io)
+    println(io, "**Output directory:** `$(output_dir)`")
 
     # Save report
     report_path = joinpath(output_dir, "report.md")
@@ -601,4 +837,86 @@ function generate_test_report(
     end
 
     return report_path
+end
+
+# ===========================================================================
+# Helper functions for visual elements
+# ===========================================================================
+
+"""
+    _make_progress_bar(fraction, width)
+
+Create a Unicode progress bar.
+"""
+function _make_progress_bar(fraction::Real, width::Int)
+    filled = round(Int, fraction * width)
+    empty = width - filled
+    return "█" ^ filled * "░" ^ empty
+end
+
+"""
+    _make_position_bar(position, width)
+
+Create a position indicator bar showing where a value lies in a range.
+"""
+function _make_position_bar(position::Real, width::Int)
+    pos = clamp(round(Int, position * (width - 1)) + 1, 1, width)
+    bar = collect("─" ^ width)
+    bar[pos] = '◆'
+    return "`" * join(bar) * "`"
+end
+
+"""
+    _make_comparison_bar(true_pos, recovered_pos, width)
+
+Create a bar comparing true and recovered positions.
+"""
+function _make_comparison_bar(true_pos::Real, recovered_pos::Real, width::Int)
+    bar = collect("─" ^ width)
+
+    true_idx = clamp(round(Int, true_pos * (width - 1)) + 1, 1, width)
+    rec_idx = clamp(round(Int, recovered_pos * (width - 1)) + 1, 1, width)
+
+    if true_idx == rec_idx
+        bar[true_idx] = '◉'  # Overlapping
+    else
+        bar[true_idx] = '○'   # True value (hollow)
+        bar[rec_idx] = '●'    # Recovered value (filled)
+    end
+
+    return "`" * join(bar) * "`"
+end
+
+"""
+    _make_sparkline(values)
+
+Create a Unicode sparkline from a series of values.
+"""
+function _make_sparkline(values::Vector)
+    if isempty(values)
+        return ""
+    end
+
+    # Use log scale for better visualization of objective values
+    log_vals = [v > 0 ? log10(v) : -20 for v in values]
+
+    min_val = minimum(log_vals)
+    max_val = maximum(log_vals)
+    range_val = max_val - min_val
+
+    if range_val ≈ 0
+        return "▅" ^ length(values)
+    end
+
+    blocks = ['▁', '▂', '▃', '▄', '▅', '▆', '▇', '█']
+
+    sparkline = ""
+    for v in log_vals
+        # Invert: lower objective = higher bar
+        normalized = 1.0 - (v - min_val) / range_val
+        idx = clamp(round(Int, normalized * 7) + 1, 1, 8)
+        sparkline *= blocks[idx]
+    end
+
+    return sparkline
 end
