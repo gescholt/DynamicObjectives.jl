@@ -77,7 +77,10 @@ export DisplayConfig,
     spin!,
     stop_spinner!,
     with_spinner,
-    display_step
+    display_step,
+    # Critical points display
+    display_top_critical_points,
+    format_critical_points_markdown
 
 # Globtim integration
 export create_globtim_objective,

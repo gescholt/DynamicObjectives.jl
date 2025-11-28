@@ -1336,3 +1336,201 @@ function display_step(
         println("$icon $step_str $title")
     end
 end
+
+# ==============================================================================
+# Critical Points Display
+# ==============================================================================
+
+"""
+    display_top_critical_points(points, objective_values, param_names;
+                                n=5, true_params=nothing, title="Top Critical Points",
+                                config=DEFAULT_CONFIG)
+
+Display a table of the top N critical points ranked by objective value.
+
+# Arguments
+- `points`: Vector of parameter vectors (each element is a parameter vector)
+- `objective_values`: Vector of objective function values
+- `param_names`: Vector of parameter names (symbols or strings)
+- `n`: Number of top points to display (default: 5)
+- `true_params`: Optional true parameter values for comparison
+- `title`: Table title
+- `config`: DisplayConfig instance
+
+# Examples
+```julia
+display_top_critical_points(
+    refined.refined_points,
+    refined.refined_values,
+    [:p1, :p2, :p3, :p4],
+    n=5,
+    true_params=p_true
+)
+```
+"""
+function display_top_critical_points(
+    points::Vector,
+    objective_values::Vector{<:Real},
+    param_names::Vector;
+    n::Int=5,
+    true_params::Union{Vector{<:Real}, Nothing}=nothing,
+    title::String="Top Critical Points",
+    config::DisplayConfig=DEFAULT_CONFIG
+)
+    # Sort by objective value
+    sorted_indices = sortperm(objective_values)
+    n_display = min(n, length(sorted_indices))
+
+    if n_display == 0
+        println("No critical points to display")
+        return
+    end
+
+    n_params = length(param_names)
+
+    # Build header
+    header = ["Rank", "Objective"]
+    for name in param_names
+        push!(header, string(name))
+    end
+    if true_params !== nothing
+        push!(header, "Rel. Error")
+    end
+
+    # Build data matrix
+    data = Matrix{Any}(undef, n_display, length(header))
+
+    for (row, idx) in enumerate(sorted_indices[1:n_display])
+        point = points[idx]
+        obj_val = objective_values[idx]
+
+        data[row, 1] = row  # Rank
+
+        # Objective value
+        if abs(obj_val) < 1e-3 || abs(obj_val) > 1e4
+            data[row, 2] = @sprintf("%.4e", obj_val)
+        else
+            data[row, 2] = round(obj_val, digits=config.precision)
+        end
+
+        # Parameters
+        for (j, p) in enumerate(point)
+            data[row, 2 + j] = round(p, digits=config.precision)
+        end
+
+        # Relative error if true_params provided
+        if true_params !== nothing
+            rel_error = norm(point .- true_params) / norm(true_params)
+            data[row, end] = @sprintf("%.2f%%", rel_error * 100)
+        end
+    end
+
+    backend_map = Dict(
+        :text => Val(:text),
+        :ascii => Val(:ascii),
+        :markdown => Val(:markdown)
+    )
+    backend = get(backend_map, config.table_backend, Val(:text))
+
+    println()
+    if config.use_color
+        pretty_table(
+            data,
+            header=header,
+            header_crayon=crayon"bold cyan",
+            border_crayon=crayon"cyan",
+            backend=backend,
+            alignment=vcat([:c, :r], fill(:r, n_params), true_params !== nothing ? [:r] : Symbol[]),
+            title=title,
+            title_crayon=crayon"bold white"
+        )
+    else
+        pretty_table(
+            data,
+            header=header,
+            backend=backend,
+            alignment=vcat([:c, :r], fill(:r, n_params), true_params !== nothing ? [:r] : Symbol[]),
+            title=title
+        )
+    end
+    println()
+
+    # Summary statistics
+    top_values = objective_values[sorted_indices[1:n_display]]
+    println("  Best: $(@sprintf("%.4e", minimum(top_values)))")
+    println("  Worst (of top $n_display): $(@sprintf("%.4e", maximum(top_values)))")
+
+    if true_params !== nothing
+        best_point = points[sorted_indices[1]]
+        best_error = norm(best_point .- true_params) / norm(true_params)
+        println("  Best point relative error: $(@sprintf("%.2f%%", best_error * 100))")
+    end
+end
+
+"""
+    format_critical_points_markdown(points, objective_values, param_names;
+                                     n=5, true_params=nothing)
+
+Format top N critical points as a Markdown table string.
+
+# Returns
+- String containing Markdown-formatted table
+"""
+function format_critical_points_markdown(
+    points::Vector,
+    objective_values::Vector{<:Real},
+    param_names::Vector;
+    n::Int=5,
+    true_params::Union{Vector{<:Real}, Nothing}=nothing,
+    precision::Int=4
+)
+    io = IOBuffer()
+
+    # Sort by objective value
+    sorted_indices = sortperm(objective_values)
+    n_display = min(n, length(sorted_indices))
+
+    if n_display == 0
+        return "No critical points found."
+    end
+
+    # Header
+    header_parts = ["Rank", "Objective"]
+    for name in param_names
+        push!(header_parts, string(name))
+    end
+    if true_params !== nothing
+        push!(header_parts, "Rel. Error")
+    end
+
+    println(io, "| ", join(header_parts, " | "), " |")
+    println(io, "| ", join(fill("---:", length(header_parts)), " | "), " |")
+
+    # Rows
+    for (row, idx) in enumerate(sorted_indices[1:n_display])
+        point = points[idx]
+        obj_val = objective_values[idx]
+
+        row_parts = String[]
+        push!(row_parts, string(row))
+
+        if abs(obj_val) < 1e-3 || abs(obj_val) > 1e4
+            push!(row_parts, @sprintf("%.4e", obj_val))
+        else
+            push!(row_parts, string(round(obj_val, digits=precision)))
+        end
+
+        for p in point
+            push!(row_parts, string(round(p, digits=precision)))
+        end
+
+        if true_params !== nothing
+            rel_error = norm(point .- true_params) / norm(true_params)
+            push!(row_parts, @sprintf("%.2f%%", rel_error * 100))
+        end
+
+        println(io, "| ", join(row_parts, " | "), " |")
+    end
+
+    return String(take!(io))
+end
