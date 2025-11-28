@@ -9,7 +9,10 @@ Run:
     julia --project=../.. test_daisy_ex3_no_input.jl
 """
 
-include("model_test_utils.jl")
+using Pkg
+Pkg.activate(joinpath(@__DIR__, "..", ".."))
+
+include("model_test_framework.jl")
 
 # Define model configuration
 config = ModelTestConfig(

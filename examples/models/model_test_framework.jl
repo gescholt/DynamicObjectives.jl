@@ -1,8 +1,9 @@
-# Shared utilities for per-model test scripts
-# Include this file to get common functionality
-
-using Pkg
-Pkg.activate(joinpath(@__DIR__, "..", ".."))
+# Model Testing Framework
+# Utilities for running and analyzing per-model tests
+#
+# Include this file in your model test scripts after activating the project:
+#   using Pkg; Pkg.activate(joinpath(@__DIR__, "..", ".."))
+#   include("model_test_framework.jl")
 
 using Dynamic_objectives
 using Globtim: Globtim, run_standard_experiment
@@ -12,12 +13,17 @@ using ForwardDiff
 using Dates
 using Printf
 
-# Include ExperimentCLI module for config
-if !isdefined(Main, :ExperimentCLI)
+# Try to load ExperimentCLI if available
+const HAS_EXPERIMENT_CLI = try
     globtimcore_path = joinpath(@__DIR__, "..", "..", "..", "globtimcore")
     if isdir(globtimcore_path)
         include(joinpath(globtimcore_path, "src", "ExperimentCLI.jl"))
+        true
+    else
+        false
     end
+catch
+    false
 end
 
 """
