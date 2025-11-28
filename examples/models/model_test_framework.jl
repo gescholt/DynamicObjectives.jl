@@ -7,7 +7,9 @@
 
 using Dynamic_objectives
 using Globtim: Globtim, run_standard_experiment
-using GlobtimPostProcessing: GlobtimPostProcessing, refine_experiment_results, ode_refinement_config
+using GlobtimPostProcessing: GlobtimPostProcessing, refine_experiment_results, ode_refinement_config,
+    check_l2_quality, detect_stagnation, check_objective_distribution_quality,
+    has_ground_truth, compute_parameter_recovery_stats
 using LinearAlgebra
 using ForwardDiff
 using Dates
@@ -218,11 +220,78 @@ function run_model_test(config::ModelTestConfig; verbose::Bool=true)
     end
 
     # ===========================================================================
-    # Step 4: Display Top Critical Points
+    # Step 4: Quality Diagnostics
+    # ===========================================================================
+
+    l2_result = nothing
+    stagnation_result = nothing
+    dist_result = nothing
+
+    if verbose
+        display_section("Step 4: Quality Diagnostics")
+    end
+
+    # L2 approximation quality
+    try
+        l2_result = check_l2_quality(result[:output_dir])
+        if verbose
+            grade_str = string(l2_result.grade)
+            grade_color = l2_result.grade == :excellent ? "✓" :
+                          l2_result.grade == :good ? "○" :
+                          l2_result.grade == :acceptable ? "△" : "✗"
+            display_results([
+                "L2 Grade" => "$(grade_color) $(uppercase(grade_str))",
+                "L2 Error" => @sprintf("%.4e", l2_result.l2_error),
+            ], title="L2 Approximation Quality")
+        end
+    catch e
+        if verbose
+            println("  L2 quality check skipped: $(e)")
+        end
+    end
+
+    # Stagnation detection
+    try
+        stagnation_result = detect_stagnation(result[:output_dir])
+        if verbose
+            if stagnation_result.detected
+                display_results([
+                    "Status" => "⚠ Stagnation detected",
+                    "Stagnation degree" => stagnation_result.stagnation_degree,
+                ], title="Convergence Analysis")
+            else
+                display_results([
+                    "Status" => "✓ No stagnation detected",
+                ], title="Convergence Analysis")
+            end
+        end
+    catch e
+        if verbose
+            println("  Stagnation detection skipped: $(e)")
+        end
+    end
+
+    # Objective distribution quality
+    try
+        dist_result = check_objective_distribution_quality(result[:output_dir])
+        if verbose
+            display_results([
+                "Outliers" => "$(dist_result.n_outliers)/$(dist_result.n_points)",
+                "Distribution" => dist_result.is_healthy ? "✓ Healthy" : "⚠ Issues detected",
+            ], title="Objective Distribution")
+        end
+    catch e
+        if verbose
+            println("  Distribution check skipped: $(e)")
+        end
+    end
+
+    # ===========================================================================
+    # Step 5: Display Top Critical Points
     # ===========================================================================
 
     if verbose && refined.n_converged > 0
-        display_section("Step 4: Top Critical Points")
+        display_section("Step 5: Top Critical Points")
 
         display_top_critical_points(
             refined.refined_points[1:refined.n_converged],
@@ -235,13 +304,13 @@ function run_model_test(config::ModelTestConfig; verbose::Bool=true)
     end
 
     # ===========================================================================
-    # Step 5: Gradient Validation
+    # Step 6: Gradient Validation
     # ===========================================================================
 
     grad_norms = Float64[]
     if refined.n_converged > 0
         if verbose
-            display_section("Step 5: Gradient Validation")
+            display_section("Step 6: Gradient Validation")
             pb = progress_bar(refined.n_converged; description="Computing gradients", width=30)
         end
 
@@ -261,7 +330,7 @@ function run_model_test(config::ModelTestConfig; verbose::Bool=true)
     end
 
     # ===========================================================================
-    # Step 6: Parameter Recovery
+    # Step 7: Parameter Recovery
     # ===========================================================================
 
     recovery_error = Inf
@@ -272,7 +341,7 @@ function run_model_test(config::ModelTestConfig; verbose::Bool=true)
         recovery_error = norm(best_params .- config.p_true) / norm(config.p_true)
 
         if verbose
-            display_section("Step 6: Parameter Recovery")
+            display_section("Step 7: Parameter Recovery")
 
             display_parameters(
                 param_names,
@@ -326,7 +395,8 @@ function run_model_test(config::ModelTestConfig; verbose::Bool=true)
     # Generate markdown report
     report_path = generate_test_report(
         config, result, refined, grad_norms,
-        stage1_time, stage2_time, output_dir, param_names
+        stage1_time, stage2_time, output_dir, param_names;
+        l2_result=l2_result, stagnation_result=stagnation_result, dist_result=dist_result
     )
 
     if verbose
@@ -344,7 +414,11 @@ function run_model_test(config::ModelTestConfig; verbose::Bool=true)
         recovery_error = recovery_error,
         best_params = best_params,
         output_dir = output_dir,
-        report_path = report_path
+        report_path = report_path,
+        # Quality diagnostics
+        l2_result = l2_result,
+        stagnation_result = stagnation_result,
+        dist_result = dist_result
     )
 end
 
@@ -355,7 +429,8 @@ Generate a detailed markdown report for the model test.
 """
 function generate_test_report(
     config, result, refined, grad_norms,
-    stage1_time, stage2_time, output_dir, param_names
+    stage1_time, stage2_time, output_dir, param_names;
+    l2_result=nothing, stagnation_result=nothing, dist_result=nothing
 )
     io = IOBuffer()
     n_params = length(config.p_true)
@@ -433,6 +508,39 @@ function generate_test_report(
     println(io, "| Best Refined Value | $(@sprintf("%.4e", refined.best_refined_value)) |")
     println(io, "| Time | $(round(stage2_time, digits=2))s |")
     println(io)
+
+    # Quality Diagnostics section
+    has_diagnostics = !isnothing(l2_result) || !isnothing(stagnation_result) || !isnothing(dist_result)
+    if has_diagnostics
+        println(io, "## Quality Diagnostics")
+        println(io)
+        println(io, "| Diagnostic | Result |")
+        println(io, "| --- | --- |")
+
+        if !isnothing(l2_result)
+            grade_emoji = l2_result.grade == :excellent ? "✓" :
+                          l2_result.grade == :good ? "○" :
+                          l2_result.grade == :acceptable ? "△" : "✗"
+            println(io, "| L2 Approximation | $(grade_emoji) $(uppercase(string(l2_result.grade))) (error: $(@sprintf("%.4e", l2_result.l2_error))) |")
+        end
+
+        if !isnothing(stagnation_result)
+            if stagnation_result.detected
+                println(io, "| Convergence | ⚠ Stagnation at degree $(stagnation_result.stagnation_degree) |")
+            else
+                println(io, "| Convergence | ✓ No stagnation |")
+            end
+        end
+
+        if !isnothing(dist_result)
+            if dist_result.is_healthy
+                println(io, "| Objective Distribution | ✓ Healthy ($(dist_result.n_outliers) outliers) |")
+            else
+                println(io, "| Objective Distribution | ⚠ $(dist_result.n_outliers)/$(dist_result.n_points) outliers |")
+            end
+        end
+        println(io)
+    end
 
     if refined.n_converged > 0
         println(io, "## Top 5 Critical Points")
