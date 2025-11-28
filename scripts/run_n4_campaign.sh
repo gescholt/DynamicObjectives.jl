@@ -1,9 +1,9 @@
 #!/bin/bash
 # ==============================================================================
-# N=4 Testing Campaign - Local Runner
+# N=4 Testing Campaign Runner
 # ==============================================================================
 #
-# Run the n=4 testing campaign locally (not on HPC).
+# Run the n=4 testing campaign.
 #
 # Usage:
 #     ./scripts/run_n4_campaign.sh
@@ -23,7 +23,7 @@
 set -e
 
 # Default values
-OUTPUT_DIR="test_results/n4_campaign_local_$(date +%Y%m%d_%H%M%S)"
+OUTPUT_DIR="test_results/n4_campaign_$(date +%Y%m%d_%H%M%S)"
 GN=8
 MAX_TIME=3600
 MODELS=""
@@ -70,7 +70,7 @@ PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 cd "$PROJECT_DIR"
 
 echo "=============================================="
-echo "N=4 Testing Campaign - Local Runner"
+echo "N=4 Testing Campaign"
 echo "=============================================="
 echo "Project: $PROJECT_DIR"
 echo "Output: $OUTPUT_DIR"
@@ -102,9 +102,9 @@ echo "Starting campaign..."
 echo ""
 
 if [ -n "$THREADS" ]; then
-    julia --project=. --threads="$THREADS" examples/n4_hpc_campaign.jl
+    julia --project=. --threads="$THREADS" examples/n4_campaign.jl
 else
-    julia --project=. examples/n4_hpc_campaign.jl
+    julia --project=. examples/n4_campaign.jl
 fi
 
 echo ""

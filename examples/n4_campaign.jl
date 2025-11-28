@@ -1,9 +1,9 @@
 #!/usr/bin/env julia
 """
-HPC Testing Campaign for n=4 Dimension Models
+Testing Campaign for n=4 Dimension Models
 
 This script runs a comprehensive testing campaign for all 4-parameter models
-in the Dynamic_objectives benchmark suite, optimized for HPC cluster execution.
+in the Dynamic_objectives benchmark suite.
 
 Features:
 - Timing information saved for each model and stage
@@ -13,11 +13,10 @@ Features:
 - Configurable via environment variables
 
 Usage:
-    # Local testing
     julia --project=. examples/n4_hpc_campaign.jl
 
-    # HPC submission (see submit_n4_campaign.slurm)
-    sbatch submit_n4_campaign.slurm
+    # Or use the runner script:
+    ./scripts/run_n4_campaign.sh --gn 10 --max-time 1800
 
 Environment Variables:
     CAMPAIGN_OUTPUT_DIR   - Output directory (default: test_results/n4_campaign)
