@@ -598,7 +598,7 @@ function run_globtim_pipeline(
         objective,
         refinement_config
     )
-    println("  ✓ Refined $(refined_result[:n_converged])/$(refined_result[:n_raw]) points")
+    println("  ✓ Refined $(refined_result.n_converged)/$(refined_result.n_raw) points")
 
     return (raw_result, refined_result)
 end
