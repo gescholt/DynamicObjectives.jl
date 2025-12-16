@@ -1,12 +1,12 @@
-# Testing Guide for Dynamic_objectives
+# Testing Guide
 
 ## Overview
 
-This guide provides a comprehensive testing strategy for time parameter estimation problems using the Dynamic_objectives package with globtim. All 13 models are suitable for testing parameter estimation algorithms.
+This guide provides a comprehensive testing strategy for time parameter estimation problems using the Dynamic\_objectives package with globtim. All 13 models are suitable for testing parameter estimation algorithms.
 
 ## Setup: Loading Local Dev Versions (REQUIRED)
 
-**Dynamic_objectives is standalone** (no package dependencies), but to use it with globtim for testing, you need to set up local dev versions:
+**Dynamic\_objectives is standalone** (no package dependencies), but to use it with globtim for testing, you need to set up local dev versions:
 
 ### One-Time Setup
 
@@ -23,11 +23,11 @@ Pkg.develop(path="../globtimpostprocessing")
 # Verify
 using Globtim
 using GlobtimPostProcessing
-println("✅ Setup complete!")
+println("Setup complete!")
 '
 ```
 
-**This only needs to be done ONCE.** After this, the packages will always be available in the Dynamic_objectives environment.
+**This only needs to be done ONCE.** After this, the packages will always be available in the Dynamic\_objectives environment.
 
 ### Verifying Setup
 
@@ -40,16 +40,18 @@ println("✅ Setup complete!")
 
 ---
 
-## Model Catalog
+## Model Configurations
 
 ### 1. DAISY Benchmark Models
 
 #### 1.1 DAISY Example 3 (4D with input)
+
 **Function:** `define_daisy_ex3_model_4D()`
 
 **Parameters:** 4 (p1, p3, p4, p6)
 
 **Recommended Test Configuration:**
+
 ```julia
 model, params, states, outputs = define_daisy_ex3_model_4D()
 
@@ -76,11 +78,13 @@ numpoints = 50
 ```
 
 #### 1.2 DAISY Example 3 (4D no input)
+
 **Function:** `define_daisy_ex3_model_4D_no_input()`
 
 **Parameters:** 4 (p1, p3, p4, p6)
 
 **Recommended Test Configuration:**
+
 ```julia
 model, params, states, outputs = define_daisy_ex3_model_4D_no_input()
 
@@ -106,11 +110,13 @@ numpoints = 50
 ### 2. Lotka-Volterra Systems
 
 #### 2.1 Generalized LV 4D (20 parameters)
+
 **Function:** `define_generalized_lotka_volterra_4D()`
 
 **Parameters:** 20 (4 growth rates + 16 interaction matrix elements)
 
 **Recommended Test Configuration:**
+
 ```julia
 model, params, states, outputs = define_generalized_lotka_volterra_4D()
 
@@ -131,7 +137,7 @@ ic = [0.5, 0.5, 0.5, 0.5]
 bounds = [
     # Growth rates
     (0.0, 3.0), (0.0, 3.0), (0.0, 3.0), (0.0, 3.0),
-    # Interaction matrix elements (diagonal: negative, off-diagonal: negative or positive)
+    # Interaction matrix elements
     (-2.0, 0.0), (-1.0, 1.0), (-1.0, 1.0), (-1.0, 1.0),
     (-1.0, 1.0), (-2.0, 0.0), (-1.0, 1.0), (-1.0, 1.0),
     (-1.0, 1.0), (-1.0, 1.0), (-2.0, 0.0), (-1.0, 1.0),
@@ -147,11 +153,13 @@ numpoints = 40
 ```
 
 #### 2.2 Constrained LV 4D (4 parameters)
+
 **Function:** `define_constrained_lotka_volterra_4D()`
 
 **Parameters:** 4 (eps1, eps2, eps3, eps4 - skew-symmetric perturbations)
 
 **Recommended Test Configuration:**
+
 ```julia
 model, params, states, outputs = define_constrained_lotka_volterra_4D()
 
@@ -172,162 +180,22 @@ numpoints = 60
 # Characteristics: Constrained structure, coupled subsystems, 4 outputs
 ```
 
-#### 2.3 LV 3D Model (variant 1)
-**Function:** `define_lotka_volterra_3D_model()`
+#### 2.3-2.8 LV 2D/3D Models
 
-**Parameters:** 3 (a, b, c)
-
-**Recommended Test Configuration:**
-```julia
-model, params, states, outputs = define_lotka_volterra_3D_model()
-
-p_true = [0.5, -0.3, 0.2]
-ic = [1.0, 0.5]
-
-bounds = [
-    (-1.0, 2.0),   # a
-    (-1.0, 0.0),   # b (negative for predator-prey)
-    (-1.0, 1.0)    # c
-]
-
-time_interval = [0.0, 20.0]
-numpoints = 40
-
-# Difficulty: MEDIUM
-# Characteristics: Classic predator-prey, 1 output (partial observability)
-```
-
-#### 2.4 LV 3D Model (variant 2)
-**Function:** `define_lotka_volterra_3D_model_v2()`
-
-**Parameters:** 3 (a, b, c)
-
-**Recommended Test Configuration:**
-```julia
-model, params, states, outputs = define_lotka_volterra_3D_model_v2()
-
-p_true = [1.0, 0.5, 0.3]
-ic = [1.0, 0.5]
-
-bounds = [
-    (0.0, 3.0),    # a (prey growth)
-    (0.0, 2.0),    # b (interaction rate)
-    (0.0, 1.0)     # c (predator conversion)
-]
-
-time_interval = [0.0, 20.0]
-numpoints = 40
-
-# Difficulty: MEDIUM
-# Characteristics: Standard formulation, 1 output
-```
-
-#### 2.5 LV 2D Model (c=1)
-**Function:** `define_lotka_volterra_2D_model()`
-
-**Parameters:** 2 (a, b)
-
-**Recommended Test Configuration:**
-```julia
-model, params, states, outputs = define_lotka_volterra_2D_model()
-
-p_true = [0.5, -0.3]
-ic = [1.0, 0.5]
-
-bounds = [
-    (-1.0, 2.0),   # a
-    (-1.0, 0.0)    # b
-]
-
-time_interval = [0.0, 20.0]
-numpoints = 30
-
-# Difficulty: EASY
-# Characteristics: Low-dimensional, 1 output
-```
-
-#### 2.6 LV 2D Model v2 (c=0.1)
-**Function:** `define_lotka_volterra_2D_model_v2()`
-
-**Parameters:** 2 (a, b)
-
-**Recommended Test Configuration:**
-```julia
-model, params, states, outputs = define_lotka_volterra_2D_model_v2()
-
-p_true = [0.5, -0.3]
-ic = [1.0, 0.5]
-
-bounds = [
-    (-1.0, 2.0),   # a
-    (-1.0, 0.0)    # b
-]
-
-time_interval = [0.0, 20.0]
-numpoints = 30
-
-# Difficulty: EASY
-# Characteristics: Low-dimensional, 1 output, slow prey growth
-```
-
-#### 2.7 LV 2D Model v3 (c=0.5)
-**Function:** `define_lotka_volterra_2D_model_v3()`
-
-**Parameters:** 2 (a, b)
-
-**Recommended Test Configuration:**
-```julia
-model, params, states, outputs = define_lotka_volterra_2D_model_v3()
-
-p_true = [1.0, 0.5]
-ic = [1.0, 0.5]
-
-bounds = [
-    (0.0, 3.0),    # a
-    (0.0, 2.0)     # b
-]
-
-time_interval = [0.0, 20.0]
-numpoints = 30
-
-# Difficulty: EASY
-# Characteristics: Low-dimensional, 1 output
-```
-
-#### 2.8 LV 2D Model v3 (two outputs)
-**Function:** `define_lotka_volterra_2D_model_v3_two_outputs()`
-
-**Parameters:** 2 (a, b)
-
-**Recommended Test Configuration:**
-```julia
-model, params, states, outputs = define_lotka_volterra_2D_model_v3_two_outputs()
-
-p_true = [1.0, 0.5]
-ic = [1.0, 0.5]
-
-bounds = [
-    (0.0, 3.0),    # a
-    (0.0, 2.0)     # b
-]
-
-time_interval = [0.0, 20.0]
-numpoints = 30
-
-# Difficulty: EASY
-# Characteristics: Low-dimensional, 2 outputs (full observability)
-```
+See [Model Catalog](model_catalog.md) for complete configurations.
 
 ---
 
 ### 3. Other Systems
 
 #### 3.1 FitzHugh-Nagumo 3D
+
 **Function:** `define_fitzhugh_nagumo_3D_model()`
 
 **Parameters:** 3 (g, a, b)
 
 **Recommended Test Configuration:**
+
 ```julia
 model, params, states, outputs = define_fitzhugh_nagumo_3D_model()
 
@@ -348,82 +216,13 @@ numpoints = 100
 # Warning: May exhibit limit cycles, use eval_timeout
 ```
 
-#### 3.2 Simple 2D Locally Identifiable (product form)
+#### 3.2-3.4 Identifiability Test Models
+
 **Function:** `define_simple_2D_model_locally_identifiable()`
 
-**Parameters:** 2 (a, b)
+**Characteristics:** NOT globally identifiable (a*b and a+b only)
 
-**Recommended Test Configuration:**
-```julia
-model, params, states, outputs = define_simple_2D_model_locally_identifiable()
-
-p_true = [2.0, 3.0]
-ic = [1.0]
-
-bounds = [
-    (0.1, 5.0),    # a
-    (0.1, 5.0)     # b
-]
-
-time_interval = [0.0, 5.0]
-numpoints = 20
-
-# Difficulty: HARD (identifiability issue)
-# Characteristics: NOT globally identifiable (a*b and a+b only)
-# Note: Multiple parameter sets give same output - ideal for testing optimizer behavior
-# Expected: Optimizer should find parameter combinations where a*b and a+b match true values
-```
-
-#### 3.3 Simple 2D Locally Identifiable (square form)
-**Function:** `define_simple_2D_model_locally_identifiable_square()`
-
-**Parameters:** 2 (a, b)
-
-**Recommended Test Configuration:**
-```julia
-model, params, states, outputs = define_simple_2D_model_locally_identifiable_square()
-
-p_true = [0.5, 2.0]
-ic = [1.0]
-
-bounds = [
-    (-1.0, 2.0),   # a
-    (-3.0, 3.0)    # b
-]
-
-time_interval = [0.0, 5.0]
-numpoints = 20
-
-# Difficulty: HARD (identifiability issue)
-# Characteristics: NOT globally identifiable (b² only)
-# Note: Both b and -b give same output - ideal for testing optimizer behavior
-# Expected: Optimizer may find either b or -b
-```
-
-#### 3.4 Simple 1D Locally Identifiable
-**Function:** `define_simple_1D_model_locally_identifiable()`
-
-**Parameters:** 1 (a)
-
-**Recommended Test Configuration:**
-```julia
-model, params, states, outputs = define_simple_1D_model_locally_identifiable()
-
-p_true = [1.5]
-ic = [1.0]
-
-bounds = [
-    (-3.0, 3.0)    # a
-]
-
-time_interval = [0.0, 5.0]
-numpoints = 20
-
-# Difficulty: MEDIUM-HARD (identifiability issue)
-# Characteristics: NOT globally identifiable (a² only)
-# Note: Both a and -a give same output
-# Expected: Optimizer may find either a or -a
-```
+> **Note:** Multiple parameter sets give same output - ideal for testing optimizer behavior. Expected: Optimizer should find parameter combinations where a*b and a+b match true values.
 
 ---
 
@@ -471,6 +270,7 @@ p_test = p_true .+ 0.1
 ### Recommended Testing Campaign
 
 #### Phase 1: Easy Problems (2 parameters)
+
 Start with these to validate globtim setup:
 1. `define_lotka_volterra_2D_model()`
 2. `define_lotka_volterra_2D_model_v2()`
@@ -480,6 +280,7 @@ Start with these to validate globtim setup:
 **Expected:** Quick convergence, low function evaluation counts
 
 #### Phase 2: Medium Problems (3-4 parameters)
+
 Test scalability and robustness:
 1. `define_lotka_volterra_3D_model()`
 2. `define_lotka_volterra_3D_model_v2()`
@@ -491,20 +292,24 @@ Test scalability and robustness:
 **Expected:** Moderate convergence time, may require more evaluations
 
 #### Phase 3: Hard Problems (identifiability issues)
+
 Test optimizer behavior on non-identifiable systems:
 1. `define_simple_1D_model_locally_identifiable()`
 2. `define_simple_2D_model_locally_identifiable()`
 3. `define_simple_2D_model_locally_identifiable_square()`
 
-**Expected:** Convergence to equivalent parameter sets, not necessarily p_true
+**Expected:** Convergence to equivalent parameter sets, not necessarily p\_true
 
 #### Phase 4: Very Hard Problems (high-dimensional)
+
 Ultimate stress test:
 1. `define_generalized_lotka_volterra_4D()` (20 parameters!)
 
 **Expected:** Long computation time, may not fully converge
 
-### Distance Function Comparison
+---
+
+## Distance Function Comparison
 
 Test each problem with different distance functions:
 
@@ -519,9 +324,11 @@ error_L1 = make_error_distance(..., L1_norm, ...)
 error_log = make_error_distance(..., log_L2_norm, ...)
 ```
 
-**Recommendation:** Start with L2_norm, then compare with log_L2_norm for problems with wide error ranges.
+**Recommendation:** Start with L2\_norm, then compare with log\_L2\_norm for problems with wide error ranges.
 
-### Timeout Configuration
+---
+
+## Timeout Configuration
 
 Models that may require timeout (due to stiffness or oscillations):
 - `define_generalized_lotka_volterra_4D()` (20D, nonlinear)
@@ -537,7 +344,9 @@ error_func = make_error_distance(
 )
 ```
 
-### Noise Injection Testing
+---
+
+## Noise Injection Testing
 
 Test robustness to noisy data:
 
@@ -552,17 +361,21 @@ error_func = make_error_distance(
 )
 ```
 
-### Performance Metrics
+---
+
+## Performance Metrics
 
 For each test, record:
 1. **Convergence success:** Did it find parameters within tolerance?
 2. **Function evaluations:** How many evaluations to convergence?
 3. **Wall-clock time:** Total optimization time
-4. **Final error:** error_func(p_best)
-5. **Parameter error:** norm(p_best - p_true) for identifiable models
+4. **Final error:** error\_func(p\_best)
+5. **Parameter error:** norm(p\_best - p\_true) for identifiable models
 6. **Timeout events:** How many evaluations timed out?
 
-### Recommended Test Matrix
+---
+
+## Recommended Test Matrix
 
 | Model | Difficulty | Params | Distance | Timeout | Priority |
 |-------|-----------|--------|----------|---------|----------|
@@ -577,7 +390,9 @@ For each test, record:
 
 *Hard due to identifiability, not dimensionality
 
-### Expected Results
+---
+
+## Expected Results
 
 **For globally identifiable models:**
 - Optimum should be close to `p_true`
@@ -591,13 +406,15 @@ For each test, record:
   - Simple 2D (product): `a*b` and `a+b` should match
   - Simple 2D (square): `a` and `b²` should match
 
-### Debugging Tips
+---
+
+## Debugging Tips
 
 If optimization fails:
 1. **Verify setup:** Check `error_func(p_true)` is near zero
 2. **Check bounds:** Ensure `p_true` is within bounds
 3. **Reduce timeout:** May indicate stiff system
-4. **Try different distance:** log_L2_norm may help with scaling
+4. **Try different distance:** log\_L2\_norm may help with scaling
 5. **Increase numpoints:** More data points may improve identifiability
 6. **Check for NaN/Inf:** Review logs for failed ODE solves
 
@@ -637,59 +454,6 @@ end
 error_func = make_error_distance(..., weighted_L2, ...)
 ```
 
-### Uneven Sampling
-
-Test with non-uniform time sampling (requires modifying `sample_data` call):
-
-```julia
-# More points at early times
-uneven_times = [0.0, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0]
-
-data = sample_data(
-    problem, model, outputs, time_interval, p_true, ic, length(uneven_times);
-    uneven_sampling = true,
-    uneven_sampling_times = uneven_times
-)
-```
-
----
-
-## Output Format for globtim
-
-Recommended experiment structure:
-
-```julia
-# experiments/test_campaign_2025/config.jl
-
-using Dynamic_objectives
-
-experiments = [
-    (
-        name = "lv2d_easy",
-        model_fn = define_lotka_volterra_2D_model_v3_two_outputs,
-        p_true = [1.0, 0.5],
-        ic = [1.0, 0.5],
-        bounds = [(0.0, 3.0), (0.0, 2.0)],
-        time_interval = [0.0, 20.0],
-        numpoints = 30,
-        distance = L2_norm,
-        timeout = nothing
-    ),
-    # Add more experiments...
-]
-
-function create_objective(exp)
-    model, params, states, outputs = exp.model_fn()
-    return make_error_distance(
-        model, outputs, exp.ic, exp.p_true,
-        exp.time_interval, exp.numpoints,
-        exp.distance, first, nothing;
-        return_inf_on_error = true,
-        eval_timeout = exp.timeout
-    )
-end
-```
-
 ---
 
 ## Questions?
@@ -697,5 +461,5 @@ end
 For issues or questions:
 - Review code documentation in `src/error_metrics.jl`
 - Check model definitions in `src/systems/*.jl`
-- See `README.md` for basic usage
-- See `MIGRATION.md` for integration with globtimcore
+- See [Getting Started](getting_started.md) for basic usage
+- See [Integration](integration.md) for integration with globtimcore

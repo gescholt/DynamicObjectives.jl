@@ -1,8 +1,8 @@
-# Dynamic_objectives Package Architecture
+# Package Architecture
 
 ## Design Philosophy: Standalone with Optional Integration
 
-Dynamic_objectives is designed to be **intentionally standalone** with **zero package dependencies** on globtimcore or globtimpostprocessing. This design has important benefits:
+Dynamic\_objectives is designed to be **intentionally standalone** with **zero package dependencies** on globtimcore or globtimpostprocessing. This design has important benefits:
 
 ### Benefits of Standalone Design
 
@@ -18,7 +18,7 @@ Dynamic_objectives is designed to be **intentionally standalone** with **zero pa
 ┌─────────────────────────────────────────────────────────┐
 │               Dynamic_objectives                        │
 │     (ODE models, parameter estimation problems)         │
-│                                                          │
+│                                                         │
 │     Dependencies: ONLY standard packages                │
 │     - DifferentialEquations, ModelingToolkit            │
 │     - CSV, DataFrames, PrettyTables                     │
@@ -35,11 +35,11 @@ Dynamic_objectives is designed to be **intentionally standalone** with **zero pa
                    CSV files
 ```
 
-**Key Point**: Dynamic_objectives has NO formal dependency on globtim packages. The integration is achieved through local dev setup for testing purposes only.
+**Key Point**: Dynamic\_objectives has NO formal dependency on globtim packages. The integration is achieved through local dev setup for testing purposes only.
 
 ## Integration Pattern: Local Dev Versions
 
-When you want to use Dynamic_objectives with globtim for optimization, you use **local development versions**:
+When you want to use Dynamic\_objectives with globtim for optimization, you use **local development versions**:
 
 ### What is `Pkg.develop()`?
 
@@ -63,7 +63,7 @@ After running setup:
 
 The following happens:
 
-1. **Dynamic_objectives/Project.toml** is updated with dev entries:
+1. **Dynamic\_objectives/Project.toml** is updated with dev entries:
    ```toml
    [deps]
    # ... existing deps ...
@@ -71,7 +71,7 @@ The following happens:
    GlobtimPostProcessing = "..."  # Added by Pkg.develop()
    ```
 
-2. **Dynamic_objectives/Manifest.toml** points to local paths:
+2. **Dynamic\_objectives/Manifest.toml** points to local paths:
    ```toml
    [[Globtim]]
    path = "../globtimcore"
@@ -95,10 +95,10 @@ You might ask: "Why not just add them to Project.toml permanently?"
 
 **Answer**: We want to keep the distinction:
 
-- **Core package** (Dynamic_objectives): Standalone, no globtim dependencies
+- **Core package** (Dynamic\_objectives): Standalone, no globtim dependencies
 - **Testing/Integration**: Optional, requires explicit dev setup
 
-This makes it clear that Dynamic_objectives is reusable with ANY optimizer, not just globtim.
+This makes it clear that Dynamic\_objectives is reusable with ANY optimizer, not just globtim.
 
 ## Testing Architecture
 
@@ -109,7 +109,7 @@ Dynamic_objectives/test/
 ├── runtests.jl                    # Main test runner
 ├── test_error_metrics.jl          # Core functionality (no globtim)
 ├── test_model_definitions.jl      # Core functionality (no globtim)
-├── test_globtim_integration.jl    # REQUIRES globtim dev setup ⚠️
+├── test_globtim_integration.jl    # REQUIRES globtim dev setup
 └── validate_all_models.jl         # Core functionality (no globtim)
 ```
 
@@ -121,7 +121,7 @@ Dynamic_objectives/test/
 - `validate_all_models.jl` - Validates all 13 models work
 
 **Integration Tests** (require dev setup):
-- `test_globtim_integration.jl` - Tests using Dynamic_objectives with globtim optimizer
+- `test_globtim_integration.jl` - Tests using Dynamic\_objectives with globtim optimizer
 
 ### Running Tests
 
@@ -200,10 +200,10 @@ refined_result = refine_experiment_results(
 ```
 src/
 ├── Dynamic_objectives.jl      # Main module
-├── error_metrics.jl            # Distance functions
-├── data_generation.jl          # Time series generation
-├── display.jl                  # Pretty printing
-└── systems/                    # ODE models
+├── error_metrics.jl           # Distance functions
+├── data_generation.jl         # Time series generation
+├── display.jl                 # Pretty printing
+└── systems/                   # ODE models
     ├── lotka_volterra.jl
     ├── daisy_benchmarks.jl
     ├── fitzhugh_nagumo.jl
@@ -213,10 +213,10 @@ src/
 ### Integration Documentation (References globtim)
 
 ```
-├── REFINEMENT_INTEGRATION_GUIDE.md   # How to use with globtim
-├── TESTING_GUIDE.md                  # Testing with globtim
-├── ARCHITECTURE.md                   # This file
-└── setup_dev_packages.jl             # Dev setup script
+docs/src/
+├── integration.md                    # How to use with globtim
+├── testing_guide.md                  # Testing with globtim
+└── architecture.md                   # This file
 ```
 
 ### Test Files
@@ -231,7 +231,7 @@ test/
 
 ## Summary: Key Takeaways
 
-1. **Dynamic_objectives is standalone** - No formal dependencies on globtim
+1. **Dynamic\_objectives is standalone** - No formal dependencies on globtim
 2. **Integration is optional** - Requires explicit dev setup
 3. **One-time setup** - Run `./setup_dev_packages.jl` once
 4. **Dev versions track local changes** - Always uses your latest local code
@@ -271,7 +271,6 @@ GlobalOptim/
 
 ## See Also
 
-- **[README.md](README.md)** - Package overview and quick start
-- **[TESTING_GUIDE.md](TESTING_GUIDE.md)** - Comprehensive testing strategy
-- **[REFINEMENT_INTEGRATION_GUIDE.md](REFINEMENT_INTEGRATION_GUIDE.md)** - Integration patterns
-- **[../docs/API_DESIGN_REFINEMENT.md](../docs/API_DESIGN_REFINEMENT.md)** - Overall architecture
+- [Getting Started](getting_started.md) - Package overview and quick start
+- [Testing Guide](testing_guide.md) - Comprehensive testing strategy
+- [Integration](integration.md) - Integration patterns

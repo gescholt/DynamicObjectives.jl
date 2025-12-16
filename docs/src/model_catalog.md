@@ -1,6 +1,6 @@
-# Model Catalog - Quick Reference
+# Model Catalog
 
-Complete list of all 13 time parameter estimation benchmark problems in Dynamic_objectives.
+Complete list of all 13 time parameter estimation benchmark problems in Dynamic\_objectives.
 
 ## Summary Table
 
@@ -24,6 +24,7 @@ Complete list of all 13 time parameter estimation benchmark problems in Dynamic_
 ## Grouped by Difficulty
 
 ### EASY (4 models)
+
 Good for initial validation of optimizer setup:
 - `define_lotka_volterra_2D_model()`
 - `define_lotka_volterra_2D_model_v2()`
@@ -31,6 +32,7 @@ Good for initial validation of optimizer setup:
 - `define_lotka_volterra_2D_model_v3_two_outputs()`
 
 ### MEDIUM (4 models)
+
 Standard benchmarks for parameter estimation:
 - `define_lotka_volterra_3D_model()`
 - `define_lotka_volterra_3D_model_v2()`
@@ -38,17 +40,20 @@ Standard benchmarks for parameter estimation:
 - `define_daisy_ex3_model_4D_no_input()`
 
 ### MEDIUM-HARD (2 models)
+
 Challenging problems with structure:
 - `define_constrained_lotka_volterra_4D()`
 - `define_simple_1D_model_locally_identifiable()`
 
 ### HARD (3 models)
+
 Advanced problems requiring robust optimization:
 - `define_fitzhugh_nagumo_3D_model()` (oscillatory dynamics)
 - `define_simple_2D_model_locally_identifiable()` (non-identifiable)
 - `define_simple_2D_model_locally_identifiable_square()` (non-identifiable)
 
 ### VERY HARD (1 model)
+
 Ultimate stress test:
 - `define_generalized_lotka_volterra_4D()` (20 dimensions!)
 
@@ -81,24 +86,29 @@ Ultimate stress test:
 ## Grouped by System Type
 
 ### Predator-Prey Dynamics (6 models)
+
 Lotka-Volterra models with oscillatory or equilibrium behavior:
 - All LV 2D and 3D models (6 total)
 
 ### Competition Models (2 models)
+
 Multi-species competition with interaction matrices:
 - `define_generalized_lotka_volterra_4D()` (full 4x4 interaction)
 - `define_constrained_lotka_volterra_4D()` (perturbed structure)
 
 ### Linear Benchmark (2 models)
+
 DAISY suite linear systems:
 - `define_daisy_ex3_model_4D()`
 - `define_daisy_ex3_model_4D_no_input()`
 
 ### Neuronal Models (1 model)
+
 Excitable systems:
 - `define_fitzhugh_nagumo_3D_model()`
 
 ### Identifiability Tests (3 models)
+
 Non-identifiable systems (multiple parameter sets give same output):
 - `define_simple_1D_model_locally_identifiable()`
 - `define_simple_2D_model_locally_identifiable()`
@@ -107,11 +117,13 @@ Non-identifiable systems (multiple parameter sets give same output):
 ## Special Characteristics
 
 ### Requires Timeout
+
 Models that may need `eval_timeout` parameter:
 - `define_generalized_lotka_volterra_4D()` (high-dimensional, stiff)
 - `define_fitzhugh_nagumo_3D_model()` (oscillatory, limit cycles)
 
 ### Partial Observability
+
 Models where not all states are measured (harder estimation):
 - All LV 2D v1/v2/v3 single-output variants (7 total)
 - All LV 3D models (2 total)
@@ -119,6 +131,7 @@ Models where not all states are measured (harder estimation):
 - Simple 1D/2D identifiability models (3 total)
 
 ### Full Observability
+
 All states are measured:
 - `define_lotka_volterra_2D_model_v3_two_outputs()`
 - `define_generalized_lotka_volterra_4D()`
@@ -126,6 +139,7 @@ All states are measured:
 - Both DAISY models (2 total)
 
 ### Non-Identifiable
+
 Multiple parameter sets produce identical outputs (test optimizer behavior):
 - `define_simple_1D_model_locally_identifiable()` - ±a gives same output
 - `define_simple_2D_model_locally_identifiable()` - (a,b) and (a',b') same if a*b and a+b match
@@ -134,6 +148,7 @@ Multiple parameter sets produce identical outputs (test optimizer behavior):
 ## Recommended Testing Sequence
 
 ### Sequence 1: Progressive Difficulty
+
 1. `define_lotka_volterra_2D_model_v3_two_outputs()` (2P, EASY, full obs)
 2. `define_lotka_volterra_3D_model_v2()` (3P, MEDIUM)
 3. `define_constrained_lotka_volterra_4D()` (4P, MEDIUM-HARD)
@@ -141,26 +156,33 @@ Multiple parameter sets produce identical outputs (test optimizer behavior):
 5. `define_generalized_lotka_volterra_4D()` (20P, VERY HARD)
 
 ### Sequence 2: Observability Study
+
 1. `define_lotka_volterra_2D_model_v3()` (1 output, partial)
 2. `define_lotka_volterra_2D_model_v3_two_outputs()` (2 outputs, full)
+
 Compare convergence speed and accuracy.
 
 ### Sequence 3: Identifiability Study
+
 1. `define_simple_1D_model_locally_identifiable()` (1P, ±a symmetry)
 2. `define_simple_2D_model_locally_identifiable_square()` (2P, ±b symmetry)
 3. `define_simple_2D_model_locally_identifiable()` (2P, product/sum only)
+
 Check if optimizer finds correct invariants.
 
 ### Sequence 4: Scalability Study
+
 1. `define_lotka_volterra_2D_model()` (2P)
 2. `define_lotka_volterra_3D_model()` (3P)
 3. `define_daisy_ex3_model_4D_no_input()` (4P)
 4. `define_generalized_lotka_volterra_4D()` (20P)
+
 Track how performance degrades with dimension.
 
 ## Quick Reference: Function Signatures
 
 All model definition functions return:
+
 ```julia
 (model, parameters, states, measured_quantities)
 ```
@@ -179,7 +201,7 @@ using Dynamic_objectives
 # Select a model (e.g., #4 from table)
 model, params, states, outputs = define_lotka_volterra_2D_model_v3_two_outputs()
 
-# Set up problem (see TESTING_GUIDE.md for recommended values)
+# Set up problem (see testing_guide.md for recommended values)
 p_true = [1.0, 0.5]
 ic = [1.0, 0.5]
 bounds = [(0.0, 3.0), (0.0, 2.0)]
@@ -202,6 +224,6 @@ error_func = make_error_distance(
 
 ## See Also
 
-- [TESTING_GUIDE.md](TESTING_GUIDE.md) - Complete testing protocol with recommended parameters
-- [README.md](README.md) - Package overview and basic usage
-- [MIGRATION.md](MIGRATION.md) - Migration from DynamicalSystems.jl
+- [Testing Guide](testing_guide.md) - Complete testing protocol with recommended parameters
+- [Getting Started](getting_started.md) - Package overview and basic usage
+- [Integration](integration.md) - Integration with globtim

@@ -1,6 +1,6 @@
-# Requirements for globtimpostprocessing Integration
+# PostProcessing Requirements
 
-This document specifies the requirements for integrating Dynamic_objectives with the globtimpostprocessing package for local refinement of grid search results.
+This document specifies the requirements for integrating Dynamic\_objectives with the globtimpostprocessing package for local refinement of grid search results.
 
 ## Overview
 
@@ -11,7 +11,7 @@ After `run_globtim_optimization()` finds promising parameter regions via grid se
 **What we have:**
 - Grid-based global optimization that finds approximate solutions
 - Real-time progress monitoring via `display_optimization_progress()`
-- Results stored in structured format (Dict with :best_params, :best_objective, etc.)
+- Results stored in structured format (Dict with :best\_params, :best\_objective, etc.)
 - Optional file output (JSON summary + CSV critical points)
 
 **What we need:**
@@ -26,7 +26,7 @@ After `run_globtim_optimization()` finds promising parameter regions via grid se
 
 ### 1. Input Format
 
-**From Dynamic_objectives to globtimpostprocessing:**
+**From Dynamic\_objectives to globtimpostprocessing:**
 
 ```julia
 # What we can provide:
@@ -50,6 +50,7 @@ refinement_input = Dict(
 ```
 
 **Alternative: File-based input**
+
 If globtimpostprocessing expects files, we can provide:
 - `critical_points_deg_*.csv` (already generated)
 - `results_summary.json` (already generated)
@@ -60,7 +61,7 @@ If globtimpostprocessing expects files, we can provide:
 **Desired function signature:**
 
 ```julia
-using GlobtimPostprocessing  # or whatever the package name is
+using GlobtimPostprocessing
 
 # Option A: Direct function call
 result = refine_solution(
@@ -96,7 +97,7 @@ result = refine_from_files(
 
 ### 3. Output Format
 
-**From globtimpostprocessing back to Dynamic_objectives:**
+**From globtimpostprocessing back to Dynamic\_objectives:**
 
 ```julia
 # Expected return structure:
@@ -194,7 +195,7 @@ end
 
 ```julia
 using Dynamic_objectives
-using GlobtimPostprocessing  # TBD: actual package name
+using GlobtimPostprocessing
 
 # Step 1: Grid search (global optimization)
 grid_result = run_globtim_optimization(
@@ -299,7 +300,7 @@ function refine_grid_result(
 end
 ```
 
-### Option B: Extended run_globtim_optimization
+### Option B: Extended run\_globtim\_optimization
 
 Add refinement as optional step:
 
@@ -324,12 +325,12 @@ result[:best_params]      # Best overall (refined if available, else grid)
 
 Integration is successful when:
 
-1. ✅ Can refine grid search results with <1% error (currently ~20%)
-2. ✅ Progress monitoring works during refinement
-3. ✅ Graceful fallback if refinement fails
-4. ✅ Minimal additional dependencies
-5. ✅ Clear documentation and examples
-6. ✅ Works with all existing models
+1. Can refine grid search results with <1% error (currently ~20%)
+2. Progress monitoring works during refinement
+3. Graceful fallback if refinement fails
+4. Minimal additional dependencies
+5. Clear documentation and examples
+6. Works with all existing models
 
 ---
 
@@ -352,22 +353,5 @@ Integration is successful when:
 
 4. **Update documentation:**
    - Add refinement examples
-   - Update test_integration.jl to show refinement
+   - Update test\_integration.jl to show refinement
    - Document best practices
-
----
-
-## File Structure
-
-```
-Dynamic_objectives/
-├── src/
-│   ├── globtim_integration.jl         # Grid search + refinement
-│   └── postprocessing_wrapper.jl      # NEW: Wrapper for globtimpostprocessing
-├── test/
-│   └── test_refinement.jl             # NEW: Test refinement integration
-├── examples/
-│   └── refinement_demo.jl             # NEW: Demo of grid + refinement
-└── docs/
-    └── POSTPROCESSING_REQUIREMENTS.md # This file
-```

@@ -9,3 +9,5 @@
 
 # Test output
 test_results/
+docs/build/
+docs/Manifest.toml
