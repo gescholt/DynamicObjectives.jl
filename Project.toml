@@ -24,7 +24,7 @@ Term = "22787eb5-b846-44ae-b979-8e399b8463ab"
 UnicodePlots = "b8865327-cd53-5732-bb35-84acbb429228"
 
 [sources]
-Globtim = {path = "/Users/ghscholt/GlobalOptim/globtimcore"}
+Globtim = {path = "../globtim"}
 GlobtimPostProcessing = {path = "/Users/ghscholt/GlobalOptim/globtimpostprocessing"}
 
 [compat]
