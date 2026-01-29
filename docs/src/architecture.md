@@ -2,7 +2,7 @@
 
 ## Design Philosophy: Standalone with Optional Integration
 
-Dynamic\_objectives is designed to be **intentionally standalone** with **zero package dependencies** on globtimcore or globtimpostprocessing. This design has important benefits:
+Dynamic\_objectives is designed to be **intentionally standalone** with **zero package dependencies** on globtim or globtimpostprocessing. This design has important benefits:
 
 ### Benefits of Standalone Design
 
@@ -44,11 +44,11 @@ When you want to use Dynamic\_objectives with globtim for optimization, you use 
 ### What is `Pkg.develop()`?
 
 ```julia
-Pkg.develop(path="../globtimcore")
+Pkg.develop(path="../globtim")
 ```
 
 This tells Julia's package manager:
-- "Add globtimcore to this environment"
+- "Add globtim to this environment"
 - "But don't download it from a registry"
 - "Instead, use the local development version at this path"
 - "Track changes to that local code"
@@ -74,7 +74,7 @@ The following happens:
 2. **Dynamic\_objectives/Manifest.toml** points to local paths:
    ```toml
    [[Globtim]]
-   path = "../globtimcore"
+   path = "../globtim"
    uuid = "..."
 
    [[GlobtimPostProcessing]]
@@ -248,7 +248,7 @@ test/
 ./setup_dev_packages.jl
 ```
 
-### Error: "Package at path '../globtimcore' not found"
+### Error: "Package at path '../globtim' not found"
 
 **Cause**: Directory structure incorrect
 
@@ -256,7 +256,7 @@ test/
 ```
 GlobalOptim/
 ├── Dynamic_objectives/
-├── globtimcore/
+├── globtim/
 └── globtimpostprocessing/
 ```
 

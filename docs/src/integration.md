@@ -6,10 +6,10 @@
 
 This guide explains how to integrate Dynamic\_objectives with the globtim ecosystem for critical point finding and parameter recovery through a **2-stage pipeline**:
 
-1. **Stage 1 (globtimcore)**: Find raw critical points using polynomial approximation + HomotopyContinuation
+1. **Stage 1 (globtim)**: Find raw critical points using polynomial approximation + HomotopyContinuation
 2. **Stage 2 (globtimpostprocessing)**: Refine critical points using local optimization on original ODE objective
 
-**Key Benefit**: After Phase 2, no wrapper functions needed! Dynamic\_objectives' 1-argument functions work directly with globtimcore.
+**Key Benefit**: After Phase 2, no wrapper functions needed! Dynamic\_objectives' 1-argument functions work directly with globtim.
 
 ## Architecture
 
@@ -21,7 +21,7 @@ This guide explains how to integrate Dynamic\_objectives with the globtim ecosys
                            │
                            ▼
 ┌──────────────────────────────────────────────────────────────┐
-│ Stage 1: globtimcore                                         │
+│ Stage 1: globtim                                         │
 │  Polynomial approximation + HomotopyContinuation             │
 │  Output: critical_points_raw_deg_X.csv                       │
 └──────────────────────────────────────────────────────────────┘
@@ -51,7 +51,7 @@ cd /path/to/Dynamic_objectives
 **Option 2: Manual setup**:
 ```bash
 cd /path/to/Dynamic_objectives
-julia --project=. -e 'using Pkg; Pkg.develop(path="../globtimcore"); Pkg.develop(path="../globtimpostprocessing")'
+julia --project=. -e 'using Pkg; Pkg.develop(path="../globtim"); Pkg.develop(path="../globtimpostprocessing")'
 ```
 
 After this setup, you can use all three packages together in your scripts.
@@ -113,8 +113,8 @@ using LinearAlgebra
 
 # Include ExperimentCLI for config
 if !isdefined(Main, :ExperimentCLI)
-    globtimcore_path = joinpath(dirname(@__DIR__), "..", "globtimcore")
-    include(joinpath(globtimcore_path, "src", "ExperimentCLI.jl"))
+    globtim_path = joinpath(dirname(@__DIR__), "..", "globtim")
+    include(joinpath(globtim_path, "src", "ExperimentCLI.jl"))
 end
 using .ExperimentCLI
 
@@ -206,7 +206,7 @@ Choose based on your needs:
 
 ## Function Signature Compatibility
 
-**After Phase 2**, globtimcore automatically detects function signatures.
+**After Phase 2**, globtim automatically detects function signatures.
 
 ### 1-Argument Functions (Dynamic\_objectives Pattern)
 
@@ -218,7 +218,7 @@ objective = make_error_distance(
     L2_norm, first, nothing
 )
 
-# Works directly with globtimcore (no wrapper!)
+# Works directly with globtim (no wrapper!)
 result = run_standard_experiment(
     objective_function = objective,  # Detected as 1-arg, used as-is
     problem_params = nothing,        # Signal that no params needed
@@ -227,11 +227,11 @@ result = run_standard_experiment(
 )
 ```
 
-**Why it works**: globtimcore checks function signature and adapts accordingly. If `problem_params = nothing`, it uses the function directly.
+**Why it works**: globtim checks function signature and adapts accordingly. If `problem_params = nothing`, it uses the function directly.
 
 ## Configuration
 
-### ExperimentParams (globtimcore)
+### ExperimentParams (globtim)
 
 ```julia
 config = ExperimentParams(
