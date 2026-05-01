@@ -1,0 +1,39 @@
+# DAISY4D Screening — DAISY Ex3 4D Candidate Discovery
+#
+# Discovers viable p_true candidates for the DAISY Ex3 4D model.
+# Uses wider bounds and longer tspan than the Globtim experiment phase.
+# Produces a catalogue JSONL consumed by the experiment pipeline.
+#
+# Usage:
+#   using Dynamic_objectives
+#   result = run_screening_from_config("Dynamic_objectives/examples/exp_candidates/daisy4d.toml")
+#
+# Then run CP recovery with the experiment config:
+#   using Dynamic_objectives, Globtim, GlobtimPostProcessing
+#   result = run_experiment_from_config("Dynamic_objectives/examples/configs/daisy4d_sweep.toml")
+
+[screening]
+name = "daisy4d"
+description = "DAISY Ex3 4D candidate discovery"
+
+[model]
+model_fn = "define_daisy_ex3_model_4D"
+ic = [1.0, 0.5, 0.3, 0.0]
+bounds = [[0.0, 2.0], [0.0, 1.0], [0.0, 1.0], [-0.5, 0.5]]
+time_interval = [0.0, 20.0]
+
+[sweep]
+n_candidates = 200
+
+[probe]
+n_probes = 10
+
+[solver]
+method = "Tsit5"
+abstol = 1e-4
+reltol = 1e-4
+
+[output]
+catalogue_path = "globtim_results/daisy4d_catalogue.jsonl"
+name_prefix = "DAISY_4D"
+top_n = 5

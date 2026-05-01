@@ -1,0 +1,58 @@
+# FHN3D Wide — FitzHugh-Nagumo 3D with wide domain for multi-CP discovery
+#
+# Purpose: Find extra critical points of the ODE error landscape beyond the
+# true parameter minimum. The basic/tight configs use radius=0.01/0.005 which
+# is too small to see multi-basin structure. This config uses radius=0.5 to
+# encompass multiple features of the landscape.
+#
+# Key differences from fhn3d_basic.toml:
+#   - radius:    0.01  → 0.5   (50x larger domain for multi-CP discovery)
+#   - abstol:    1e-4  → 1e-6  (tighter solver for meaningful gradients)
+#   - reltol:    1e-4  → 1e-6
+#   - degrees:   4:2:10 → 4:2:8 (larger domains may struggle at high degree)
+#   - newton_tol: 1e-8 → 1e-4  (relaxed — finite-diff gradient noise limits precision)
+#
+# Requires catalogue from screening:
+#   julia --project=. Dynamic_objectives/examples/run_fhn3d_screening.jl
+
+[experiment]
+name = "fhn3d_wide"
+description = "FitzHugh-Nagumo 3D — wide domain (r=0.5) for multi-CP discovery"
+
+[model]
+catalogue_path = "globtim_results/fhn3d_catalogue.jsonl"
+entry_name = "FHN3D_1"
+
+[domain]
+radius = 0.5
+
+[polynomial]
+GN = 15
+degree_range = [4, 2, 8]
+basis = "chebyshev"
+
+[solver]
+method = "AutoTsit5"
+abstol = 1e-6
+reltol = 1e-6
+
+[refinement]
+enabled = true
+method = "NelderMead"
+max_time = 60.0
+gradient_method = "finitediff"
+gradient_tolerance = 1e-4
+
+[analysis]
+enabled = true
+gradient_method = "finitediff"
+newton_tol = 1e-4
+newton_max_iterations = 200
+hessian_tol = 1e-6
+dedup_fraction = 0.02
+top_k = 5
+# accept_tol = 1e-2       # gradient norm acceptance threshold (default: 1e-2)
+# f_accept_tol = 0.01     # function value acceptance — accept CPs in flat valleys (default: disabled)
+
+[output]
+dir = "globtim_results/fhn3d_wide"

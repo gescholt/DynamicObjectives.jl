@@ -1,0 +1,47 @@
+# LV4D Basic — Constrained Lotka-Volterra 4D CP Recovery
+# Mirrors: Dynamic_objectives/examples/run_lv4d_globtim.jl
+#
+# Usage:
+#   using Dynamic_objectives
+#   result = run_experiment_from_config("Dynamic_objectives/examples/configs/lv4d_basic.toml")
+
+[experiment]
+name = "lv4d_basic"
+description = "Constrained LV4D CP recovery on first screening candidate"
+
+[model]
+catalogue_path = "globtim_results/lv4d_catalogue.jsonl"
+entry_name = "LV4D_1"
+
+[domain]
+radius = 0.005
+
+[polynomial]
+GN = 12
+degree_range = [4, 2, 8]
+basis = "chebyshev"
+
+[solver]
+method = "Tsit5"
+abstol = 1e-4
+reltol = 1e-4
+
+[refinement]
+enabled = true
+method = "NelderMead"
+max_time = 60.0
+gradient_method = "finitediff"
+gradient_tolerance = 1e-4
+
+[analysis]
+enabled = true
+gradient_method = "finitediff"
+newton_tol = 1e-8
+newton_max_iterations = 200
+hessian_tol = 1e-6
+dedup_fraction = 0.02
+# accept_tol = 1e-2       # gradient norm acceptance threshold (default: 1e-2)
+# f_accept_tol = 0.01     # function value acceptance — accept CPs in flat valleys (default: disabled)
+
+[output]
+dir = "globtim_results/lv4d_basic"
