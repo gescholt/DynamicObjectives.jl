@@ -1,0 +1,47 @@
+# LV-2D-v3 Time Study T=100 — Time Sensitivity (Paper Section 5.2)
+# LV-2D-v3 with c=0.5, long time window T=100
+# NOTE: This config overrides the catalogue's default time_interval.
+#       The catalogue entry has T=10; we override to T=100 here.
+#
+# Usage:
+#   julia --project=. paper/run_experiment.jl paper/configs/lv2d_time_T100.toml
+
+[experiment]
+name = "lv2d_time_T100"
+description = "LV-2D-v3 time sensitivity, T=100 — Section 5.2"
+
+[model]
+catalogue_path = "../catalogue/lv2d_catalogue.jsonl"
+entry_name = "LV2D_v3_1"
+time_interval = [0.0, 100.0]
+
+[domain]
+radius = 0.01
+
+[polynomial]
+GN = 12
+degree_range = [4, 2, 10]
+basis = "chebyshev"
+
+[solver]
+method = "AutoTsit5"
+abstol = 1e-4
+reltol = 1e-4
+
+[refinement]
+enabled = true
+method = "NelderMead"
+max_time = 60.0
+gradient_method = "finitediff"
+gradient_tolerance = 1e-4
+
+[analysis]
+enabled = true
+gradient_method = "finitediff"
+newton_tol = 1e-8
+newton_max_iterations = 200
+hessian_tol = 1e-6
+dedup_fraction = 0.02
+
+[output]
+dir = "../../results/lv2d_time_T100"

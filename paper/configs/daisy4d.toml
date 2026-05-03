@@ -1,0 +1,45 @@
+# DAISY-4D — DAISY Ex3 4D CP Recovery (Paper Section 5.4)
+# 4-param compartmental model
+# Based on daisy4d_sweep r=0.01 — recovery 2.2e-4 at deg 8, GN=12
+#
+# Usage:
+#   julia --project=. paper/run_experiment.jl paper/configs/daisy4d.toml
+
+[experiment]
+name = "daisy4d"
+description = "DAISY Ex3 4D at r=0.01 — Section 5.4"
+
+[model]
+catalogue_path = "../catalogue/daisy4d_catalogue.jsonl"
+entry_name = "DAISY_4D_1"
+
+[domain]
+radius = 0.01
+
+[polynomial]
+GN = 12
+degree_range = [4, 2, 8]
+basis = "chebyshev"
+
+[solver]
+method = "Tsit5"
+abstol = 1e-4
+reltol = 1e-4
+
+[refinement]
+enabled = true
+method = "NelderMead"
+max_time = 60.0
+gradient_method = "finitediff"
+gradient_tolerance = 1e-4
+
+[analysis]
+enabled = true
+gradient_method = "finitediff"
+newton_tol = 1e-8
+newton_max_iterations = 200
+hessian_tol = 1e-6
+dedup_fraction = 0.02
+
+[output]
+dir = "../../results/daisy4d"

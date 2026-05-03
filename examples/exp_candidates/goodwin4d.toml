@@ -1,0 +1,38 @@
+# Goodwin Oscillator 4D Screening — Candidate Discovery
+#
+# 3-state Hill function oscillator, 4 unknown params (k1, k2, k4, k5), 2 outputs.
+# Hill function: K^n / (K^n + x3^n) with K=0.9, n=10.
+# Fixed constants: k3=0.3 (translation), k6=0.5 (degradation).
+#
+# Uses AutoTsit5 (stiff-aware) — Hill function with n=10 creates steep
+# transitions that may cause solver stiffness for some parameter combinations.
+#
+# Usage:
+#   using DynamicObjectives
+#   result = run_screening_from_config("DynamicObjectives/examples/exp_candidates/goodwin4d.toml")
+
+[screening]
+name = "goodwin4d"
+description = "Goodwin oscillator 4D candidate discovery (Hill function feedback loop)"
+
+[model]
+model_fn = "define_goodwin_oscillator_4D"
+ic = [0.5, 0.5, 0.5]                                       # x1 (mRNA), x2 (protein), x3 (end product)
+bounds = [[0.1, 3.0], [0.1, 2.0], [0.1, 2.0], [0.1, 2.0]]  # k1, k2, k4, k5 — rate constants > 0
+time_interval = [0.0, 20.0]
+
+[sweep]
+n_candidates = 200
+
+[probe]
+n_probes = 10
+
+[solver]
+method = "AutoTsit5"          # stiff-aware — Hill function may cause stiffness
+abstol = 1e-4
+reltol = 1e-4
+
+[output]
+catalogue_path = "globtim_results/goodwin4d_catalogue.jsonl"
+name_prefix = "Goodwin4D"
+top_n = 5

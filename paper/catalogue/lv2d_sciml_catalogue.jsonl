@@ -1,0 +1,1 @@
+{"distance_function":"L2_norm","time_interval":[0.0,1.5],"numpoints":4,"aggregate_distances":"sum","name":"LV2D_SciML_1","ic":[1.0,1.0],"p_true":[1.0,1.5],"eval_timeout":null,"model_fn":"define_lotka_volterra_2D_sciml_benchmark","description":"SciML benchmark LV: a1*x1-0.6*x1*x2, -a2*x2+0.8*x1*x2, both states observed, 4 time points","bounds":[[0.0,100.0],[0.0,100.0]]}

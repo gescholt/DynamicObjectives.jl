@@ -1,0 +1,58 @@
+# FHN3D Tight — FitzHugh-Nagumo 3D with tightened parameters
+# Format: TOML (not YAML) — stdlib, zero deps, consistent with project conventions.
+# See PR #1 for design rationale.
+#
+# Tightened vs fhn3d_basic.toml:
+#   - radius:    0.01  → 0.005  (smaller domain for better polynomial accuracy)
+#   - abstol:    1e-4  → 1e-6   (tighter ODE solver for stiff FHN dynamics)
+#   - reltol:    1e-4  → 1e-6
+#   - numpoints: 30    → 100    (finer temporal resolution for oscillatory dynamics)
+#
+# Requires catalogue from screening:
+#   julia --project=. DynamicObjectives/examples/run_fhn3d_screening.jl
+#
+# Usage:
+#   using DynamicObjectives, Globtim, GlobtimPostProcessing
+#   result = run_experiment_from_config("DynamicObjectives/examples/configs/fhn3d_tight.toml")
+
+[experiment]
+name = "fhn3d_tight"
+description = "FitzHugh-Nagumo 3D — tightened radius, tolerances, and numpoints"
+
+[model]
+catalogue_path = "globtim_results/fhn3d_catalogue.jsonl"
+entry_name = "FHN3D_1"
+
+[domain]
+radius = 0.005
+
+[polynomial]
+GN = 15
+degree_range = [4, 2, 10]
+basis = "chebyshev"
+
+[solver]
+method = "AutoTsit5"
+abstol = 1e-6
+reltol = 1e-6
+numpoints = 100
+
+[refinement]
+enabled = true
+method = "NelderMead"
+max_time = 60.0
+gradient_method = "finitediff"
+gradient_tolerance = 1e-4
+
+[analysis]
+enabled = true
+gradient_method = "finitediff"
+newton_tol = 1e-8
+newton_max_iterations = 200
+hessian_tol = 1e-6
+dedup_fraction = 0.02
+# accept_tol = 1e-2       # gradient norm acceptance threshold (default: 1e-2)
+# f_accept_tol = 0.01     # function value acceptance — accept CPs in flat valleys (default: disabled)
+
+[output]
+dir = "globtim_results/fhn3d_tight"

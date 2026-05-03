@@ -1,0 +1,45 @@
+# LV-3D — Lotka-Volterra 3D CP Recovery (Paper Example 4.2)
+# Locally identifiable LV: dx1/dt = a²*x1 + b²*x1*x2, dx2/dt = b²*x1*x2 + c*x2
+# Squared params (a,b) → multiple equivalent minimizers, 1 output
+#
+# Usage:
+#   julia --project=. paper/run_experiment.jl paper/configs/lv3d.toml
+
+[experiment]
+name = "lv3d"
+description = "Lotka-Volterra 3D — Example 4.2"
+
+[model]
+catalogue_path = "../catalogue/lv3d_catalogue.jsonl"
+entry_name = "LV3D_1"
+
+[domain]
+radius = 0.01
+
+[polynomial]
+GN = 12
+degree_range = [4, 2, 10]
+basis = "chebyshev"
+
+[solver]
+method = "AutoTsit5"
+abstol = 1e-4
+reltol = 1e-4
+
+[refinement]
+enabled = true
+method = "NelderMead"
+max_time = 60.0
+gradient_method = "finitediff"
+gradient_tolerance = 1e-4
+
+[analysis]
+enabled = true
+gradient_method = "finitediff"
+newton_tol = 1e-8
+newton_max_iterations = 200
+hessian_tol = 1e-6
+dedup_fraction = 0.02
+
+[output]
+dir = "../../results/lv3d"

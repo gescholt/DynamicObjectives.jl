@@ -1,0 +1,45 @@
+# Locally-Identifiable 1D — Simple 1D Model (Paper Section 5.9)
+# dx/dt = x + a², single param, non-globally-identifiable
+# Should find 2 CPs (symmetric +-a)
+#
+# Usage:
+#   julia --project=. paper/run_experiment.jl paper/configs/locally_id_1d.toml
+
+[experiment]
+name = "locally_id_1d"
+description = "Simple 1D locally-identifiable model — Section 5.9"
+
+[model]
+catalogue_path = "../catalogue/locally_id_catalogue.jsonl"
+entry_name = "LocalID_1D_1"
+
+[domain]
+radius = 0.05
+
+[polynomial]
+GN = 10
+degree_range = [4, 2, 12]
+basis = "chebyshev"
+
+[solver]
+method = "AutoTsit5"
+abstol = 1e-4
+reltol = 1e-4
+
+[refinement]
+enabled = true
+method = "NelderMead"
+max_time = 30.0
+gradient_method = "finitediff"
+gradient_tolerance = 1e-4
+
+[analysis]
+enabled = true
+gradient_method = "finitediff"
+newton_tol = 1e-8
+newton_max_iterations = 200
+hessian_tol = 1e-6
+dedup_fraction = 0.02
+
+[output]
+dir = "../../results/locally_id_1d"

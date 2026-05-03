@@ -1,0 +1,39 @@
+# FHN3D Screening — FitzHugh-Nagumo 3D Candidate Discovery
+#
+# Discovers viable p_true candidates for the FitzHugh-Nagumo 3D model.
+# Uses AutoTsit5 (stiff-aware solver) — plain Tsit5 fails on FHN dynamics.
+# Produces a catalogue JSONL consumed by the experiment pipeline.
+#
+# Usage:
+#   using DynamicObjectives
+#   result = run_screening_from_config("DynamicObjectives/examples/exp_candidates/fhn3d.toml")
+#
+# Then run CP recovery with the experiment config:
+#   using DynamicObjectives, Globtim, GlobtimPostProcessing
+#   result = run_experiment_from_config("DynamicObjectives/examples/configs/fhn3d_basic.toml")
+
+[screening]
+name = "fhn3d"
+description = "FitzHugh-Nagumo 3D candidate discovery (stiff-aware)"
+
+[model]
+model_fn = "define_fitzhugh_nagumo_3D_model"
+ic = [0.0, 0.0]                                            # resting state (V, R)
+bounds = [[0.1, 2.0], [0.0, 2.0], [0.0, 2.0]]             # g (>0.1, in denominator), a, b
+time_interval = [0.0, 20.0]                                # 50.0 causes stiffness failures
+
+[sweep]
+n_candidates = 200
+
+[probe]
+n_probes = 10
+
+[solver]
+method = "AutoTsit5"          # stiff-aware — required for FHN
+abstol = 1e-4
+reltol = 1e-4
+
+[output]
+catalogue_path = "globtim_results/fhn3d_catalogue.jsonl"
+name_prefix = "FHN3D"
+top_n = 5

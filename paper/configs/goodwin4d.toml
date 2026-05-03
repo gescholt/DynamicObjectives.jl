@@ -1,0 +1,47 @@
+# Goodwin Oscillator 4D — Hill function feedback loop (Paper Example 4.5)
+# 3-state, 4-param (k1,k2,k4,k5), 2 outputs (y1=x1, y2=x3)
+# Hill function: K^n / (K^n + x3^n) with K=0.9, n=10
+# Fixed constants: k3=0.3, k6=0.5
+#
+# Usage:
+#   julia --project=. paper/run_experiment.jl paper/configs/goodwin4d.toml
+
+[experiment]
+name = "goodwin4d"
+description = "Goodwin oscillator 4D — Example 4.5"
+
+[model]
+catalogue_path = "../catalogue/goodwin4d_catalogue.jsonl"
+entry_name = "Goodwin4D_1"
+
+[domain]
+radius = 0.01
+
+[polynomial]
+GN = 15
+degree_range = [4, 2, 10]
+basis = "chebyshev"
+
+[solver]
+method = "AutoTsit5"
+abstol = 1e-4
+reltol = 1e-4
+
+[refinement]
+enabled = true
+method = "NelderMead"
+max_time = 60.0
+gradient_method = "finitediff"
+gradient_tolerance = 1e-4
+
+[analysis]
+enabled = true
+gradient_method = "finitediff"
+newton_tol = 1e-8
+newton_max_iterations = 200
+hessian_tol = 1e-6
+dedup_fraction = 0.02
+f_accept_tol = 0.02
+
+[output]
+dir = "../../results/goodwin4d"

@@ -1,0 +1,51 @@
+# FHN3D Basic — FitzHugh-Nagumo 3D CP Recovery
+# Format: TOML (not YAML) — stdlib, zero deps, consistent with project conventions.
+# See PR #1 for design rationale.
+#
+# Requires catalogue from screening:
+#   julia --project=. DynamicObjectives/examples/run_fhn3d_screening.jl
+#
+# Usage:
+#   using DynamicObjectives, Globtim, GlobtimPostProcessing
+#   result = run_experiment_from_config("DynamicObjectives/examples/configs/fhn3d_basic.toml")
+
+[experiment]
+name = "fhn3d_basic"
+description = "FitzHugh-Nagumo 3D CP recovery on first screening candidate"
+
+[model]
+catalogue_path = "globtim_results/fhn3d_catalogue.jsonl"
+entry_name = "FHN3D_1"
+
+[domain]
+radius = 0.01
+
+[polynomial]
+GN = 15
+degree_range = [4, 2, 10]
+basis = "chebyshev"
+
+[solver]
+method = "AutoTsit5"
+abstol = 1e-4
+reltol = 1e-4
+
+[refinement]
+enabled = true
+method = "NelderMead"
+max_time = 60.0
+gradient_method = "finitediff"
+gradient_tolerance = 1e-4
+
+[analysis]
+enabled = true
+gradient_method = "finitediff"
+newton_tol = 1e-8
+newton_max_iterations = 200
+hessian_tol = 1e-6
+dedup_fraction = 0.02
+# accept_tol = 1e-2       # gradient norm acceptance threshold (default: 1e-2)
+f_accept_tol = 0.02       # function value acceptance — accept CPs in flat valleys
+
+[output]
+dir = "globtim_results/fhn3d_basic"
