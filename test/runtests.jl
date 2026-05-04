@@ -179,3 +179,6 @@ include("test_all_registered_models.jl")
 
 # globtim integration tests (comprehensive test suite)
 include("test_globtim_integration.jl")
+
+# Aqua.jl quality assurance (bead eti8)
+include("test_aqua.jl")
