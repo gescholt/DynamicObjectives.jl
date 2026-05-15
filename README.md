@@ -10,6 +10,13 @@ This package provides **29 ODE benchmark models** for testing parameter estimati
 
 ```julia
 using Pkg
+Pkg.add("DynamicObjectives")
+```
+
+Or, for development against a local checkout:
+
+```julia
+using Pkg
 Pkg.develop(path="/path/to/DynamicObjectives")
 ```
 

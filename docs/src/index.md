@@ -55,7 +55,12 @@ display_time_series(data)
 
 ## Installation
 
-This package is a local development package:
+```julia
+using Pkg
+Pkg.add("Dynamic_objectives")
+```
+
+Or, for development against a local checkout:
 
 ```julia
 using Pkg

@@ -2,6 +2,7 @@ name = "DynamicObjectives"
 uuid = "a7860e71-583f-4874-99b9-9df52d7a8e5c"
 version = "0.1.0"
 authors = ["Global Optimization Team <scholten@mpi-cbg.de>"]
+license = "GPL-3.0"
 repo = "https://github.com/gescholt/DynamicObjectives.jl"
 
 [deps]
@@ -53,7 +54,10 @@ julia = "1.12"
 
 [extras]
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+Globtim = "00da9514-6261-47e9-8848-33640cb1e528"
+GlobtimPostProcessing = "b470b6bb-4443-493e-998d-c7c5e1aa9116"
+Optim = "429524aa-4258-5aef-a3af-852621145aeb"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Aqua", "Test"]
+test = ["Aqua", "Test", "Globtim", "GlobtimPostProcessing", "Optim"]

@@ -3,8 +3,6 @@
 Higher-dimensional test problems with **known** critical-point sets, generated
 by Cartesian-product gluing of lower-dimensional objectives.
 
-Tracks bead `globopt_merged-zwbs.10.1` (BENCH-EPIC).
-
 ## The construction
 
 Given two objectives `f₁(x): ℝⁿ¹ → ℝ` and `f₂(y): ℝⁿ² → ℝ`:
@@ -153,8 +151,7 @@ The "right" factor pair depends on what you're trying to validate:
 
 Heavy-duty ODE pairs (e.g. wide-domain `goodwin4d × goodwin4d`) will hit
 ODE-divergence regions that cost significant wall time before pruning kicks
-in. The wide-domain rule still applies — see project memory
-`feedback_no_wide_domain_3d_4d.md`.
+in. Prefer narrow domains around the known critical points for ODE factors.
 
 ## See also
 
