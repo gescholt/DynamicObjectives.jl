@@ -142,6 +142,15 @@ function sample_data!(
         key = Num(v.lhs)
         buf = out[key]
         rhs_vals = sol[Num(v.rhs)]
+        # Resize the buffer to match the actual solution length: when the ODE
+        # terminates early (Unstable retcode), `sol[Num(v.rhs)]` returns fewer
+        # entries than `numpoints`. Matches the legacy `sample_data` semantics
+        # — the returned dict's per-key vector length equals what the solve
+        # produced. Downstream distance computation handles ref/test length
+        # mismatches via `return_inf_on_error`.
+        if length(buf) != length(rhs_vals)
+            resize!(buf, length(rhs_vals))
+        end
         copyto!(buf, rhs_vals)
     end
     return out
