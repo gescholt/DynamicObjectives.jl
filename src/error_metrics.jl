@@ -458,6 +458,8 @@ raises — callers should treat that as a real configuration error, not a
 silent fallback. Per-call AD compatibility (Dual eltype) is handled separately
 at the call site.
 """
+_solver_pool_safe(solver) = nameof(typeof(solver)) !== :CompositeAlgorithm
+
 function _build_integrator_pool(
     problem,
     model,
@@ -468,6 +470,16 @@ function _build_integrator_pool(
     outputs::Vector{ModelingToolkit.Equation},
     numpoints::Int,
 )
+    # Bail out for composite / auto-switching solvers (e.g. AutoTsit5(Rosenbrock23())).
+    # CompositeAlgorithm carries stiffness-detector state in AutoSwitch that
+    # `reinit!` does not reset, causing ~1e-5 drift across sequential solves
+    # (diagnostic: experiments/sandbox/diagnose_vemc_drift.jl). Returning
+    # (nothing, nothing, nothing) signals the caller to use the legacy
+    # remake+solve path, which is allocation-heavy but correct.
+    if !_solver_pool_safe(solver)
+        return nothing, nothing, nothing
+    end
+
     n = Threads.nthreads()
     proto = SciMLBase.init(
         problem,
