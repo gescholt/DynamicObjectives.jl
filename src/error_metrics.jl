@@ -480,7 +480,14 @@ function _build_integrator_pool(
         return nothing, nothing, nothing
     end
 
-    n = Threads.nthreads()
+    # Size the pool by Threads.maxthreadid() (default + interactive pools), not
+    # Threads.nthreads() (default pool only). On Julia 1.9+, Threads.threadid()
+    # may return values up to maxthreadid() when tasks dispatch to the
+    # interactive pool. Sizing only by nthreads() makes integrators_pool[tid]
+    # raise BoundsError on those threads — silently caught by the closure's
+    # try/catch as Inf, biasing the audit's polynomial fit and shifting leaf
+    # counts down by ~13% with non-deterministic variance across runs.
+    n = Threads.maxthreadid()
     proto = SciMLBase.init(
         problem,
         solver;
