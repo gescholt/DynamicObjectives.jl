@@ -109,6 +109,7 @@ function _init_registries!()
     # Distance functions
     register_distance!("L1_norm", L1_norm)
     register_distance!("L2_norm", L2_norm)
+    register_distance!("L2_squared", L2_squared)
     register_distance!("log_L2_norm", log_L2_norm)
 
     # Aggregation functions

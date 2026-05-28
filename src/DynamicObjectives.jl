@@ -77,6 +77,7 @@ export sample_data
 export make_error_distance,
     L1_norm,
     L2_norm,
+    L2_squared,
     log_L2_norm,
     # Aggregation strategy registry (bead 0iq)
     AGGREGATION_STRATEGIES,

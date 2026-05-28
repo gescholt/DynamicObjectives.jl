@@ -30,6 +30,30 @@ Returns:
 L2_norm(Y_true, Y_test) = norm(Y_true - Y_test, 2)
 
 """
+Squared Euclidean distance — `Σᵢ (Y_true[i] - Y_test[i])²`.
+
+Same minimizer as `L2_norm` (squaring is monotone on ℝ≥₀), but **C² at zero**
+where `L2_norm` is Lipschitz/conical. Use this for parameter-estimation error
+functions when the polynomial-approximation framework (Safey/Scholten/Trélat,
+HAL hal-05160251) is intended to apply: Thm 1's Morse-class smoothness
+assumption `c ≥ max(3, βn+1)` requires C² landscapes, which `L2_norm` violates
+at the global minimum.
+
+Empirically (radius_sweep_squared_l2_fhn3d_tight.md, 2026-05-27): switching
+fhn3d_tight from `L2_norm` to `L2_squared` reduced ‖w_d - f‖_∞ by 60×–14000×
+at the same degrees and restored `f_max ∝ r²` scaling (quadratic well)
+from the Lipschitz `f_max ∝ r` of `L2_norm`.
+
+Arguments:
+- Y_true: True values
+- Y_test: Test values
+
+Returns:
+    Σᵢ (Y_true[i] - Y_test[i])²
+"""
+L2_squared(Y_true, Y_test) = sum(abs2, Y_true .- Y_test)
+
+"""
 Log L2 norm distance function
 
 Arguments:
