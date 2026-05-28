@@ -145,6 +145,29 @@ function DynamicObjectives.run_experiment_from_config(path::String; io::IO = std
             uneven_sampling_times = Float64[]
         end
 
+        # Honour [model].distance_function_override — opt-in swap of the
+        # catalogue entry's distance_function (e.g., L2_squared in place of
+        # L2_norm) without editing the catalogue file. Resolves through
+        # DISTANCE_REGISTRY.
+        distance_fn = if config.distance_function_override !== nothing
+            resolved =
+                get(DISTANCE_REGISTRY, config.distance_function_override, nothing)
+            resolved === nothing && error(
+                "distance_function_override = \"$(config.distance_function_override)\" " *
+                "not in DISTANCE_REGISTRY (have: " *
+                join(sort(collect(keys(DISTANCE_REGISTRY))), ", ") *
+                ")",
+            )
+            println(
+                io,
+                "  distance_function_override: \"$(config.distance_function_override)\" " *
+                "(catalogue entry was using its default)",
+            )
+            resolved
+        else
+            entry.distance_function
+        end
+
         objective = TolerantObjective(
             model,
             outputs,
@@ -152,7 +175,7 @@ function DynamicObjectives.run_experiment_from_config(path::String; io::IO = std
             p_true,
             time_interval,
             numpoints,
-            entry.distance_function,
+            distance_fn,
             entry.aggregate_distances;
             solver = solver,
             abstol = abstol,
