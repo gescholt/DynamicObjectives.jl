@@ -103,6 +103,23 @@ error_func = make_error_distance(
 @assert error_func(p_true) < 1e-6  # Should be ~0
 ```
 
+## Distance Metrics: L₂ vs L₂²
+
+The choice of distance function shapes the parameter-estimation landscape near `p_true`. The default `L2_norm` is **Lipschitz at the minimum** (a cone, gradient-discontinuous); switching to `L2_squared` produces a **C² quadratic basin** at the same minimiser.
+
+![L₂ vs L₂² objective on the LV2D paper configuration](assets/l2_vs_l2squared.png)
+
+The 1-D slice (bottom) makes the distinction sharp: `L2_norm` is V-shaped at `p*`, while `L2_squared` is U-shaped. This matters for the polynomial-approximation guarantee in Globtim — Thm 1 requires `c ≥ max(3, βn+1)` continuous derivatives of the objective, which `L2_norm` violates at the minimum but `L2_squared` satisfies.
+
+Opt in per experiment via the TOML config:
+
+```toml
+[model]
+distance_function_override = "L2_squared"
+```
+
+Available metrics: `L2_norm` (default), `L2_squared`, `log_L2_norm`. The figure above was regenerated with `pkg/DynamicObjectives/examples/figures/l2_vs_l2squared.jl`.
+
 ## Contents
 
 - [Model Catalog](model_catalog.md) — All 29 models with configurations and recommended testing sequences
