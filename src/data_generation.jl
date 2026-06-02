@@ -100,3 +100,58 @@ function sample_data(
     data_sample["t"] = sampling_times
     return data_sample
 end
+
+"""
+    sample_data!(out, integrator, p_test, setp_fn, measured_data)
+
+In-place variant of `sample_data` for the audit / Tolerant-objective hot path.
+
+Reuses a pre-allocated integrator (built via `SciMLBase.init` at construction time)
+and a pre-allocated output buffer `out::OrderedDict`. The parameter cache is mutated
+via `setp_fn` (no allocation), then `reinit!` + `solve!` reuse the integrator's
+working memory.
+
+Per spike (`experiments/sandbox/spike_integrator_reuse.jl`): 210× faster, 168× less
+allocation than the `remake(problem; p=...)+solve(...)` path, at bit-identical output.
+
+Arguments:
+- `out::OrderedDict{Any,Vector{Float64}}`: pre-allocated; each `Num(v.lhs)` key
+  must already hold a `Vector{Float64}` of the right length. `out["t"]` is preserved.
+- `integrator`: built once via `SciMLBase.init(problem, solver; saveat, abstol, reltol)`.
+- `p_test::AbstractVector{Float64}`: current parameter vector.
+- `setp_fn`: closure returned by `SciMLBase.setp(problem, parameters(model))`.
+- `measured_data::Vector{ModelingToolkit.Equation}`: same as for `sample_data`.
+
+Returns `out` (mutated). The integrator's internal `sol` buffer is overwritten on the
+next call — do not retain references across calls.
+"""
+function sample_data!(
+    out::DataStructures.OrderedDict,
+    integrator,
+    p_test::AbstractVector{Float64},
+    setp_fn,
+    measured_data::Vector{ModelingToolkit.Equation},
+)
+    setp_fn(integrator, p_test)
+    Logging.with_logger(Logging.NullLogger()) do
+        SciMLBase.reinit!(integrator, integrator.sol.prob.u0; tstops = Float64[])
+        SciMLBase.solve!(integrator)
+    end
+    sol = integrator.sol
+    for v in measured_data
+        key = Num(v.lhs)
+        buf = out[key]
+        rhs_vals = sol[Num(v.rhs)]
+        # Resize the buffer to match the actual solution length: when the ODE
+        # terminates early (Unstable retcode), `sol[Num(v.rhs)]` returns fewer
+        # entries than `numpoints`. Matches the legacy `sample_data` semantics
+        # — the returned dict's per-key vector length equals what the solve
+        # produced. Downstream distance computation handles ref/test length
+        # mismatches via `return_inf_on_error`.
+        if length(buf) != length(rhs_vals)
+            resize!(buf, length(rhs_vals))
+        end
+        copyto!(buf, rhs_vals)
+    end
+    return out
+end

@@ -19,6 +19,7 @@ using TOML
 using UnicodePlots
 
 # Include submodules
+include("compat_patches.jl")
 include("systems/daisy_models.jl")
 include("systems/lotka_volterra.jl")
 include("systems/other_systems.jl")

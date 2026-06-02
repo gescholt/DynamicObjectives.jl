@@ -162,13 +162,44 @@ function make_error_distance(
         data_sample_true[key] = add_noise_in_time_series(values)
     end
 
+    # ── Build per-thread integrator pool for the fast path (vemc) ──────────
+    # Per-thread `init`'d integrators + a single `setp` closure replace the
+    # per-call `remake(problem; p=...)+solve(...)` allocation. The closure
+    # branches on T2: Float64 → pool (~15 μs/call), Dual/other → legacy path.
+    # See experiments/sandbox/spike_integrator_reuse.jl for validation.
+    sampling_times_vec = uneven_sampling ?
+        collect(uneven_sampling_times) :
+        collect(range(time_interval[1], time_interval[2], length = numpoints))
+    integrators_pool, setp_fn, out_buffers = _build_integrator_pool(
+        problem,
+        model,
+        solver,
+        abstol,
+        reltol,
+        sampling_times_vec,
+        outputs,
+        numpoints,
+    )
+
     function error_distance(p_test::Union{SVector{N,T2},Vector{T2}}) where {T2,N}
+
+        use_pool = (integrators_pool !== nothing) && (T2 === Float64)
 
         # Timeout wrapper: use @async + timedwait if eval_timeout is set
         if eval_timeout !== nothing
             # Run computation in async task
             task = @async begin
-                _compute_error_distance(
+                use_pool ? _compute_error_distance_pool(
+                    p_test,
+                    outputs,
+                    data_sample_true,
+                    distance_function,
+                    aggregate_distances,
+                    integrators_pool,
+                    setp_fn,
+                    out_buffers,
+                    numpoints,
+                ) : _compute_error_distance(
                     p_test,
                     outputs,
                     time_interval,
@@ -221,7 +252,17 @@ function make_error_distance(
         # Wrap in try-catch when return_inf_on_error is true (for optimization)
         if return_inf_on_error
             try
-                return _compute_error_distance(
+                return use_pool ? _compute_error_distance_pool(
+                    p_test,
+                    outputs,
+                    data_sample_true,
+                    distance_function,
+                    aggregate_distances,
+                    integrators_pool,
+                    setp_fn,
+                    out_buffers,
+                    numpoints,
+                ) : _compute_error_distance(
                     p_test,
                     outputs,
                     time_interval,
@@ -245,7 +286,17 @@ function make_error_distance(
             end
         else
             # Let errors propagate for debugging
-            return _compute_error_distance(
+            return use_pool ? _compute_error_distance_pool(
+                p_test,
+                outputs,
+                data_sample_true,
+                distance_function,
+                aggregate_distances,
+                integrators_pool,
+                setp_fn,
+                out_buffers,
+                numpoints,
+            ) : _compute_error_distance(
                 p_test,
                 outputs,
                 time_interval,
@@ -346,7 +397,158 @@ function make_error_distance(
         ])
     end
 
+    # Fast path: reuse the per-thread integrator and pre-allocated output buffer.
+    # Mirrors _compute_error_distance's validation + aggregation, but the inner
+    # `sample_data!` does setp/reinit!/solve! against a pre-built integrator
+    # instead of remake+solve. Float64-only — gated by the outer closure.
+    function _compute_error_distance_pool(
+        p_test::AbstractVector{Float64},
+        measured_data,
+        data_sample_true,
+        distance_function,
+        aggregate_distances,
+        integrators_pool,
+        setp_fn,
+        out_buffers,
+        datasize,
+    )
+        if datasize != length(data_sample_true["t"])
+            error(
+                "Datasize mismatch: requested $datasize but reference data has $(length(data_sample_true["t"])) points",
+            )
+        end
+
+        tid = Threads.threadid()
+        integrator = integrators_pool[tid]
+        out = out_buffers[tid]
+
+        try
+            sample_data!(out, integrator, p_test, setp_fn, measured_data)
+        catch e
+            if isa(e, InterruptException)
+                rethrow(e)
+            end
+            error(
+                "ODE sampling (integrator-pool path) failed for parameters p_test=$p_test: $(sprint(showerror, e))",
+            )
+        end
+
+        for (key, values) in out
+            if key == "t"
+                continue
+            end
+            if any(isnan, values)
+                error(
+                    "NaN detected in sampled data for variable '$key' with parameters p_test=$p_test",
+                )
+            end
+            if any(isinf, values)
+                error(
+                    "Inf detected in sampled data for variable '$key' with parameters p_test=$p_test",
+                )
+            end
+            if any(isnan, data_sample_true[key])
+                error("NaN detected in reference data for variable '$key'")
+            end
+            if any(isinf, data_sample_true[key])
+                error("Inf detected in reference data for variable '$key'")
+            end
+        end
+
+        return aggregate_distances([
+            distance_function(data_sample_true[key], out[key]) for
+            key in keys(data_sample_true) if key != "t"
+        ])
+    end
+
     return error_distance
+end
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Integrator-pool builder (vemc — per-thread reuse of init/reinit!/solve!)
+# ─────────────────────────────────────────────────────────────────────────────
+
+"""
+    _build_integrator_pool(problem, model, solver, abstol, reltol, saveat, outputs, numpoints)
+        -> (integrators::Vector, setp_fn, out_buffers::Vector{OrderedDict})
+
+Build the per-thread scaffolding used by the `make_error_distance` Float64 fast
+path: one `init`'d integrator per thread (sharing the same `problem` template),
+a single `setp` closure for in-place parameter mutation, and one pre-allocated
+output buffer (`OrderedDict{Any,Vector{Float64}}`) per thread.
+
+If construction fails (e.g., the model is incompatible with `setp` or `init`),
+raises — callers should treat that as a real configuration error, not a
+silent fallback. Per-call AD compatibility (Dual eltype) is handled separately
+at the call site.
+"""
+_solver_pool_safe(solver) = nameof(typeof(solver)) !== :CompositeAlgorithm
+
+function _build_integrator_pool(
+    problem,
+    model,
+    solver,
+    abstol,
+    reltol,
+    saveat::AbstractVector{<:Real},
+    outputs::Vector{ModelingToolkit.Equation},
+    numpoints::Int,
+)
+    # Bail out for composite / auto-switching solvers (e.g. AutoTsit5(Rosenbrock23())).
+    # CompositeAlgorithm carries stiffness-detector state in AutoSwitch that
+    # `reinit!` does not reset, causing ~1e-5 drift across sequential solves
+    # (diagnostic: experiments/sandbox/diagnose_vemc_drift.jl). Returning
+    # (nothing, nothing, nothing) signals the caller to use the legacy
+    # remake+solve path, which is allocation-heavy but correct.
+    if !_solver_pool_safe(solver)
+        return nothing, nothing, nothing
+    end
+
+    # Size the pool by Threads.maxthreadid() (default + interactive pools), not
+    # Threads.nthreads() (default pool only). On Julia 1.9+, Threads.threadid()
+    # may return values up to maxthreadid() when tasks dispatch to the
+    # interactive pool. Sizing only by nthreads() makes integrators_pool[tid]
+    # raise BoundsError on those threads — silently caught by the closure's
+    # try/catch as Inf, biasing the audit's polynomial fit and shifting leaf
+    # counts down by ~13% with non-deterministic variance across runs.
+    n = Threads.maxthreadid()
+    proto = SciMLBase.init(
+        problem,
+        solver;
+        saveat = saveat,
+        abstol = abstol,
+        reltol = reltol,
+        verbose = false,
+        maxiters = 1000000,
+    )
+    pool = Vector{typeof(proto)}(undef, n)
+    pool[1] = proto
+    for i in 2:n
+        pool[i] = SciMLBase.init(
+            problem,
+            solver;
+            saveat = saveat,
+            abstol = abstol,
+            reltol = reltol,
+            verbose = false,
+            maxiters = 1000000,
+        )
+    end
+
+    setp_fn = SciMLBase.setp(problem, ModelingToolkit.parameters(model))
+
+    saveat_vec = collect(Float64, saveat)
+    out_buffers = [
+        let buf = DataStructures.OrderedDict{Any,Vector{Float64}}()
+            for v in outputs
+                buf[Num(v.lhs)] = Vector{Float64}(undef, numpoints)
+            end
+            buf["t"] = copy(saveat_vec)
+            buf
+        end for _ in 1:n
+    ]
+
+    return pool, setp_fn, out_buffers
 end
 
 #==============================================================================#
