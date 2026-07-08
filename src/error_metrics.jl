@@ -181,7 +181,7 @@ function make_error_distance(
         numpoints,
     )
 
-    function error_distance(p_test::Union{SVector{N,T2},Vector{T2}}) where {T2,N}
+    function error_distance(p_test::AbstractVector{T2}) where {T2}
 
         use_pool = (integrators_pool !== nothing) && (T2 === Float64)
 
