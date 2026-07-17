@@ -66,5 +66,7 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 [targets]
 # GlobtimPostProcessing (weakdep) is deliberately NOT in the test target: it is
 # unregistered, so Pkg.test on the standalone mirror cannot resolve it. The
-# DynamicObjectivesGlobtimExt entry point is not covered by the test suite.
+# DynamicObjectivesGlobtimExt entry point is covered by
+# test/test_ext_toml_pipeline.jl, which runtests.jl includes only when
+# GlobtimPostProcessing is resolvable (workspace profiles; skipped on the mirror).
 test = ["Aqua", "Test", "Globtim", "Optim"]

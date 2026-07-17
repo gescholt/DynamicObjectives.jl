@@ -180,5 +180,13 @@ include("test_all_registered_models.jl")
 # globtim integration tests (comprehensive test suite)
 include("test_globtim_integration.jl")
 
+# DynamicObjectivesGlobtimExt smoke (needs GlobtimPostProcessing, which the
+# public standalone mirror cannot resolve — unregistered; workspace runs cover it)
+if Base.identify_package("GlobtimPostProcessing") !== nothing
+    include("test_ext_toml_pipeline.jl")
+else
+    @info "Skipping test_ext_toml_pipeline.jl — GlobtimPostProcessing not resolvable in this environment (public mirror)"
+end
+
 # Aqua.jl quality assurance (bead eti8)
 include("test_aqua.jl")
