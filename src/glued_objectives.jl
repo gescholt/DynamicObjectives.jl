@@ -14,7 +14,7 @@
 # - Each minimum corresponds to a (min, min) factor pair
 # - Saddle topology is decomposable
 #
-# Tracks bead globopt_merged-zwbs.10.1 (BENCH-EPIC).
+# Tracks bead zwbs.10.1 (BENCH-EPIC).
 
 # ── Construction ─────────────────────────────────────────────────────────────
 

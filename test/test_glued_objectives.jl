@@ -1,4 +1,4 @@
-# Tests for Cartesian-product gluing (bead globopt_merged-zwbs.10.1).
+# Tests for Cartesian-product gluing (bead zwbs.10.1).
 #
 # Construction:  F([x; y]) := f1(x) + f2(y)
 # Property:      CP(F) = CP(f1) × CP(f2)  (exact)
