@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [0.1.1] - 2026-08-05
 
+### Fixed
+
+- Pin the SciML stack to the tested majors — `SciMLBase = "2"`, `ModelingToolkit = "10"`, `OrdinaryDiffEq{Tsit5,Verner,Rosenbrock,SDIRK} = "1"`. The looser bounds let a fresh resolve pull the OrdinaryDiffEq-7-era stack (DiffEqBase 7), which **removed `verbose::Bool`** — the ODE-solving code passes `verbose = false`, so CI errored (`ArgumentError: Passing a Bool for verbose is no longer supported`) while local tests passed on the cached Manifest. Verified via fresh-resolve (DiffEqBase 6.214.1, tests pass).
+
 ### Changed
 
 - Source-comment cleanup ahead of public registration (removed internal issue-tracker prefixes from a couple of code comments).
