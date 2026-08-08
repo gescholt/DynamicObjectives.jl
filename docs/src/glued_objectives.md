@@ -138,6 +138,32 @@ sol = solve_tree_leaves(tree)
 # sol.critical_points should contain a CP near g.oracle_cps[1]
 ```
 
+## Verified recall: globtim recovers the *full* oracle
+
+The payoff of a known CP set is a **decidable** recall test: not "did we find the
+global min?" but "did we find *every* critical point?". Using closed-form
+polynomial factors, `experiments/sandbox/glue4d_recall_demo.jl` builds the analytic
+oracle **independently** (multi-start Newton on the analytic gradient, classified by
+the analytic Hessian — never by globtim), fits the glued objective at its exact
+polynomial degree (`p.nrm ≈ 1e-12`, so the fit is exact and we test the *solver*,
+not the approximation), enumerates critical points with the HC pipeline, and matches
+per Morse index.
+
+Both cases recover **every** critical point — recall = precision = 1.0 at every index:
+
+| Glue (deg) | oracle CPs | minima | recovered | recall | max match dist |
+|---|---|---|---|---|---|
+| himmelblau × himmelblau (4) | 81 = 9² | 16 | 81 | **1.00** | 2.0e-14 |
+| camel × camel (6) | 225 = 15² | 36 | 225 | **1.00** | 4.8e-13 |
+
+himmelblau's gradient is Bezout-tight (`3⁴ = 81` complex roots, all real), so 81/81 is
+a *complete* certificate that no HC paths were lost. The camel case is stronger
+evidence still: its mixed volume is **625** while only **225** roots are real, yet
+globtim recovers all 225 (36 minima) — path loss would have shown up as a recall gap
+and did not. Index breakdown (0=min … 4=max): himmelblau² `16/32/24/8/1`,
+camel² `36/84/73/28/4`. Artifacts land in
+`globtim_results/subdivision/recovery/glue4d_<factor>_deg<d>.json`.
+
 ## Choosing factor pairs
 
 The "right" factor pair depends on what you're trying to validate:
@@ -155,7 +181,9 @@ in. Prefer narrow domains around the known critical points for ODE factors.
 
 ## See also
 
+- `experiments/sandbox/glue4d_recall_demo.jl` — the closed-form decidable-recall
+  demonstration (himmelblau² / camel²) behind the results table above
+- `pkg/DynamicObjectives/test/test_glued_recovery.jl` — cheap CI regression: a 2D
+  double-well² glue where globtim recovers all 9 oracle CPs (recall = precision = 1.0)
 - `pkg/DynamicObjectives/test/test_glued_objectives.jl` — construction,
   oracle CP gradient-zero check, sub-box counting
-- `experiments/sandbox/run_glue_lv2d_demo.jl` — lv2d × lv2d end-to-end demo
-  with adaptive_refine + brute-force CP scan (sandbox / evidence quality)

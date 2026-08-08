@@ -158,6 +158,15 @@ include("test_catalogue_parallel.jl")
 # Cartesian-product gluing for higher-dim test problems (bead zwbs.10.1)
 include("test_glued_objectives.jl")
 
+# Recovery regression: globtim enumerates the FULL glued oracle CP set (bead
+# zwbs.10.1). Needs the HomotopyContinuation solver extension — present in the
+# workspace, absent on the standalone mirror — so guard like test_ext_toml_pipeline.jl.
+if Base.identify_package("HomotopyContinuation") !== nothing
+    include("test_glued_recovery.jl")
+else
+    @info "Skipping test_glued_recovery.jl — HomotopyContinuation not resolvable in this environment (public mirror)"
+end
+
 # Gradient compatibility tests need ForwardDiff + FiniteDiff, which are NOT
 # in DynamicObjectives' [deps] (ForwardDiff support is duck-typed — callers
 # bring their own AD backend). The test file exists for manual runs:
