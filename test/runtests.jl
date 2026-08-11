@@ -145,6 +145,10 @@ include("test_screening.jl")
 # Catalogue persistence tests
 include("test_catalogue.jl")
 
+# TOML screening config: parse/validate/path-resolution plus one end-to-end
+# run_screening_from_config (bead 89rn)
+include("test_screening_config.jl")
+
 # Grid-based interestingness scoring tests
 include("test_grid_scoring.jl")
 
