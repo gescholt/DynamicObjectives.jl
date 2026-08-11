@@ -41,13 +41,13 @@ The setup script will error if the sibling directories are not found.
 
 ```bash
 # Run a single experiment
-julia --project=. globtim/scripts/run_experiment.jl DynamicObjectives/paper/configs/lv2d.toml
+julia --project=. experiments/drivers/run_experiment.jl DynamicObjectives/paper/configs/lv2d.toml
 
 # Run all 16 paper experiments
-julia --project=. globtim/scripts/run_experiment.jl DynamicObjectives/paper/configs/*.toml
+julia --project=. experiments/drivers/run_experiment.jl DynamicObjectives/paper/configs/*.toml
 
 # Validate configs without executing (dry run)
-julia --project=. globtim/scripts/run_experiment.jl --dry-run DynamicObjectives/paper/configs/*.toml
+julia --project=. experiments/drivers/run_experiment.jl --dry-run DynamicObjectives/paper/configs/*.toml
 ```
 
 ### From the DynamicObjectives directory
@@ -66,7 +66,7 @@ After running an experiment, re-run the analysis without re-computing:
 
 ```bash
 # From monorepo root
-julia --project=. globtim/scripts/postprocess_experiment.jl results/lv2d/ --all
+julia --project=. experiments/drivers/postprocess_experiment.jl results/lv2d/ --all
 
 # From DynamicObjectives/
 julia --project=. paper/postprocess_experiment.jl results/lv2d/ --all
