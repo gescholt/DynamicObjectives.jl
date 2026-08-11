@@ -159,6 +159,9 @@ include("test_interestingness_end_to_end.jl")
 # Candidate-level parallelism for catalogue experiments (bead 1yt)
 include("test_catalogue_parallel.jl")
 
+# Threaded Cartesian grid evaluator (bead ychu)
+include("test_parallel_eval.jl")
+
 # Cartesian-product gluing for higher-dim test problems (bead zwbs.10.1)
 include("test_glued_objectives.jl")
 
