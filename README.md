@@ -8,16 +8,27 @@ This package provides **29 ODE benchmark models** for testing parameter estimati
 
 ## Installation
 
-```julia
-using Pkg
-Pkg.add("DynamicObjectives")
+Requires **Julia 1.12** or newer.
+
+DynamicObjectives is **not yet registered in Julia General**, so it installs by URL.
+Press `]` at the Julia prompt to enter Pkg mode (backspace exits):
+
+```julia-repl
+pkg> add https://github.com/gescholt/DynamicObjectives.jl
+```
+
+That is enough for **Pipeline 1** (screening / candidate discovery). **Pipeline 2** (CP
+recovery) lives in a package extension and additionally needs Globtim, which is
+registered:
+
+```julia-repl
+pkg> add Globtim GlobtimPostProcessing
 ```
 
 Or, for development against a local checkout:
 
-```julia
-using Pkg
-Pkg.develop(path="/path/to/DynamicObjectives")
+```julia-repl
+pkg> develop /path/to/DynamicObjectives
 ```
 
 ## Quick Start
