@@ -1,3 +1,6 @@
+# check_test_deps: skip — runtests.jl includes this file only when
+# HomotopyContinuation is resolvable (`Base.identify_package(...) !== nothing`),
+# so its deps are intentionally absent from the standalone mirror's test env.
 # Recovery regression for Cartesian-product gluing (bead zwbs.10.1).
 #
 # The other glue tests check that the analytic oracle is stationary and that
