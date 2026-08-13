@@ -25,5 +25,10 @@ const BinaryHeap = DynamicObjectives.DataStructures.BinaryHeap
     Aqua.test_all(
         DynamicObjectives;
         piracies = (; treat_as_own = [BinaryHeap]),
+        # tmax raised from Aqua's 10s default: this package's subprocess loads the
+        # whole SciML stack (~2 min), so the default is nowhere near enough and a
+        # slow load would be misread as a lingering task. See the 2026-08-13 flake
+        # note in the sibling packages' test_aqua.jl.
+        persistent_tasks = (; tmax = 300),
     )
 end
