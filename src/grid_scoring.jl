@@ -788,6 +788,37 @@ Compute a composite interestingness score from grid-based metrics.
 Higher values indicate more interesting/challenging landscapes for
 optimization benchmarking.
 
+!!! warning "What this score actually ranks (bead cbyn.1)"
+    It ranks ONE of the two difficulty modes in the corpus — *deep wells in a
+    flat sea* — and is close to blind to the other, *curved multimodal*. Do not
+    read it as a general "hard vs boring" axis, and do not select a benchmark
+    set by top-N of it. Use [`difficulty_profile`](@ref) to stratify.
+
+    Measured over the 73-entry corpus (`experiments/sandbox/results/grid_scores.json`):
+
+    - `curvature_score` carries the LARGEST weight (0.13) but supplies the
+      second-SMALLEST share of the score's spread (6.3%), because its realized
+      distribution is crushed: `clamp(min_variation / 0.1, 0, 1)` divides by 0.1
+      when the corpus median `min_variation` is 0.0089, so **72 of 73 entries
+      can never saturate it** and the median contribution is 0.012 of a 0.13
+      budget.
+    - The `Curvature ... penalizes flat/degenerate landscapes` line below is
+      wrong as stated: a term with a POSITIVE weight can only fail to reward,
+      never penalize. Flatness is in fact rewarded outright by
+      `plateau_fraction` (+0.08).
+    - Empirically `corr(curvature_score, interestingness) = -0.534`. This is NOT
+      a weighting bug and cannot be reweighted away — curvature is negatively
+      correlated with *every* other term (−0.15 to −0.66) and with their
+      aggregate at −0.605. Dropping `plateau_norm` and recalibrating curvature
+      together still leave it at −0.364. The nine terms span two opposed
+      factors, so no all-positive linear scalar can rank both.
+    - `dynamic_range` and `plateau_fraction` correlate at +0.91 with each other,
+      i.e. 0.18 of the weight budget is spent twice on one property.
+
+    Left numerically unchanged on purpose: 73 scores are persisted and callers
+    compare against them. The defect is in what it CLAIMS to measure, not in its
+    arithmetic.
+
 # Scoring components (all normalized to [0, 1] range):
 - **Multimodality** (weight 0.20): more local minima = more interesting
 - **Dynamic range** (weight 0.10): wider value spread = more structure
@@ -851,6 +882,77 @@ function interestingness_score(gs::GridScoreResult)::Float64
            0.10 * cond_norm +
            0.05 * rugged_norm +
            0.08 * plateau_norm
+end
+
+"Corpus 75th percentile of min(directional_variation); see [`structure_score`](@ref)."
+const CURVATURE_SCALE = 0.02
+
+"""
+    structure_score(gs::GridScoreResult) -> Float64
+
+Score the difficulty axis that [`interestingness_score`](@ref) is blind to:
+**curved multimodality** — many local minima on a genuinely curved surface,
+rather than narrow wells punched through a flat plateau.
+
+Deliberately built from the terms that oppose the interestingness composite
+(`corr(curvature_score, interestingness) = -0.534`), so the two scores are
+near-independent by construction and a benchmark set can be stratified on both.
+
+Curvature is recalibrated against the corpus rather than the arbitrary 0.1 of
+`curvature_score`: dividing by 0.1 leaves 72 of 73 entries unable to saturate.
+`CURVATURE_SCALE = 0.02` sits near the corpus 75th percentile of
+`min(directional_variation)`, so the term spans its range instead of hugging 0.
+
+Returns a value in `[0, 1]`. Higher means more curved-multimodal.
+"""
+function structure_score(gs::GridScoreResult)::Float64
+    # Curvature on a corpus-realistic scale (see CURVATURE_SCALE).
+    curv = clamp(gs.curvature_score * 0.1 / CURVATURE_SCALE, 0.0, 1.0)
+
+    # Multimodality, same saturation as the interestingness composite.
+    multi = clamp((gs.n_local_minima - 1) / 14.0, 0.0, 1.0)
+
+    # Flatness counts AGAINST this axis — the term interestingness_score cannot
+    # express, because there every weight is positive.
+    not_flat = 1.0 - clamp(gs.plateau_fraction / 0.7, 0.0, 1.0)
+
+    # Deceptive minima on a curved surface are what makes this mode hard.
+    decept = clamp(gs.n_deceptive / 5.0, 0.0, 1.0)
+
+    return 0.40 * curv + 0.30 * multi + 0.20 * not_flat + 0.10 * decept
+end
+
+"""
+    difficulty_profile(gs::GridScoreResult) -> NamedTuple
+
+Both difficulty axes plus a coarse mode label, for stratifying a benchmark set
+instead of cutting top-N from a single scalar (bead cbyn.1, BENCH-4/t25x).
+
+Returns `(; resolution, structure, mode)`:
+
+- `resolution` — [`interestingness_score`](@ref). Deep narrow wells in a flat
+  sea. Stresses polynomial RESOLUTION.
+- `structure` — [`structure_score`](@ref). Dense multimodality on a curved
+  surface. Stresses ROOT COUNT and separation.
+- `mode` — `:deep_well`, `:curved`, `:both` or `:easy`, by comparing each axis
+  against 0.5.
+
+Both modes are genuinely hard; they are hard in different ways, and a set drawn
+from one axis alone will systematically miss the other.
+"""
+function difficulty_profile(gs::GridScoreResult)
+    r = interestingness_score(gs)
+    s = structure_score(gs)
+    mode = if r >= 0.5 && s >= 0.5
+        :both
+    elseif r >= 0.5
+        :deep_well
+    elseif s >= 0.5
+        :curved
+    else
+        :easy
+    end
+    return (; resolution = r, structure = s, mode = mode)
 end
 
 # ============================================================================

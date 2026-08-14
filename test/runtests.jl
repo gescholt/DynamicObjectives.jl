@@ -152,6 +152,10 @@ include("test_screening_config.jl")
 # Grid-based interestingness scoring tests
 include("test_grid_scoring.jl")
 
+# Second difficulty axis — curved multimodality, which interestingness_score
+# cannot express because all its weights are positive (bead cbyn.1)
+include("test_structure_score.jl")
+
 # End-to-end interestingness pipeline (bead bzf): screen_and_probe →
 # score_top_candidates → interestingness_score
 include("test_interestingness_end_to_end.jl")

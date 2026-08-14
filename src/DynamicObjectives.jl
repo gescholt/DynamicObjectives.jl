@@ -178,7 +178,8 @@ export ScreeningConfig, load_screening_config, run_screening_from_config
 
 # Grid-based interestingness scoring
 export GridScoreResult,
-    score_landscape_grid, interestingness_score, score_top_candidates, print_grid_score
+    score_landscape_grid, interestingness_score, score_top_candidates, print_grid_score,
+    structure_score, difficulty_profile
 
 # Parallel grid evaluation (thread-safe factory pattern)
 export evaluate_grid_threaded
