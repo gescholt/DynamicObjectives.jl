@@ -25,8 +25,14 @@
 
 using Printf
 using DynamicObjectives
-using OrdinaryDiffEq
 using Globtim: load_experiment_config
+
+# The solvers used by _resolve_solver below (Tsit5, AutoTsit5, Vern7, Vern9,
+# Rosenbrock23, Rodas5, TRBDF2) all come from `using DynamicObjectives`, which
+# imports them from the granular OrdinaryDiffEq* sub-packages and re-exports
+# them. This file used to `using OrdinaryDiffEq` — the umbrella package, which
+# is NOT in profiles/cluster, so the script could not run on the cluster at all.
+# Do not reinstate that import; add any new solver to DynamicObjectives instead.
 
 # Pull the screening_options helper + SCREENING_*_DEFAULT constants.
 include(joinpath(@__DIR__, "..", "..", "..", "experiments", "sandbox", "sandbox_shared.jl"))
