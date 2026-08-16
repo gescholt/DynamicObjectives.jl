@@ -1,8 +1,8 @@
 name = "DynamicObjectives"
 uuid = "a7860e71-583f-4874-99b9-9df52d7a8e5c"
 version = "0.1.1"
-authors = ["Global Optimization Team <scholten@mpi-cbg.de>"]
-license = "GPL-3.0"
+authors = ["Global Optimization Team <scholtengeorgy@gmail.com>"]
+license = "MIT"
 repo = "https://github.com/gescholt/DynamicObjectives.jl"
 
 [deps]
