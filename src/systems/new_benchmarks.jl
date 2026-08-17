@@ -45,12 +45,13 @@ function define_sir_2d_model()
 
     N = 1000.0  # total population (known constant)
 
-    @mtkcompile model = System(
+    @named sir = System(
         [D(S) ~ -beta * S * I / N, D(I) ~ beta * S * I / N - gamma * I, D(R) ~ gamma * I],
         t,
         states,
         params,
     )
+    model = complete(sir)
     outputs = [y1 ~ I]
     return model, params, states, outputs
 end
@@ -98,7 +99,7 @@ function define_seir_3d_model()
 
     N = 1000.0
 
-    @mtkcompile model = System(
+    @named seir = System(
         [
             D(S) ~ -beta * S * I / N,
             D(E) ~ beta * S * I / N - sigma * E,
@@ -109,6 +110,7 @@ function define_seir_3d_model()
         states,
         params,
     )
+    model = complete(seir)
     outputs = [y1 ~ I]
     return model, params, states, outputs
 end
@@ -161,7 +163,7 @@ function define_hindmarsh_rose_3d_model()
 
     x_rest = 1.6  # resting offset
 
-    @mtkcompile model = System(
+    @named hr = System(
         [
             D(x) ~ y + a * x^2 - x^3 - z,
             D(y) ~ 1.0 - b * x^2 - y,
@@ -171,6 +173,7 @@ function define_hindmarsh_rose_3d_model()
         states,
         params,
     )
+    model = complete(hr)
     outputs = [y1 ~ x]
     return model, params, states, outputs
 end
@@ -218,12 +221,13 @@ function define_pk_2comp_3d_model()
     params = [k10, k12, k21]
     states = [x1, x2]
 
-    @mtkcompile model = System(
+    @named pk = System(
         [D(x1) ~ -(k10 + k12) * x1 + k21 * x2, D(x2) ~ k12 * x1 - k21 * x2],
         t,
         states,
         params,
     )
+    model = complete(pk)
     outputs = [y1 ~ x1]
     return model, params, states, outputs
 end
@@ -270,12 +274,13 @@ function define_brusselator_2d_model()
     params = [A, B]
     states = [x, y]
 
-    @mtkcompile model = System(
+    @named bruss = System(
         [D(x) ~ A + x^2 * y - (B + 1.0) * x, D(y) ~ B * x - x^2 * y],
         t,
         states,
         params,
     )
+    model = complete(bruss)
     outputs = [y1 ~ x]
     return model, params, states, outputs
 end
@@ -333,15 +338,18 @@ function define_michaelis_menten_2d_model()
 
     E_total = 1.0
 
-    # Reconstruct individual rate constants from Vmax and Km
-    # Vmax = kcat * E_total  → kcat = Vmax / E_total
-    # Km   = (k2 + kcat) / k1
-    # We fix k1 = 1.0, then k2 = Km - kcat
-    k1 = 1.0
+    # Reconstruct individual rate constants from Vmax and Km.
+    # Standard definitions:
+    #   Vmax = kcat * E_total  → kcat = Vmax / E_total
+    #   Km   = (k2 + kcat) / k1
+    # To make both Vmax and Km independently affect the dynamics, we fix
+    # k2 = 1.0 (known dissociation rate) and solve for k1:
+    #   k1 = (k2 + kcat) / Km = (1.0 + Vmax) / Km
+    k2 = 1.0
     kcat = Vmax / E_total
-    k2 = Km * k1 - kcat
+    k1 = (k2 + kcat) / Km
 
-    @mtkcompile model = System(
+    @named mm = System(
         [
             D(S) ~ -k1 * E_total * S + k2 * ES + kcat * ES,
             D(ES) ~ k1 * E_total * S - k2 * ES - kcat * ES,
@@ -350,6 +358,7 @@ function define_michaelis_menten_2d_model()
         states,
         params,
     )
+    model = complete(mm)
     outputs = [y1 ~ S]
     return model, params, states, outputs
 end
