@@ -23,6 +23,7 @@ include("compat_patches.jl")
 include("systems/daisy_models.jl")
 include("systems/lotka_volterra.jl")
 include("systems/other_systems.jl")
+include("systems/new_benchmarks.jl")
 include("data_generation.jl")
 include("error_metrics.jl")
 include("screening.jl")
@@ -69,7 +70,14 @@ export define_fitzhugh_nagumo_3D_model,
     define_fhn_3d_locally_id_model,
     define_simple_2D_model_locally_identifiable,
     define_simple_2D_model_locally_identifiable_square,
-    define_simple_1D_model_locally_identifiable
+    define_simple_1D_model_locally_identifiable,
+    # New benchmark models (epidemiology, neuroscience, PK, chemistry, biochemistry)
+    define_sir_2d_model,
+    define_seir_3d_model,
+    define_hindmarsh_rose_3d_model,
+    define_pk_2comp_3d_model,
+    define_brusselator_2d_model,
+    define_michaelis_menten_2d_model
 
 # Data generation
 export sample_data
@@ -178,8 +186,12 @@ export ScreeningConfig, load_screening_config, run_screening_from_config
 
 # Grid-based interestingness scoring
 export GridScoreResult,
-    score_landscape_grid, interestingness_score, score_top_candidates, print_grid_score,
-    structure_score, difficulty_profile
+    score_landscape_grid,
+    interestingness_score,
+    score_top_candidates,
+    print_grid_score,
+    structure_score,
+    difficulty_profile
 
 # Parallel grid evaluation (thread-safe factory pattern)
 export evaluate_grid_threaded

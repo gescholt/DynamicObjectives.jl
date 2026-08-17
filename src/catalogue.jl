@@ -188,6 +188,14 @@ function _init_registries!()
     register_model!("define_fhn_3d_locally_id_model", define_fhn_3d_locally_id_model)
     register_model!("define_lv_3d_symmetric_model", define_lv_3d_symmetric_model)
 
+    # New benchmark models (epidemiology, neuroscience, PK, chemistry, biochemistry)
+    register_model!("define_sir_2d_model", define_sir_2d_model)
+    register_model!("define_seir_3d_model", define_seir_3d_model)
+    register_model!("define_hindmarsh_rose_3d_model", define_hindmarsh_rose_3d_model)
+    register_model!("define_pk_2comp_3d_model", define_pk_2comp_3d_model)
+    register_model!("define_brusselator_2d_model", define_brusselator_2d_model)
+    register_model!("define_michaelis_menten_2d_model", define_michaelis_menten_2d_model)
+
     return nothing
 end
 
@@ -678,7 +686,7 @@ function screening_to_catalogue(
     entries = CatalogueEntry[]
     sizehint!(entries, n)
 
-    for i in 1:n
+    for i = 1:n
         idx = ranked[i]
         p_true = result.sweep.valid[idx]
 
