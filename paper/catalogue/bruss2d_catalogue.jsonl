@@ -1,0 +1,1 @@
+{"aggregate_distances":"sum","numpoints":30,"name":"bruss2d","p_true":[1.0,3.0],"description":"Brusselator oscillator: A=1.0, B=3.0, x(0)=1.0, y(0)=1.0","distance_function":"L2_norm","dimension":2,"time_interval":[0.0,20.0],"ic":[1.0,1.0],"eval_timeout":null,"model_fn":"define_brusselator_2d_model","bounds":[[0.5,1.5],[2.0,4.0]]}

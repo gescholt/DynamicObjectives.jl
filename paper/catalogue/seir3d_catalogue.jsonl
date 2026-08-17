@@ -1,0 +1,1 @@
+{"aggregate_distances":"sum","numpoints":30,"name":"seir3d","p_true":[0.6,0.2,0.1],"description":"SEIR epidemic model: beta=0.6, sigma=0.2, gamma=0.1, N=1000","distance_function":"L2_norm","dimension":3,"time_interval":[0.0,40.0],"ic":[990.0,0.0,10.0,0.0],"eval_timeout":null,"model_fn":"define_seir_3d_model","bounds":[[0.3,0.9],[0.1,0.3],[0.05,0.15]]}

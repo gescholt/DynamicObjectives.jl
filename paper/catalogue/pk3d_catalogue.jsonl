@@ -1,0 +1,1 @@
+{"aggregate_distances":"sum","numpoints":30,"name":"pk3d","p_true":[0.1,0.5,0.3],"description":"PK 2-compartment: k10=0.1, k12=0.5, k21=0.3","distance_function":"L2_norm","dimension":3,"time_interval":[0.0,20.0],"ic":[10.0,0.0],"eval_timeout":null,"model_fn":"define_pk_2comp_3d_model","bounds":[[0.05,0.15],[0.3,0.7],[0.15,0.45]]}
