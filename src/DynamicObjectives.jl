@@ -181,6 +181,7 @@ export CandidateResult, build_bounds, print_candidate_summary_table
 
 # TOML-driven experiment pipeline
 export run_experiment_from_config
+export build_experiment_objective
 
 # TOML-driven screening pipeline
 export ScreeningConfig, load_screening_config, run_screening_from_config

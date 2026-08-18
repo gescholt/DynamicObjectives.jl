@@ -30,6 +30,7 @@ GlobtimPostProcessing = "b470b6bb-4443-493e-998d-c7c5e1aa9116"
 Optim = "429524aa-4258-5aef-a3af-852621145aeb"
 
 [extensions]
+DynamicObjectivesGlobtimCoreExt = "Globtim"
 DynamicObjectivesGlobtimExt = ["Globtim", "GlobtimPostProcessing", "Optim"]
 
 [compat]
@@ -46,7 +47,10 @@ OrdinaryDiffEqRosenbrock = "1"
 OrdinaryDiffEqSDIRK = "1"
 OrdinaryDiffEqTsit5 = "1"
 OrdinaryDiffEqVerner = "1"
-PrettyTables = "2, 3"
+# PrettyTables 3.x renamed the backend kwarg values (Symbol, not Val) — display.jl
+# uses the 2.x Val API, so the CompatHelper "2, 3" widening was a compat lie
+# (Pkg.test resolves 3.x fresh and errors while the workspace stays on 2.4).
+PrettyTables = "2"
 Printf = "1"
 SciMLBase = "2"
 StaticArrays = "1"
