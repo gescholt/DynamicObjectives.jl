@@ -196,6 +196,12 @@ function _init_registries!()
     register_model!("define_brusselator_2d_model", define_brusselator_2d_model)
     register_model!("define_michaelis_menten_2d_model", define_michaelis_menten_2d_model)
 
+    # 4-D trophic model (cbyn.4 — 3-species RMA food chain)
+    register_model!(
+        "define_rosenzweig_macarthur_4d_model",
+        define_rosenzweig_macarthur_4d_model,
+    )
+
     return nothing
 end
 

@@ -362,3 +362,82 @@ function define_michaelis_menten_2d_model()
     outputs = [y1 ~ S]
     return model, params, states, outputs
 end
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Trophic dynamics — 3-species Rosenzweig-MacArthur food chain (4 parameters)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+"""
+Rosenzweig-MacArthur 3-species food chain (4 parameters)
+
+Extends the classic 2-species RMA predator-prey model to three trophic levels:
+resource (x) → intermediate consumer (y) → top predator (z). Both consumer
+and predator have Holling Type II functional responses, which create the
+nonlinear structure that produces multimodal parameter-estimation landscapes.
+
+System equations:
+    dx/dt = r·x·(1 - x/K) - a1·x·y / (1 + a1·h1·x)
+    dy/dt = e1·a1·x·y / (1 + a1·h1·x) - d1·y - a2·y·z / (1 + a2·h2·y)
+    dz/dt = e2·a2·y·z / (1 + a2·h2·y) - d2·z
+
+Parameters (4):
+- r: resource intrinsic growth rate
+- a1: attack rate of intermediate consumer on resource
+- K: resource carrying capacity
+- a2: attack rate of top predator on intermediate consumer
+
+Fixed constants:
+- h1 = 0.5: handling time of intermediate consumer
+- e1 = 0.6: conversion efficiency of intermediate consumer
+- d1 = 0.3: death rate of intermediate consumer
+- h2 = 0.5: handling time of top predator
+- e2 = 0.6: conversion efficiency of top predator
+- d2 = 0.3: death rate of top predator
+
+States (3): x, y, z
+Output (1): y1 = x (observed resource biomass)
+
+True parameters for verification: r=1.0, a1=1.0, K=1.0, a2=1.0
+
+Identifiability: Globally identifiable from x(t) when h1, e1, d1, h2, e2, d2
+are known. The two Type II functional responses create genuine nonlinearity
+that distinguishes this family from the flat LV/DAISY 4-D families.
+
+Returns:
+- model: System
+- parameters: [r, a1, K, a2]
+- states: [x, y, z]
+- measured_quantities: [y1 ~ x]
+"""
+function define_rosenzweig_macarthur_4d_model()
+    @independent_variables t
+    @parameters r a1 K a2
+    @variables x(t) y(t) z(t) y1(t)
+    D = Differential(t)
+
+    params = [r, a1, K, a2]
+    states = [x, y, z]
+
+    # Fixed constants
+    h1 = 0.5    # handling time (intermediate consumer)
+    e1 = 0.6    # conversion efficiency (intermediate consumer)
+    d1 = 0.3    # death rate (intermediate consumer)
+    h2 = 0.5    # handling time (top predator)
+    e2 = 0.6    # conversion efficiency (top predator)
+    d2 = 0.3    # death rate (top predator)
+
+    @named rma4d = System(
+        [
+            D(x) ~ r * x * (1 - x / K) - a1 * x * y / (1 + a1 * h1 * x),
+            D(y) ~
+            e1 * a1 * x * y / (1 + a1 * h1 * x) - d1 * y - a2 * y * z / (1 + a2 * h2 * y),
+            D(z) ~ e2 * a2 * y * z / (1 + a2 * h2 * y) - d2 * z,
+        ],
+        t,
+        states,
+        params,
+    )
+    model = complete(rma4d)
+    outputs = [y1 ~ x]
+    return model, params, states, outputs
+end
