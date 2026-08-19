@@ -120,6 +120,7 @@ function _init_registries!()
 
     # Model functions — all define_* from systems/
     register_model!("define_daisy_ex3_model_4D", define_daisy_ex3_model_4D)
+    register_model!("define_daisy_ex3_model_5D", define_daisy_ex3_model_5D)
     register_model!(
         "define_daisy_ex3_model_4D_no_input",
         define_daisy_ex3_model_4D_no_input,
