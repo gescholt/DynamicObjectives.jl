@@ -172,3 +172,46 @@ function define_daisy_ex3_model_6D()
     measured_quantities = [y1 ~ x1 + x3, y2 ~ x2]
     model, parameters, states, measured_quantities
 end
+
+"""
+DAISY Example 3 Model (7D) — the FULL benchmark, all seven parameters freed.
+
+The 6D variant still fixes p5 at 1, which appears as the bare `+ x3` term in
+dx2. Here p5 is estimated, so the p5 = 1 slice of this model reproduces
+`define_daisy_ex3_model_6D` exactly — the identity the DAISY-7D smoke
+asserts. This is the terminus of the m-ladder (4 -> 5 -> 6 -> 7): the
+complete original DAISY ex3 with every parameter free. Parameter ORDER
+follows the append convention: [p1, p3, p4, p6, p7, p2, p5].
+
+System equations:
+    dx1/dt = -p1*x1 + p2*x2 + u0
+    dx2/dt = p3*x1 - p4*x2 + p5*x3
+    dx3/dt = p6*x1 - p7*x3
+    du0/dt = 1
+
+Measured quantities:  y1 = x1 + x3,  y2 = x2
+
+Returns: model, parameters [p1, p3, p4, p6, p7, p2, p5], states, measured_quantities
+"""
+function define_daisy_ex3_model_7D()
+    @independent_variables t
+    @parameters p1 p3 p4 p6 p7 p2 p5
+    @variables x1(t) x2(t) x3(t) u0(t) y1(t) y2(t)
+    D = Differential(t)
+
+    states = [x1, x2, x3, u0]
+    parameters = [p1, p3, p4, p6, p7, p2, p5]
+    @mtkcompile model = System(
+        [
+            D(x1) ~ -1 * p1 * x1 + p2 * x2 + u0,
+            D(x2) ~ p3 * x1 - p4 * x2 + p5 * x3,
+            D(x3) ~ p6 * x1 - p7 * x3,
+            D(u0) ~ 1,
+        ],
+        t,
+        states,
+        parameters,
+    )
+    measured_quantities = [y1 ~ x1 + x3, y2 ~ x2]
+    model, parameters, states, measured_quantities
+end
