@@ -129,3 +129,46 @@ function define_daisy_ex3_model_5D()
     measured_quantities = [y1 ~ x1 + x3, y2 ~ x2]
     model, parameters, states, measured_quantities
 end
+
+"""
+DAISY Example 3 Model (6D) — the 5D variant with a sixth parameter freed.
+
+The 4D/5D variants fix the original benchmark's p2 at 1, which appears as the
+bare `+ x2` term in dx1. Here p2 is estimated, so the p2 = 1 slice of this
+model reproduces `define_daisy_ex3_model_5D` exactly — the identity the
+DAISY-6D smoke asserts. Parameter ORDER follows the append convention of the
+m-ladder (jucj): the new parameter goes LAST, so p_true/bounds/results extend
+the 5D vectors by one coordinate and stay slice-comparable.
+
+System equations:
+    dx1/dt = -p1*x1 + p2*x2 + u0
+    dx2/dt = p3*x1 - p4*x2 + x3
+    dx3/dt = p6*x1 - p7*x3
+    du0/dt = 1
+
+Measured quantities:  y1 = x1 + x3,  y2 = x2
+
+Returns: model, parameters [p1, p3, p4, p6, p7, p2], states, measured_quantities
+"""
+function define_daisy_ex3_model_6D()
+    @independent_variables t
+    @parameters p1 p3 p4 p6 p7 p2
+    @variables x1(t) x2(t) x3(t) u0(t) y1(t) y2(t)
+    D = Differential(t)
+
+    states = [x1, x2, x3, u0]
+    parameters = [p1, p3, p4, p6, p7, p2]
+    @mtkcompile model = System(
+        [
+            D(x1) ~ -1 * p1 * x1 + p2 * x2 + u0,
+            D(x2) ~ p3 * x1 - p4 * x2 + x3,
+            D(x3) ~ p6 * x1 - p7 * x3,
+            D(u0) ~ 1,
+        ],
+        t,
+        states,
+        parameters,
+    )
+    measured_quantities = [y1 ~ x1 + x3, y2 ~ x2]
+    model, parameters, states, measured_quantities
+end
