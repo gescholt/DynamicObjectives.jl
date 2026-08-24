@@ -127,6 +127,7 @@ function DynamicObjectives.run_experiment_from_config(path::String; io::IO = std
             "entry_name" => config.entry_name,                     # e.g. "lv4d_basic" or nothing
         ),
         true_params = p_true,
+        start_system = Symbol(something(config.hc_start_system, "auto")),
     )
 
     degree_results = exp_result[:degree_results]
