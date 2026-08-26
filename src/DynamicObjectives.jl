@@ -42,6 +42,7 @@ export define_daisy_ex3_model_4D, define_daisy_ex3_model_4D_no_input
 export define_daisy_ex3_model_5D
 export define_daisy_ex3_model_6D
 export define_daisy_ex3_model_7D
+export define_daisy_ex3_model_8D
 
 # System definitions - Lotka-Volterra variants
 export define_generalized_lotka_volterra_4D,
