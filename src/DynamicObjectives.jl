@@ -86,6 +86,7 @@ export define_fitzhugh_nagumo_3D_model,
     define_pk_2comp_3d_model,
     define_brusselator_2d_model,
     define_michaelis_menten_2d_model,
+    define_mm_chain_3d_model,
     define_rosenzweig_macarthur_4d_model
 
 # Data generation

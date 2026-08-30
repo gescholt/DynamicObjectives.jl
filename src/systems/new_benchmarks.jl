@@ -363,6 +363,56 @@ function define_michaelis_menten_2d_model()
     return model, params, states, outputs
 end
 
+"""
+MM-chain 3D (3 parameters) — designed multi-pole known-answer benchmark
+(bead 1if7, rung 2 of the singularity ladder).
+
+Linear 3-stage conversion cascade S → I → J with MM-style rational rates,
+
+    dS/dt = -a1·S,   dI/dt = a1·S - a2·I,   dJ/dt = a2·I - a3·J,
+    a_i = (1 + V0)/Km_i,   V0 = 2.0 fixed (known),
+
+observed y1 = J (the end of the cascade feels all three rates). Because the
+system is LINEAR in the states, the solution is explicit (J is the
+convolution of three exponentials), and the misfit's singular set in
+parameter space is exactly the three hyperplanes {Km_i = 0} (essential
+singularities). Planted predictions: isotropic analyticity radius
+min_i(Km_i*); directional radii (Km1*, Km2*, Km3*) along the three axes.
+
+Design notes (learned the hard way): with Vmax as a free parameter the fiber
+(1+V, Km_i) → (c(1+V), c·Km_i) is a structural non-identifiability
+(lambda_min = 0 exactly), hence V0 fixed. The convolution output is symmetric
+under permutations of (a1, a2, a3), so entries must keep the rates DISTINCT —
+on the confluent stratum the Hessian degenerates (and each entry owns 3! = 6
+symmetric global minima, far outside the small sweep boxes).
+
+Parameters (3): Km1, Km2, Km3. States (3): S, I, J. Output: y1 = J.
+"""
+function define_mm_chain_3d_model()
+    @independent_variables t
+    @parameters Km1 Km2 Km3
+    @variables S(t) I(t) J(t) y1(t)
+    D = Differential(t)
+
+    params = [Km1, Km2, Km3]
+    states = [S, I, J]
+
+    V0 = 2.0
+    a1 = (1 + V0) / Km1
+    a2 = (1 + V0) / Km2
+    a3 = (1 + V0) / Km3
+
+    @named mmchain = System(
+        [D(S) ~ -a1 * S, D(I) ~ a1 * S - a2 * I, D(J) ~ a2 * I - a3 * J],
+        t,
+        states,
+        params,
+    )
+    model = complete(mmchain)
+    outputs = [y1 ~ J]
+    return model, params, states, outputs
+end
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # Trophic dynamics — 3-species Rosenzweig-MacArthur food chain (4 parameters)
 # ═══════════════════════════════════════════════════════════════════════════════
