@@ -147,6 +147,48 @@ function define_goodwin_oscillator_4D()
 end
 
 """
+Goodwin 4D Hill-exponent dial (bead nv7b): identical to
+`define_goodwin_oscillator_4D` except the Hill exponent n. The Hill term
+k1 K^n/(K^n + x3^n) has poles at x3 = K exp(i pi (2j+1)/n); the nearest pole
+sits at angle pi/n to the positive real x3-axis, so lowering n rotates the
+singular set away from the real trajectory (n = 10/6/4/2 -> 18/30/45/90 deg).
+This is the state-space singularity dial for the analyticity-radius program:
+the measured parameter-space delta should increase monotonically as n drops.
+(n < 8 loses the Goodwin limit cycle — irrelevant here, the objective measures
+the PE landscape's analyticity, not oscillation.)
+"""
+function _define_goodwin_hilln_4D(n::Int)
+    @independent_variables t
+    @parameters k1 k2 k4 k5
+    @variables x1(t) x2(t) x3(t) y1(t) y2(t)
+    D = Differential(t)
+
+    params = [k1, k2, k4, k5]
+    states = [x1, x2, x3]
+
+    K = 0.9    # Hill half-maximal constant (as in the n=10 model)
+    k3 = 0.3   # translation rate (fixed, known)
+    k6 = 0.5   # end product degradation (fixed, known)
+    Kn = K^n
+
+    @mtkcompile model = System(
+        [
+            D(x1) ~ k1 * Kn / (Kn + x3^n) - k2 * x1,
+            D(x2) ~ k3 * x1 - k4 * x2,
+            D(x3) ~ k5 * x2 - k6 * x3,
+        ],
+        t,
+        states,
+        params,
+    )
+    outputs = [y1 ~ x1, y2 ~ x3]
+    return model, params, states, outputs
+end
+define_goodwin_oscillator_4D_hill2() = _define_goodwin_hilln_4D(2)
+define_goodwin_oscillator_4D_hill4() = _define_goodwin_hilln_4D(4)
+define_goodwin_oscillator_4D_hill6() = _define_goodwin_hilln_4D(6)
+
+"""
 Simple 2D model - locally identifiable (product form)
 
 System equations:

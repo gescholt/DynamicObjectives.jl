@@ -202,6 +202,9 @@ function _init_registries!()
     register_model!("define_pk_2comp_3d_model", define_pk_2comp_3d_model)
     register_model!("define_brusselator_2d_model", define_brusselator_2d_model)
     register_model!("define_michaelis_menten_2d_model", define_michaelis_menten_2d_model)
+    register_model!("define_goodwin_oscillator_4D_hill2", define_goodwin_oscillator_4D_hill2)
+    register_model!("define_goodwin_oscillator_4D_hill4", define_goodwin_oscillator_4D_hill4)
+    register_model!("define_goodwin_oscillator_4D_hill6", define_goodwin_oscillator_4D_hill6)
 
     # 4-D trophic model (cbyn.4 — 3-species RMA food chain)
     register_model!(
