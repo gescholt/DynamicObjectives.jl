@@ -599,3 +599,45 @@ function define_fhn_3d_locally_id_model()
     outputs = [y1 ~ V, y2 ~ R]
     return model, params, states, outputs
 end
+
+"""
+Driven FitzHugh-Nagumo 2D family (bead 6pj0) — the control input as a
+landscape-shaping lever.
+
+System equations (b = 0.8, I = 0.5 fixed; drive amplitude A and period Td
+baked into each registered variant; estimated parameters eps, a):
+    dv/dt = v - v³/3 - w + I + A*sin(2π t / Td)
+    dw/dt = eps*(v + a - b*w)
+
+Measured quantities: y1 = v (the latent recovery variable w is unobserved).
+
+The autonomous variant (A = 0) has a fringe-multimodal PE landscape over
+(eps, a): spike-count aliasing gives ~T-proportional local minima (probe run
+20260829T122030_fhn_driven_probe: 53/154/256 raw minima at T = 100/200/400,
+fringe spacing halving as the window doubles). A known drive reshapes it:
+deep decoys are non-monotone in amplitude (7 -> 1 -> 4 at A = 0/0.15/0.3,
+T = 200) — moderate drive nearly convexifies via entrainment, strong drive
+re-fragments into tongue lobes with non-smooth boundaries.
+"""
+function _define_fhn_driven(A::Float64, Td::Float64)
+    @independent_variables t
+    @parameters epsilon a
+    @variables v(t) w(t) y1(t)
+    D = Differential(t)
+    states = [v, w]
+    params = [epsilon, a]
+    outputs = [y1 ~ v]
+    rhs_v = A == 0.0 ? (0.5) : (0.5 + A * sin(2pi / Td * t))
+    @mtkcompile model = System(
+        [D(v) ~ v - v^3 / 3 - w + rhs_v,
+         D(w) ~ epsilon * (v + a - 0.8 * w)],
+        t,
+        states,
+        params,
+    )
+    return model, params, states, outputs
+end
+
+define_fhn_driven_auto() = _define_fhn_driven(0.0, 25.0)
+define_fhn_driven_A015() = _define_fhn_driven(0.15, 25.0)
+define_fhn_driven_A030() = _define_fhn_driven(0.3, 25.0)

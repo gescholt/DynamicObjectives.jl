@@ -62,6 +62,7 @@ export define_generalized_lotka_volterra_4D,
     create_lv2d_localid1d_3d_objective
 
 # System definitions - Other models
+export define_fhn_driven_auto, define_fhn_driven_A015, define_fhn_driven_A030
 export define_fitzhugh_nagumo_3D_model,
     define_fitzhugh_nagumo_3D_model_two_outputs,
     define_goodwin_oscillator_4D,
