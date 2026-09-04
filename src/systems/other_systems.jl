@@ -146,6 +146,60 @@ function define_goodwin_oscillator_4D()
     return model, params, states, outputs
 end
 
+
+"""
+Goodwin nested ladder (bead rai5.5): the 4-parameter oscillator with its
+hard-coded rate constants freed one at a time, appended LAST per the m-ladder
+convention (jucj), so rung m is the base-value slice of rung m+1:
+  5D: + k3 (translation rate, base 0.3)     6D: + k6 (end-product decay, base 0.5)
+Hill constant K = 0.9 and exponent n = 10 stay fixed. Unlike the DAISY ladder
+(linear in the states, loss entire in p) this ladder is nonlinear in the
+states, so the analyticity half of the certificate is exercised.
+"""
+function define_goodwin_oscillator_5D()
+    @independent_variables t
+    @parameters k1 k2 k4 k5 k3
+    @variables x1(t) x2(t) x3(t) y1(t) y2(t)
+    D = Differential(t)
+    params = [k1, k2, k4, k5, k3]
+    states = [x1, x2, x3]
+    K = 0.9; n = 10; k6 = 0.5; Kn = K^n
+    @mtkcompile model = System(
+        [
+            D(x1) ~ k1 * Kn / (Kn + x3^n) - k2 * x1,
+            D(x2) ~ k3 * x1 - k4 * x2,
+            D(x3) ~ k5 * x2 - k6 * x3,
+        ],
+        t,
+        states,
+        params,
+    )
+    outputs = [y1 ~ x1, y2 ~ x3]
+    return model, params, states, outputs
+end
+
+function define_goodwin_oscillator_6D()
+    @independent_variables t
+    @parameters k1 k2 k4 k5 k3 k6
+    @variables x1(t) x2(t) x3(t) y1(t) y2(t)
+    D = Differential(t)
+    params = [k1, k2, k4, k5, k3, k6]
+    states = [x1, x2, x3]
+    K = 0.9; n = 10; Kn = K^n
+    @mtkcompile model = System(
+        [
+            D(x1) ~ k1 * Kn / (Kn + x3^n) - k2 * x1,
+            D(x2) ~ k3 * x1 - k4 * x2,
+            D(x3) ~ k5 * x2 - k6 * x3,
+        ],
+        t,
+        states,
+        params,
+    )
+    outputs = [y1 ~ x1, y2 ~ x3]
+    return model, params, states, outputs
+end
+
 """
 Goodwin 4D Hill-exponent dial (bead nv7b): identical to
 `define_goodwin_oscillator_4D` except the Hill exponent n. The Hill term
@@ -683,3 +737,27 @@ end
 define_fhn_driven_auto() = _define_fhn_driven(0.0, 25.0)
 define_fhn_driven_A015() = _define_fhn_driven(0.15, 25.0)
 define_fhn_driven_A030() = _define_fhn_driven(0.3, 25.0)
+
+"""
+Three-parameter autonomous FHN (bead rai5.4 / 6pj0): the (eps, a) driven-FHN
+landscape with the recovery slope b freed as the third unknown (appended last,
+ladder convention), so the b = 0.8 slice reproduces `define_fhn_driven_auto`
+exactly. Same fixed I = 0.5, observed v only.
+"""
+function define_fhn_driven3_auto()
+    @independent_variables t
+    @parameters epsilon a b
+    @variables v(t) w(t) y1(t)
+    D = Differential(t)
+    states = [v, w]
+    params = [epsilon, a, b]
+    outputs = [y1 ~ v]
+    @mtkcompile model = System(
+        [D(v) ~ v - v^3 / 3 - w + 0.5,
+         D(w) ~ epsilon * (v + a - b * w)],
+        t,
+        states,
+        params,
+    )
+    return model, params, states, outputs
+end

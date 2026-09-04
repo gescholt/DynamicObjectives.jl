@@ -158,11 +158,14 @@ function _init_registries!()
     register_model!("define_fhn_driven_auto", define_fhn_driven_auto)
     register_model!("define_fhn_driven_A015", define_fhn_driven_A015)
     register_model!("define_fhn_driven_A030", define_fhn_driven_A030)
+    register_model!("define_fhn_driven3_auto", define_fhn_driven3_auto)
     register_model!(
         "define_fitzhugh_nagumo_3D_model_two_outputs",
         define_fitzhugh_nagumo_3D_model_two_outputs,
     )
     register_model!("define_goodwin_oscillator_4D", define_goodwin_oscillator_4D)
+    register_model!("define_goodwin_oscillator_5D", define_goodwin_oscillator_5D)
+    register_model!("define_goodwin_oscillator_6D", define_goodwin_oscillator_6D)
     register_model!(
         "define_simple_2D_model_locally_identifiable",
         define_simple_2D_model_locally_identifiable,

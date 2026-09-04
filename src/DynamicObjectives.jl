@@ -63,9 +63,12 @@ export define_generalized_lotka_volterra_4D,
 
 # System definitions - Other models
 export define_fhn_driven_auto, define_fhn_driven_A015, define_fhn_driven_A030
+export define_fhn_driven3_auto
 export define_fitzhugh_nagumo_3D_model,
     define_fitzhugh_nagumo_3D_model_two_outputs,
     define_goodwin_oscillator_4D,
+    define_goodwin_oscillator_5D,
+    define_goodwin_oscillator_6D,
     define_goodwin_oscillator_4D_hill2,
     define_goodwin_oscillator_4D_hill4,
     define_goodwin_oscillator_4D_hill6,
