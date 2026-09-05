@@ -167,6 +167,10 @@ function _init_registries!()
     register_model!("define_fhn_coupled_A030_k0005", define_fhn_coupled_A030_k0005)
     register_model!("define_fhn_coupled_A030_k0020", define_fhn_coupled_A030_k0020)
     register_model!("define_fhn_coupled_A030_k0050", define_fhn_coupled_A030_k0050)
+    register_model!("define_fhn_coupled_A030_k1e5", define_fhn_coupled_A030_k1e5)
+    register_model!("define_fhn_coupled_A030_k2e5", define_fhn_coupled_A030_k2e5)
+    register_model!("define_fhn_coupled_A030_k5e5", define_fhn_coupled_A030_k5e5)
+    register_model!("define_fhn_coupled_A030_k1e4", define_fhn_coupled_A030_k1e4)
     register_model!(
         "define_fitzhugh_nagumo_3D_model_two_outputs",
         define_fitzhugh_nagumo_3D_model_two_outputs,

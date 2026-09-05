@@ -827,6 +827,16 @@ define_fhn_coupled_A030_k0050() = _define_fhn_coupled(0.3, 0.3, 25.0, 0.005)
 define_fhn_coupled_A030_k002() = _define_fhn_coupled(0.3, 0.3, 25.0, 0.02)
 define_fhn_coupled_A030_k005() = _define_fhn_coupled(0.3, 0.3, 25.0, 0.05)
 define_fhn_coupled_A030_k010() = _define_fhn_coupled(0.3, 0.3, 25.0, 0.10)
+# Ultra-light arms (bead 6pj0, short-T / light-kappa test). The sub-percent sweep
+# found 9 of 27 product points surviving already at kappa = 2e-4, so if a
+# perturbative window exists at T = 200 it is BELOW that. If the destroying
+# mechanism is spike-phase drift, survival should depend on the product kappa*T
+# rather than on kappa alone; these arms fix T and vary kappa, the short-T
+# entries fix kappa and vary T, and the two together test that scaling.
+define_fhn_coupled_A030_k1e5() = _define_fhn_coupled(0.3, 0.3, 25.0, 1.0e-5)
+define_fhn_coupled_A030_k2e5() = _define_fhn_coupled(0.3, 0.3, 25.0, 2.0e-5)
+define_fhn_coupled_A030_k5e5() = _define_fhn_coupled(0.3, 0.3, 25.0, 5.0e-5)
+define_fhn_coupled_A030_k1e4() = _define_fhn_coupled(0.3, 0.3, 25.0, 1.0e-4)
 
 """
 Three-parameter autonomous FHN (bead rai5.4 / 6pj0): the (eps, a) driven-FHN
