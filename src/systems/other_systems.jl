@@ -818,6 +818,12 @@ end
 # not an estimated parameter). k000 is the product limit whose critical set is
 # exactly crit(L_A) x crit(L_B); the others are the continuation arms.
 define_fhn_coupled_A030_k000() = _define_fhn_coupled(0.3, 0.3, 25.0, 0.0)
+# Sub-percent arms: the product critical set does NOT continue at kappa >= 0.02
+# (2 of 27 survive), so the perturbative window, if there is one, is below that.
+define_fhn_coupled_A030_k0002() = _define_fhn_coupled(0.3, 0.3, 25.0, 0.0002)
+define_fhn_coupled_A030_k0005() = _define_fhn_coupled(0.3, 0.3, 25.0, 0.0005)
+define_fhn_coupled_A030_k0020() = _define_fhn_coupled(0.3, 0.3, 25.0, 0.002)
+define_fhn_coupled_A030_k0050() = _define_fhn_coupled(0.3, 0.3, 25.0, 0.005)
 define_fhn_coupled_A030_k002() = _define_fhn_coupled(0.3, 0.3, 25.0, 0.02)
 define_fhn_coupled_A030_k005() = _define_fhn_coupled(0.3, 0.3, 25.0, 0.05)
 define_fhn_coupled_A030_k010() = _define_fhn_coupled(0.3, 0.3, 25.0, 0.10)

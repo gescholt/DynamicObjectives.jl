@@ -66,6 +66,8 @@ export define_fhn_driven_auto, define_fhn_driven_A015, define_fhn_driven_A030
 export define_fhn_driven3_auto
 export define_fhn_coupled_A030_k000, define_fhn_coupled_A030_k002
 export define_fhn_coupled_A030_k005, define_fhn_coupled_A030_k010
+export define_fhn_coupled_A030_k0002, define_fhn_coupled_A030_k0005
+export define_fhn_coupled_A030_k0020, define_fhn_coupled_A030_k0050
 export define_fitzhugh_nagumo_3D_model,
     define_fitzhugh_nagumo_3D_model_two_outputs,
     define_goodwin_oscillator_4D,
