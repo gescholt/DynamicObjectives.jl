@@ -739,6 +739,90 @@ define_fhn_driven_A015() = _define_fhn_driven(0.15, 25.0)
 define_fhn_driven_A030() = _define_fhn_driven(0.3, 25.0)
 
 """
+Two diffusively coupled driven-FitzHugh-Nagumo units — a 4-parameter model whose
+complete critical set is known at zero coupling.
+
+    dv1/dt = v1 - v1³/3 - w1 + I + A*sin(2π t / Td) + kappa*(v2 - v1)
+    dw1/dt = eps1*(v1 + a1 - b*w1)
+    dv2/dt = v2 - v2³/3 - w2 + I + A*sin(2π t / Td) + kappa*(v1 - v2)
+    dw2/dt = eps2*(v2 + a2 - b*w2)
+
+with b = 0.8, I = 0.5 as in `_define_fhn_driven`, estimated parameters
+`[eps1, a1, eps2, a2]`, and BOTH units observed (`y1 = v1`, `y2 = v2`).
+
+Gap-junction (diffusive) coupling with `kappa` closed over rather than estimated.
+Three consequences, all deliberate:
+
+  * the model stays at m = 4, so the coupling strength is a property of the
+    INSTANCE (one catalogue entry per kappa, exactly as A is handled above),
+    not a parameter competing with the four being recovered;
+  * at kappa = 0 the two units are independent and, since both are observed and
+    the loss is `L2_squared` aggregated by `sum`, the misfit is the CONCATENATION
+    of the two units' residuals, so
+
+        L(p1,p2,p3,p4) = L_A(p1,p2) + L_B(p3,p4).
+
+    Hence grad L = (grad L_A, grad L_B), the Hessian is block diagonal, and
+
+        crit(L) = crit(L_A) x crit(L_B),   index(a,b) = index(a) + index(b),
+
+    i.e. the full critical set WITH INDICES is the Cartesian product of two 2-D
+    enumerations — a certified truth in a dimension where a brute-force scan
+    (1601^4 solves) does not exist. This is the `glue`/`glued_objectives.jl`
+    construction realized as an actual ODE rather than as a sum of objectives,
+    and the identity must be asserted numerically before it is relied on;
+  * for kappa > 0 every nondegenerate product critical point persists and moves
+    by norm(Hess^-1 * grad(kappa*Delta)), so the product set continues by Newton and
+    pairs annihilate in folds as kappa grows.
+
+Both units must be observed. With only v1 measured the blocks are not independent
+in the data and the product identity above is false.
+
+Detuning is by GROUND TRUTH, not by dynamics: both units are driven identically
+(A1 = A2), and the two units are told apart by the data, which is generated at
+different (eps, a) per unit. The loss is then not symmetric under swapping
+(eps1,a1) <-> (eps2,a2) -- that swap would compare v1 against unit 2's data -- so
+the model stays globally identifiable and the minimum count is exactly the product.
+The per-unit drive amplitudes A1, A2 are kept separate in the generator so a
+dynamics-detuned variant is available, but note that both units necessarily share
+one time span, so a mixed-drive variant cannot reuse the stored 2-D truths of the
+A=0.30 (T=200) and autonomous (T=400) entries at once.
+
+Brick choice is not free: coupling two 2-D units enriches the landscape only when
+the units are limit cycles. Coupled Lotka-Volterra centers give one minimum
+(bead 6pj0, coupled probe) — FHN is the right brick, LV is not.
+"""
+function _define_fhn_coupled(A1::Float64, A2::Float64, Td::Float64, kappa::Float64)
+    @independent_variables t
+    @parameters eps1 a1 eps2 a2
+    @variables v1(t) w1(t) v2(t) w2(t) y1(t) y2(t)
+    D = Differential(t)
+    states = [v1, w1, v2, w2]
+    params = [eps1, a1, eps2, a2]
+    outputs = [y1 ~ v1, y2 ~ v2]
+    drive1 = A1 == 0.0 ? (0.5) : (0.5 + A1 * sin(2pi / Td * t))
+    drive2 = A2 == 0.0 ? (0.5) : (0.5 + A2 * sin(2pi / Td * t))
+    @mtkcompile model = System(
+        [D(v1) ~ v1 - v1^3 / 3 - w1 + drive1 + kappa * (v2 - v1),
+         D(w1) ~ eps1 * (v1 + a1 - 0.8 * w1),
+         D(v2) ~ v2 - v2^3 / 3 - w2 + drive2 + kappa * (v1 - v2),
+         D(w2) ~ eps2 * (v2 + a2 - 0.8 * w2)],
+        t,
+        states,
+        params,
+    )
+    return model, params, states, outputs
+end
+
+# One registered variant per coupling strength (kappa is an instance property,
+# not an estimated parameter). k000 is the product limit whose critical set is
+# exactly crit(L_A) x crit(L_B); the others are the continuation arms.
+define_fhn_coupled_A030_k000() = _define_fhn_coupled(0.3, 0.3, 25.0, 0.0)
+define_fhn_coupled_A030_k002() = _define_fhn_coupled(0.3, 0.3, 25.0, 0.02)
+define_fhn_coupled_A030_k005() = _define_fhn_coupled(0.3, 0.3, 25.0, 0.05)
+define_fhn_coupled_A030_k010() = _define_fhn_coupled(0.3, 0.3, 25.0, 0.10)
+
+"""
 Three-parameter autonomous FHN (bead rai5.4 / 6pj0): the (eps, a) driven-FHN
 landscape with the recovery slope b freed as the third unknown (appended last,
 ladder convention), so the b = 0.8 slice reproduces `define_fhn_driven_auto`
