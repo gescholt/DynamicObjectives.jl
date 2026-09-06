@@ -8,10 +8,12 @@
     ic = [1.0, 0.5]
     time_interval = [0.0, 10.0]
 
-    # Build the ODEProblem the same way make_error_distance does
+    # Bind the initial condition by `unknowns(model)`, which is what
+    # `make_error_distance` does; `states` is model_fn's DECLARATION order and the
+    # two differ for these models (bead rai5.12).
     problem = ODEProblem(
         model,
-        merge(Dict(states .=> ic), Dict(params .=> p_true)),
+        merge(Dict(ModelingToolkit.unknowns(model) .=> ic), Dict(params .=> p_true)),
         time_interval,
     )
 
