@@ -154,6 +154,21 @@ function _init_registries!()
         "define_lotka_volterra_2D_sciml_benchmark",
         define_lotka_volterra_2D_sciml_benchmark,
     )
+    register_model!("define_lv2d_coupled_k000", define_lv2d_coupled_k000)
+    register_model!("define_lv2d_coupled_k0020", define_lv2d_coupled_k0020)
+    register_model!("define_lv2d_coupled_k0050", define_lv2d_coupled_k0050)
+    register_model!("define_lv2d_coupled_k002", define_lv2d_coupled_k002)
+    register_model!("define_lv2d_coupled_k005", define_lv2d_coupled_k005)
+    register_model!("define_lv2d_sciml_coupled_k000", define_lv2d_sciml_coupled_k000)
+    register_model!("define_lv2d_sciml_coupled_k0030", define_lv2d_sciml_coupled_k0030)
+    register_model!("define_lv2d_sciml_coupled_k0075", define_lv2d_sciml_coupled_k0075)
+    register_model!("define_lv2d_sciml_coupled_k003", define_lv2d_sciml_coupled_k003)
+    register_model!("define_lv2d_sciml_coupled_k0075b", define_lv2d_sciml_coupled_k0075b)
+    # Randomized-wiring family: 24 fixed literal draws (see lotka_volterra.jl).
+    for i = 1:24
+        nm = "define_lv2d_sciml_rc" * lpad(i, 2, '0')
+        register_model!(nm, getfield(@__MODULE__, Symbol(nm)))
+    end
     register_model!("define_fitzhugh_nagumo_3D_model", define_fitzhugh_nagumo_3D_model)
     register_model!("define_fhn_driven_auto", define_fhn_driven_auto)
     register_model!("define_fhn_driven_A015", define_fhn_driven_A015)

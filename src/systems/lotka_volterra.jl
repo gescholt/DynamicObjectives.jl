@@ -664,3 +664,237 @@ function create_lv2d_localid1d_3d_objective(;
 
     return hybrid
 end
+
+"""
+Two weakly wired copies of the LV-2D paper brick (`define_lotka_volterra_2D_model`).
+
+Each brick is the paper example verbatim — brick A on (x1, x2) with unknowns
+(a, b), brick B on (x3, x4) with unknowns (c, d):
+
+    dx1/dt = a*x1 + b*x1*x2          dx3/dt = c*x3 + d*x3*x4
+    dx2/dt = b*x1*x2 +   x2          dx4/dt = d*x3*x4 +   x4
+
+The wiring is one interaction rate on the (x1, x3) pair and one on the (x2, x4)
+pair, in the generalized-LV bilinear form (an off-diagonal B_ij, not a diffusive
+term), taken skew-symmetric as `define_constrained_lotka_volterra_4D` does so the
+coupling adds no dissipation:
+
+    D(x1) ~ x1*(a + b*x2 + kappa*x3)      D(x3) ~ x3*(c + d*x4 - kappa*x1)
+    D(x2) ~ x2*(1 + b*x1 + kappa*x4)      D(x4) ~ x4*(1 + d*x3 - kappa*x2)
+
+`kappa` is an instance property, not an estimated parameter, so the parameter
+space stays 4-D: [a, b, c, d]. "Light" means kappa << the within-brick rates
+b, d ~ 0.4 of the LV2D_paper_1 truth; the registered ladder spans 0.5%–12.5% of
+that.
+
+WHY BOTH BRICKS ARE OBSERVED (y1 ~ x1, y2 ~ x3): at kappa = 0 the units are
+independent, so under `L2_squared` + `sum` the misfit is the concatenation of the
+two bricks' residuals and therefore a SUM,
+
+    L(a,b,c,d) = L_A(a,b) + L_B(c,d)
+    => crit(L) = crit(L_A) x crit(L_B),  index(p,q) = index(p) + index(q)
+
+giving the complete 4-D critical set, with indices, from two 2-D enumerations.
+With only x1 measured the bricks are not independent in the data and this
+identity is false. For kappa > 0 every nondegenerate product point persists and
+moves by norm(Hess^-1 * grad(kappa*Delta)), so the product set continues by Newton.
+
+THE STANDING CAVEAT (bead 6pj0, and the L2_squared collapse): this construction
+MULTIPLIES the brick's multimodality, it does not create it — 4-D minima =
+(2-D minima)^2, so a monomodal brick gives a monomodal 4-D problem no matter how
+the wiring is chosen. Two facts bear on whether the LV brick qualifies. (i) The
+"12 minima" recorded for LV2D_paper_1 is an `L2_norm` cone-at-minimum count; the
+paper-headline LV-2D config collapses to a single CP under `L2_squared`. (ii)
+6pj0's coupled probe found LV centers give one smooth basin and called LV the
+wrong brick — but that probe estimated (coupling, detuning) with one unit
+observed, which is a different parameter space and violates the observation
+requirement above, so it does not settle this construction. The lever that could
+make LV a genuine brick is the same WINDOW DIAL 6pj0 measured on FHN (fringe
+count ~ linear in T): LV centers have a parameter-dependent period, so a long
+horizon should alias it. Hence the ladder is offered at the paper T = 1 (where
+the kappa = 0 oracle is exactly the stored LV2D_paper_1 truth) and at long T.
+Establish the brick's `L2_squared` minimum count FIRST; the 4-D count is its square.
+
+Parameters (4): [a, b, c, d]
+States (4): [x1, x2, x3, x4]
+Outputs (2): y1 = x1, y2 = x3
+"""
+function _define_lv2d_coupled(kappa::Float64)
+    @independent_variables t
+    @parameters a b c d
+    @variables x1(t) x2(t) x3(t) x4(t) y1(t) y2(t)
+    D = Differential(t)
+    params = [a, b, c, d]
+    states = [x1, x2, x3, x4]
+    @mtkcompile model = System(
+        [
+            D(x1) ~ x1 * (a + b * x2 + kappa * x3),
+            D(x2) ~ x2 * (1 + b * x1 + kappa * x4),
+            D(x3) ~ x3 * (c + d * x4 - kappa * x1),
+            D(x4) ~ x4 * (1 + d * x3 - kappa * x2),
+        ],
+        t,
+        states,
+        params,
+    )
+    outputs = [y1 ~ x1, y2 ~ x3]
+    return model, params, states, outputs
+end
+
+# One registered variant per wiring strength, mirroring the coupled-FHN ladder.
+# k000 is the product limit whose critical set is exactly crit(L_A) x crit(L_B);
+# the others are the continuation arms. Percentages are of the within-brick rate
+# b = d = 0.4 carried by the LV2D_paper_1 truth.
+define_lv2d_coupled_k000() = _define_lv2d_coupled(0.0)
+define_lv2d_coupled_k0020() = _define_lv2d_coupled(0.002)   # 0.5% of b
+define_lv2d_coupled_k0050() = _define_lv2d_coupled(0.005)   # 1.25%
+define_lv2d_coupled_k002() = _define_lv2d_coupled(0.02)     # 5%
+define_lv2d_coupled_k005() = _define_lv2d_coupled(0.05)     # 12.5%
+
+"""
+Two weakly wired copies of the SciML-benchmark LV brick
+(`define_lotka_volterra_2D_sciml_benchmark`) — the oscillatory counterpart to
+`_define_lv2d_coupled`.
+
+Each brick is the benchmark verbatim — brick A on (x1, x2) with unknowns
+(a1, a2), brick B on (x3, x4) with unknowns (a3, a4):
+
+    dx1/dt =  a1*x1 - 0.6*x1*x2       dx3/dt =  a3*x3 - 0.6*x3*x4
+    dx2/dt = -a2*x2 + 0.8*x1*x2       dx4/dt = -a4*x4 + 0.8*x3*x4
+
+with the same light skew wiring as `_define_lv2d_coupled`: one interaction rate
+on the (x1, x3) pair and one on the (x2, x4) pair, kappa << the within-brick
+rates 0.6 / 0.8.
+
+    D(x1) ~ x1*( a1 - 0.6*x2 + kappa*x3)   D(x3) ~ x3*( a3 - 0.6*x4 - kappa*x1)
+    D(x2) ~ x2*(-a2 + 0.8*x1 + kappa*x4)   D(x4) ~ x4*(-a4 + 0.8*x3 - kappa*x2)
+
+All four states are observed, one brick's pair each, so the kappa = 0 product
+identity of `_define_lv2d_coupled` holds here too:
+
+    L(a1,a2,a3,a4) = L_A(a1,a2) + L_B(a3,a4)  under L2_squared + sum
+    => crit(L) = crit(L_A) x crit(L_B), with indices.
+
+WHY THIS BRICK RATHER THAN THE PAPER ONE. The product identity makes the 4-D
+minimum count the SQUARE of the brick's, so the brick has to be genuinely
+multimodal or the whole construction returns 1. The LV2D_paper_1 brick is a
+growth system, not a center: at its truth (a, b) = (0.2, 0.4) both species
+increase without bound and the solver goes Unstable by T ~ 2, which is why that
+entry is recorded at T = [0, 1]. A one-third-of-a-cycle window has no phase to
+alias, so its recorded 12 minima are the `L2_norm` cone artifact that
+`L2_squared` collapses to one. This brick is a conservative predator-prey CENTER:
+bounded for all T (verified to T = 100 at the benchmark truth (1.0, 1.5)), with a
+period that depends on the parameters. That is the ingredient 6pj0's WINDOW DIAL
+found generating real minima on FHN — fringe count ~ linear in T from spike-count
+aliasing — and the LV analogue is cycle-count aliasing, which survives squaring
+because it is a genuine misfit valley structure and not a norm cone.
+
+So the horizon, not the wiring, is the multimodality lever here; the wiring only
+has to be light enough not to destroy it (too strong a kappa synchronises the
+bricks and collapses the aliasing, the failure mode 6pj0 measured on FHN).
+
+MEASURED (121^2 grid scan of the brick on the box (0.4,2.0) x (0.6,2.4), truth
+(1.0, 1.5), ic (1,1), Tsit5 at 1e-8; catalogue `lv2d_coupled_catalogue.jsonl`):
+
+    T          1.5    10    20    40
+    L2_squared   1     2     3     9      grid-local minima
+    L2_norm      1     1     3     8
+
+The two norms AGREE, which is what separates this from the LV2D_paper_1 case:
+a cone artifact shows up as L2_norm >> L2_squared = 1, and here it does not. The
+count grows with the horizon exactly as 6pj0's window dial does on FHN. At T = 40
+the brick carries 9 minima, so the wired 4-D problem carries 9 x 9 = 81 at
+kappa = 0, with the complete critical set and its indices known from two 2-D
+enumerations. This REFINES 6pj0's "LV is the wrong brick": that probe ran a short
+window with no cycle to alias, and estimated (coupling, detuning) with one unit
+observed rather than the brick rates with both. On a center brick over a long
+horizon, LV does carry genuine minima.
+
+The perturbative window in kappa, measured the same way (worst
+|L4 - (LA+LB)| / loss scale over 13 box points, T = 40, tol 1e-10):
+
+    kappa      0     0.003   0.0075   0.03    0.075
+    % of 0.6   0     0.5     1.25     5.0     12.5
+    deviation  9e-11 4.6e-2  1.3e-1   2.1e-1  2.1e-1
+
+So k0030 and k0075 are the usable arms — a perturbation the product points
+continue through — while k003 and k0075b have already saturated and are
+destroying the product structure rather than deforming it.
+
+Parameters (4): [a1, a2, a3, a4]
+States (4): [x1, x2, x3, x4]
+Outputs (4): y1 = x1, y2 = x2, y3 = x3, y4 = x4
+"""
+function _define_lv2d_sciml_coupled_free(
+    b13::Float64,
+    b31::Float64,
+    b24::Float64,
+    b42::Float64,
+)
+    @independent_variables t
+    @parameters a1 a2 a3 a4
+    @variables x1(t) x2(t) x3(t) x4(t) y1(t) y2(t) y3(t) y4(t)
+    D = Differential(t)
+    params = [a1, a2, a3, a4]
+    states = [x1, x2, x3, x4]
+    @mtkcompile model = System(
+        [
+            D(x1) ~ x1 * (a1 - 0.6 * x2 + b13 * x3),
+            D(x2) ~ x2 * (-a2 + 0.8 * x1 + b24 * x4),
+            D(x3) ~ x3 * (a3 - 0.6 * x4 + b31 * x1),
+            D(x4) ~ x4 * (-a4 + 0.8 * x3 + b42 * x2),
+        ],
+        t,
+        states,
+        params,
+    )
+    outputs = [y1 ~ x1, y2 ~ x2, y3 ~ x3, y4 ~ x4]
+    return model, params, states, outputs
+end
+
+# The skew ladder is the (kappa, -kappa) slice of the free form.
+_define_lv2d_sciml_coupled(kappa::Float64) =
+    _define_lv2d_sciml_coupled_free(kappa, -kappa, kappa, -kappa)
+
+# Wiring ladder as percentages of the within-brick rate 0.6. k000 is the product
+# limit whose critical set is exactly crit(L_A) x crit(L_B).
+define_lv2d_sciml_coupled_k000() = _define_lv2d_sciml_coupled(0.0)
+define_lv2d_sciml_coupled_k0030() = _define_lv2d_sciml_coupled(0.003)  # 0.5% of 0.6
+define_lv2d_sciml_coupled_k0075() = _define_lv2d_sciml_coupled(0.0075) # 1.25%
+define_lv2d_sciml_coupled_k003() = _define_lv2d_sciml_coupled(0.03)    # 5%
+define_lv2d_sciml_coupled_k0075b() = _define_lv2d_sciml_coupled(0.075) # 12.5%
+
+# ── Randomized wiring family (rc01..rc24) ────────────────────────────────────
+# Same two wired pairs as the kappa ladder, but each of the four cross-rates is
+# drawn independently: sign +/- and magnitude log-uniform on [3e-4, 3e-2], which
+# brackets the measured perturbative edge (7.5e-3) from well below to well above.
+# Draws are FIXED LITERALS (seed 20260907, drawn once) rather than an RNG call, so
+# the family is reproducible, registry-resolvable by name, and adds no Random dep.
+# Unlike the kappa ladder these are NOT skew: b31 is independent of b13, so the
+# sweep samples skew, symmetric and mixed wirings and can tell whether the
+# conservative (skew) structure is what preserves the product minima.
+
+define_lv2d_sciml_rc01() = _define_lv2d_sciml_coupled_free(-0.021559, -0.001989, -0.002269, -0.027971)
+define_lv2d_sciml_rc02() = _define_lv2d_sciml_coupled_free(0.00151, -0.004103, -0.000901, -0.000522)
+define_lv2d_sciml_rc03() = _define_lv2d_sciml_coupled_free(-0.005043, 0.000491, 0.000508, -0.011432)
+define_lv2d_sciml_rc04() = _define_lv2d_sciml_coupled_free(-0.003911, -0.026693, -0.000826, 0.0035)
+define_lv2d_sciml_rc05() = _define_lv2d_sciml_coupled_free(0.00047, 0.010325, -0.025849, -0.000818)
+define_lv2d_sciml_rc06() = _define_lv2d_sciml_coupled_free(0.003544, -0.005794, 0.001648, -0.000459)
+define_lv2d_sciml_rc07() = _define_lv2d_sciml_coupled_free(0.029567, 0.025826, -0.001197, -0.008915)
+define_lv2d_sciml_rc08() = _define_lv2d_sciml_coupled_free(0.000619, -0.003768, 0.004875, -0.029143)
+define_lv2d_sciml_rc09() = _define_lv2d_sciml_coupled_free(0.012819, 0.013249, -0.000625, 0.002452)
+define_lv2d_sciml_rc10() = _define_lv2d_sciml_coupled_free(0.004594, 0.000373, -0.025356, -0.002901)
+define_lv2d_sciml_rc11() = _define_lv2d_sciml_coupled_free(0.000535, -0.001015, 0.000958, -0.005147)
+define_lv2d_sciml_rc12() = _define_lv2d_sciml_coupled_free(0.004477, -0.019308, 0.027969, 0.000339)
+define_lv2d_sciml_rc13() = _define_lv2d_sciml_coupled_free(0.000482, -0.005703, -0.007446, -0.007462)
+define_lv2d_sciml_rc14() = _define_lv2d_sciml_coupled_free(-0.000326, -0.001755, 0.002849, -0.00114)
+define_lv2d_sciml_rc15() = _define_lv2d_sciml_coupled_free(0.003755, 0.001899, 0.002149, -0.000597)
+define_lv2d_sciml_rc16() = _define_lv2d_sciml_coupled_free(0.003743, 0.002963, -0.007232, 0.011021)
+define_lv2d_sciml_rc17() = _define_lv2d_sciml_coupled_free(-0.01096, -0.002661, 0.000411, 0.009638)
+define_lv2d_sciml_rc18() = _define_lv2d_sciml_coupled_free(0.007556, 0.008781, 0.000386, 0.001151)
+define_lv2d_sciml_rc19() = _define_lv2d_sciml_coupled_free(-0.001278, 0.028272, 0.023358, 0.004476)
+define_lv2d_sciml_rc20() = _define_lv2d_sciml_coupled_free(-0.001436, -0.006731, 0.002224, 0.021853)
+define_lv2d_sciml_rc21() = _define_lv2d_sciml_coupled_free(0.000728, -0.001909, 0.016201, 0.027175)
+define_lv2d_sciml_rc22() = _define_lv2d_sciml_coupled_free(0.00067, -0.00634, 0.004939, 0.000419)
+define_lv2d_sciml_rc23() = _define_lv2d_sciml_coupled_free(0.00195, -0.006717, 0.01241, -0.008517)
+define_lv2d_sciml_rc24() = _define_lv2d_sciml_coupled_free(0.003633, 0.000833, -0.008086, 0.001725)
