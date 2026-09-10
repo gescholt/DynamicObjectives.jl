@@ -797,13 +797,13 @@ Compute a composite interestingness score from grid-based metrics.
 Higher values indicate more interesting/challenging landscapes for
 optimization benchmarking.
 
-!!! warning "What this score actually ranks (bead cbyn.1)"
+!!! warning "What this score actually ranks"
     It ranks ONE of the two difficulty modes in the corpus — *deep wells in a
     flat sea* — and is close to blind to the other, *curved multimodal*. Do not
     read it as a general "hard vs boring" axis, and do not select a benchmark
     set by top-N of it. Use [`difficulty_profile`](@ref) to stratify.
 
-    Measured over the 73-entry corpus (`experiments/sandbox/results/grid_scores.json`):
+    Measured over the 73-entry corpus:
 
     - `curvature_score` carries the LARGEST weight (0.13) but supplies the
       second-SMALLEST share of the score's spread (6.3%), because its realized
@@ -935,7 +935,7 @@ end
     difficulty_profile(gs::GridScoreResult) -> NamedTuple
 
 Both difficulty axes plus a coarse mode label, for stratifying a benchmark set
-instead of cutting top-N from a single scalar (bead cbyn.1, BENCH-4/t25x).
+instead of cutting top-N from a single scalar.
 
 Returns `(; resolution, structure, mode)`:
 

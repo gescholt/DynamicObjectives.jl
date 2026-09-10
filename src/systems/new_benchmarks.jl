@@ -365,7 +365,7 @@ end
 
 """
 MM-chain 3D (3 parameters) — designed multi-pole known-answer benchmark
-(bead 1if7, rung 2 of the singularity ladder).
+(rung 2 of the singularity ladder).
 
 Linear 3-stage conversion cascade S → I → J with MM-style rational rates,
 

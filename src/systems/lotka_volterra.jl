@@ -699,17 +699,17 @@ With only x1 measured the bricks are not independent in the data and this
 identity is false. For kappa > 0 every nondegenerate product point persists and
 moves by norm(Hess^-1 * grad(kappa*Delta)), so the product set continues by Newton.
 
-THE STANDING CAVEAT (bead 6pj0, and the L2_squared collapse): this construction
+THE STANDING CAVEAT (see also the L2_squared collapse): this construction
 MULTIPLIES the brick's multimodality, it does not create it — 4-D minima =
 (2-D minima)^2, so a monomodal brick gives a monomodal 4-D problem no matter how
 the wiring is chosen. Two facts bear on whether the LV brick qualifies. (i) The
 "12 minima" recorded for LV2D_paper_1 is an `L2_norm` cone-at-minimum count; the
 paper-headline LV-2D config collapses to a single CP under `L2_squared`. (ii)
-6pj0's coupled probe found LV centers give one smooth basin and called LV the
+The coupled probe found LV centers give one smooth basin and called LV the
 wrong brick — but that probe estimated (coupling, detuning) with one unit
 observed, which is a different parameter space and violates the observation
 requirement above, so it does not settle this construction. The lever that could
-make LV a genuine brick is the same WINDOW DIAL 6pj0 measured on FHN (fringe
+make LV a genuine brick is the same WINDOW DIAL measured on FHN (fringe
 count ~ linear in T): LV centers have a parameter-dependent period, so a long
 horizon should alias it. Hence the ladder is offered at the paper T = 1 (where
 the kappa = 0 oracle is exactly the stored LV2D_paper_1 truth) and at long T.
@@ -784,14 +784,14 @@ entry is recorded at T = [0, 1]. A one-third-of-a-cycle window has no phase to
 alias, so its recorded 12 minima are the `L2_norm` cone artifact that
 `L2_squared` collapses to one. This brick is a conservative predator-prey CENTER:
 bounded for all T (verified to T = 100 at the benchmark truth (1.0, 1.5)), with a
-period that depends on the parameters. That is the ingredient 6pj0's WINDOW DIAL
+period that depends on the parameters. That is the ingredient the WINDOW DIAL
 found generating real minima on FHN — fringe count ~ linear in T from spike-count
 aliasing — and the LV analogue is cycle-count aliasing, which survives squaring
 because it is a genuine misfit valley structure and not a norm cone.
 
 So the horizon, not the wiring, is the multimodality lever here; the wiring only
 has to be light enough not to destroy it (too strong a kappa synchronises the
-bricks and collapses the aliasing, the failure mode 6pj0 measured on FHN).
+bricks and collapses the aliasing, the failure mode measured on FHN).
 
 MEASURED (121^2 grid scan of the brick on the box (0.4,2.0) x (0.6,2.4), truth
 (1.0, 1.5), ic (1,1), Tsit5 at 1e-8; catalogue `lv2d_coupled_catalogue.jsonl`):
@@ -802,10 +802,10 @@ MEASURED (121^2 grid scan of the brick on the box (0.4,2.0) x (0.6,2.4), truth
 
 The two norms AGREE, which is what separates this from the LV2D_paper_1 case:
 a cone artifact shows up as L2_norm >> L2_squared = 1, and here it does not. The
-count grows with the horizon exactly as 6pj0's window dial does on FHN. At T = 40
+count grows with the horizon exactly as the window dial does on FHN. At T = 40
 the brick carries 9 minima, so the wired 4-D problem carries 9 x 9 = 81 at
 kappa = 0, with the complete critical set and its indices known from two 2-D
-enumerations. This REFINES 6pj0's "LV is the wrong brick": that probe ran a short
+enumerations. This REFINES the "LV is the wrong brick" verdict: that probe ran a short
 window with no cycle to alias, and estimated (coupling, detuning) with one unit
 observed rather than the brick rates with both. On a center brick over a long
 horizon, LV does carry genuine minima.

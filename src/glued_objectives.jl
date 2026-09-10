@@ -13,8 +13,6 @@
 # - The full critical-point set is known analytically
 # - Each minimum corresponds to a (min, min) factor pair
 # - Saddle topology is decomposable
-#
-# Tracks bead zwbs.10.1 (BENCH-EPIC).
 
 # ── Construction ─────────────────────────────────────────────────────────────
 

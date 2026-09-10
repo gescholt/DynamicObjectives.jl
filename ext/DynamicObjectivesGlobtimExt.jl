@@ -147,7 +147,7 @@ function DynamicObjectives.run_experiment_from_config(path::String; io::IO = std
         # Build refinement config
         # Method dispatch (4xgu): NelderMead (default), BFGS, LBFGS supported in
         # the cluster path. Newton variants are not yet in the cluster runner —
-        # use experiments/sandbox/run_refinement_shootout.jl for Newton comparison.
+        # a refinement shootout is the tool for Newton comparison.
         ref_method = if config.refinement_method == "BFGS"
             BFGS()
         elseif config.refinement_method == "LBFGS"
@@ -164,7 +164,7 @@ function DynamicObjectives.run_experiment_from_config(path::String; io::IO = std
         ref_grad_tol =
             config.refinement_gradient_tolerance !== nothing ?
             config.refinement_gradient_tolerance : 1e-4
-        # Newton-step-norm tolerance (62qv): scale-invariant CP criterion. Default
+        # Newton-step-norm tolerance: scale-invariant CP criterion. Default
         # 1e-4 matches "a Newton step would move us less than 1e-4."
         ref_step_tol =
             config.refinement_step_tolerance !== nothing ?

@@ -8,8 +8,8 @@ Optim and carries the full HC/refinement pipeline). It provides
 model-resolution step shared by:
 
   - DynamicObjectivesGlobtimExt.run_experiment_from_config (full pipeline)
-  - experiments/drivers/run_per_axis_audit_cluster.jl (audit, no HC)
-  - experiments/drivers/run_per_axis_counterfactual_cluster.jl (cf, no HC)
+  - the per-axis audit driver (audit, no HC)
+  - the per-axis counterfactual driver (cf, no HC)
 
 The audit/cf drivers deliberately depend only on DynamicObjectives + Globtim;
 keeping this builder in its own extension preserves that property (rmow).

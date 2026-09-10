@@ -111,7 +111,7 @@ and a pre-allocated output buffer `out::OrderedDict`. The parameter cache is mut
 via `setp_fn` (no allocation), then `reinit!` + `solve!` reuse the integrator's
 working memory.
 
-Per spike (`experiments/sandbox/spike_integrator_reuse.jl`): 210× faster, 168× less
+Per spike: 210× faster, 168× less
 allocation than the `remake(problem; p=...)+solve(...)` path, at bit-identical output.
 
 Arguments:

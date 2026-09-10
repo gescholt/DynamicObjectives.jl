@@ -148,9 +148,9 @@ end
 
 
 """
-Goodwin nested ladder (bead rai5.5): the 4-parameter oscillator with its
+Goodwin nested ladder: the 4-parameter oscillator with its
 hard-coded rate constants freed one at a time, appended LAST per the m-ladder
-convention (jucj), so rung m is the base-value slice of rung m+1:
+convention, so rung m is the base-value slice of rung m+1:
   5D: + k3 (translation rate, base 0.3)     6D: + k6 (end-product decay, base 0.5)
 Hill constant K = 0.9 and exponent n = 10 stay fixed. Unlike the DAISY ladder
 (linear in the states, loss entire in p) this ladder is nonlinear in the
@@ -201,7 +201,7 @@ function define_goodwin_oscillator_6D()
 end
 
 """
-Goodwin 4D Hill-exponent dial (bead nv7b): identical to
+Goodwin 4D Hill-exponent dial: identical to
 `define_goodwin_oscillator_4D` except the Hill exponent n. The Hill term
 k1 K^n/(K^n + x3^n) has poles at x3 = K exp(i pi (2j+1)/n); the nearest pole
 sits at angle pi/n to the positive real x3-axis, so lowering n rotates the
@@ -697,7 +697,7 @@ function define_fhn_3d_locally_id_model()
 end
 
 """
-Driven FitzHugh-Nagumo 2D family (bead 6pj0) — the control input as a
+Driven FitzHugh-Nagumo 2D family — the control input as a
 landscape-shaping lever.
 
 System equations (b = 0.8, I = 0.5 fixed; drive amplitude A and period Td
@@ -790,7 +790,7 @@ A=0.30 (T=200) and autonomous (T=400) entries at once.
 
 Brick choice is not free: coupling two 2-D units enriches the landscape only when
 the units are limit cycles. Coupled Lotka-Volterra centers give one minimum
-(bead 6pj0, coupled probe) — FHN is the right brick, LV is not.
+(coupled probe) — FHN is the right brick, LV is not.
 """
 function _define_fhn_coupled(A1::Float64, A2::Float64, Td::Float64, kappa::Float64)
     @independent_variables t
@@ -827,7 +827,7 @@ define_fhn_coupled_A030_k0050() = _define_fhn_coupled(0.3, 0.3, 25.0, 0.005)
 define_fhn_coupled_A030_k002() = _define_fhn_coupled(0.3, 0.3, 25.0, 0.02)
 define_fhn_coupled_A030_k005() = _define_fhn_coupled(0.3, 0.3, 25.0, 0.05)
 define_fhn_coupled_A030_k010() = _define_fhn_coupled(0.3, 0.3, 25.0, 0.10)
-# Ultra-light arms (bead 6pj0, short-T / light-kappa test). The sub-percent sweep
+# Ultra-light arms (short-T / light-kappa test). The sub-percent sweep
 # found 9 of 27 product points surviving already at kappa = 2e-4, so if a
 # perturbative window exists at T = 200 it is BELOW that. If the destroying
 # mechanism is spike-phase drift, survival should depend on the product kappa*T
@@ -839,7 +839,7 @@ define_fhn_coupled_A030_k5e5() = _define_fhn_coupled(0.3, 0.3, 25.0, 5.0e-5)
 define_fhn_coupled_A030_k1e4() = _define_fhn_coupled(0.3, 0.3, 25.0, 1.0e-4)
 
 """
-Three-parameter autonomous FHN (bead rai5.4 / 6pj0): the (eps, a) driven-FHN
+Three-parameter autonomous FHN: the (eps, a) driven-FHN
 landscape with the recovery slope b freed as the third unknown (appended last,
 ladder convention), so the b = 0.8 slice reproduces `define_fhn_driven_auto`
 exactly. Same fixed I = 0.5, observed v only.

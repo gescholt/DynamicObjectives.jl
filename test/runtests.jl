@@ -114,7 +114,7 @@ using Test
 
             # Bind the initial condition by `unknowns(model)`, which is what
             # `make_error_distance` does; `states` is model_fn's DECLARATION order and the
-            # two differ for these models (bead rai5.12).
+            # two differ for these models.
             problem = ODEProblem(
                 model,
                 merge(Dict(ModelingToolkit.unknowns(model) .=> ic), Dict(params .=> p_true)),
@@ -133,10 +133,10 @@ using Test
     end
 end
 
-# Aggregation strategy registry (bead 0iq)
+# Aggregation strategy registry
 include("test_aggregation_strategies.jl")
 
-# Partial observability helper (bead dds)
+# Partial observability helper
 include("test_partial_observability.jl")
 
 # TolerantObjective tests
@@ -149,31 +149,31 @@ include("test_screening.jl")
 include("test_catalogue.jl")
 
 # TOML screening config: parse/validate/path-resolution plus one end-to-end
-# run_screening_from_config (bead 89rn)
+# run_screening_from_config
 include("test_screening_config.jl")
 
 # Grid-based interestingness scoring tests
 include("test_grid_scoring.jl")
 
 # Second difficulty axis — curved multimodality, which interestingness_score
-# cannot express because all its weights are positive (bead cbyn.1)
+# cannot express because all its weights are positive
 include("test_structure_score.jl")
 
-# End-to-end interestingness pipeline (bead bzf): screen_and_probe →
+# End-to-end interestingness pipeline: screen_and_probe →
 # score_top_candidates → interestingness_score
 include("test_interestingness_end_to_end.jl")
 
-# Candidate-level parallelism for catalogue experiments (bead 1yt)
+# Candidate-level parallelism for catalogue experiments
 include("test_catalogue_parallel.jl")
 
-# Threaded Cartesian grid evaluator (bead ychu)
+# Threaded Cartesian grid evaluator
 include("test_parallel_eval.jl")
 
-# Cartesian-product gluing for higher-dim test problems (bead zwbs.10.1)
+# Cartesian-product gluing for higher-dim test problems
 include("test_glued_objectives.jl")
 
-# Recovery regression: globtim enumerates the FULL glued oracle CP set (bead
-# zwbs.10.1). Needs the HomotopyContinuation solver extension — present in the
+# Recovery regression: globtim enumerates the FULL glued oracle CP set.
+# Needs the HomotopyContinuation solver extension — present in the
 # workspace, absent on the standalone mirror — so guard like test_ext_toml_pipeline.jl.
 if Base.identify_package("HomotopyContinuation") !== nothing
     include("test_glued_recovery.jl")
@@ -211,5 +211,5 @@ else
     @info "Skipping test_ext_toml_pipeline.jl — GlobtimPostProcessing not resolvable in this environment (public mirror)"
 end
 
-# Aqua.jl quality assurance (bead eti8)
+# Aqua.jl quality assurance
 include("test_aqua.jl")

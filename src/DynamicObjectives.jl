@@ -141,10 +141,10 @@ export make_error_distance,
     L2_norm,
     L2_squared,
     log_L2_norm,
-    # Aggregation strategy registry (bead 0iq)
+    # Aggregation strategy registry
     AGGREGATION_STRATEGIES,
     resolve_aggregation,
-    # Partial observability helper (bead dds)
+    # Partial observability helper
     make_partial_observability_distance,
     # Tolerant objective wrapper (mutable solver/tolerance settings)
     TolerantObjective,
@@ -250,10 +250,10 @@ export GridScoreResult,
 # Parallel grid evaluation (thread-safe factory pattern)
 export evaluate_grid_threaded
 
-# Candidate-level parallelism for catalogue experiments (bead 1yt)
+# Candidate-level parallelism for catalogue experiments
 export run_catalogue_experiments
 
-# Cartesian-product gluing for higher-dim test problems with known CPs (bead zwbs.10.1)
+# Cartesian-product gluing for higher-dim test problems with known CPs
 export glue, glue_catalogue, count_oracle_cps_in_box
 
 # Initialize function registries with all known model/distance/aggregation functions

@@ -169,7 +169,7 @@ function make_error_distance(
     # solve, and unlike `pool[Threads.threadid()]` it cannot alias two
     # migrating tasks onto one integrator. The closure branches on T2:
     # Float64 → pool (~15 μs/call), Dual/other → legacy path.
-    # See experiments/sandbox/spike_integrator_reuse.jl for validation.
+    # Validated by an integrator-reuse spike.
     sampling_times_vec = uneven_sampling ?
         collect(uneven_sampling_times) :
         collect(range(time_interval[1], time_interval[2], length = numpoints))
@@ -510,7 +510,7 @@ function _build_integrator_pool(
     # Bail out for composite / auto-switching solvers (e.g. AutoTsit5(Rosenbrock23())).
     # CompositeAlgorithm carries stiffness-detector state in AutoSwitch that
     # `reinit!` does not reset, causing ~1e-5 drift across sequential solves
-    # (diagnostic: experiments/sandbox/diagnose_vemc_drift.jl). Returning
+    # (established by a drift diagnostic). Returning
     # (nothing, nothing) signals the caller to use the legacy remake+solve
     # path, which is allocation-heavy but correct.
     if !_solver_pool_safe(solver)
@@ -756,7 +756,7 @@ function _rebuild_error_func!(obj::TolerantObjective)
 end
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Named aggregation strategies (bead 0iq)
+# Named aggregation strategies
 # ─────────────────────────────────────────────────────────────────────────────
 
 """
@@ -771,7 +771,7 @@ Current strategies:
 - `:mean`    — arithmetic mean
 - `:maximum` — worst-case output error
 - `:minimum` — best-case output error
-- `:first`   — first output only (legacy behaviour prior to bead pam)
+- `:first`   — first output only (legacy behaviour)
 - `:rms`     — root-mean-square of per-output distances
 """
 const AGGREGATION_STRATEGIES = Dict{Symbol,Function}(
@@ -802,7 +802,7 @@ function resolve_aggregation(name::Symbol)
 end
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Partial observability helper (bead dds)
+# Partial observability helper
 # ─────────────────────────────────────────────────────────────────────────────
 
 """

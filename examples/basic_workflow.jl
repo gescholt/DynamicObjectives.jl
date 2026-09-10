@@ -29,7 +29,7 @@ using DynamicObjectives: ODEProblem
 problem =
     # Bind the initial condition by `unknowns(model)`, which is what
     # `make_error_distance` does; `states` is model_fn's DECLARATION order and the
-    # two differ for these models (bead rai5.12).
+    # two differ for these models.
     ODEProblem(model, merge(Dict(ModelingToolkit.unknowns(model) .=> ic), Dict(params .=> p_true)), time_interval)
 
 data_reference = sample_data(problem, model, outputs, time_interval, p_true, ic, num_points)

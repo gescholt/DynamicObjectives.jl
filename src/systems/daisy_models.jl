@@ -94,8 +94,8 @@ The 4D model fixes the original benchmark's fifth parameter at p7 = -1/5,
 which appears as the hard-coded `+ 0.2 * x3` term. Here p7 is estimated
 (DAISY sign convention: the term is `- p7 * x3`), so the p7 = -0.2 slice of
 this model reproduces `define_daisy_ex3_model_4D` exactly — the identity the
-DAISY-5D smoke asserts. Defined for the m = 5 dimension-wall measurement
-(bead jucj): the paper's Bézout extrapolation at m = 5, d = 8 is 16807 paths.
+DAISY-5D smoke asserts. Defined for the m = 5 dimension-wall measurement:
+the paper's Bézout extrapolation at m = 5, d = 8 is 16807 paths.
 
 System equations:
     dx1/dt = -p1*x1 + x2 + u0
@@ -137,7 +137,7 @@ The 4D/5D variants fix the original benchmark's p2 at 1, which appears as the
 bare `+ x2` term in dx1. Here p2 is estimated, so the p2 = 1 slice of this
 model reproduces `define_daisy_ex3_model_5D` exactly — the identity the
 DAISY-6D smoke asserts. Parameter ORDER follows the append convention of the
-m-ladder (jucj): the new parameter goes LAST, so p_true/bounds/results extend
+m-ladder: the new parameter goes LAST, so p_true/bounds/results extend
 the 5D vectors by one coordinate and stay slice-comparable.
 
 System equations:
