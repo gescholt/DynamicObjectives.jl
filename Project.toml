@@ -1,7 +1,7 @@
 name = "DynamicObjectives"
 uuid = "a7860e71-583f-4874-99b9-9df52d7a8e5c"
-version = "0.1.1"
-authors = ["Global Optimization Team <scholtengeorgy@gmail.com>"]
+version = "0.2.0"
+authors = ["Georgy Scholten <scholtengeorgy@gmail.com>"]
 license = "MIT"
 repo = "https://github.com/gescholt/DynamicObjectives.jl"
 
