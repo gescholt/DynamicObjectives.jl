@@ -599,22 +599,29 @@ function load_catalogue(
     isfile(path) || error("Catalogue file not found: $path")
 
     entries = CatalogueEntry[]
-    for line in eachline(path)
-        stripped = strip(line)
-        isempty(stripped) && continue
-        d = JSON3.read(stripped, Dict{String,Any})
-        entry = _dict_to_entry(d)
+    # Open explicitly rather than iterating `eachline(path)`: that form closes
+    # its handle only when the iterator is exhausted, and the `max_entries`
+    # break below leaves it open. POSIX unlinks an open file happily, so this
+    # went unnoticed on Linux and macOS, but on Windows the caller then gets
+    # EBUSY deleting or moving the file. `open(...) do` closes on break.
+    open(path, "r") do io
+        for line in eachline(io)
+            stripped = strip(line)
+            isempty(stripped) && continue
+            d = JSON3.read(stripped, Dict{String,Any})
+            entry = _dict_to_entry(d)
 
-        # Apply model_name filter
-        if model_name !== nothing && !startswith(entry.name, model_name)
-            continue
-        end
+            # Apply model_name filter
+            if model_name !== nothing && !startswith(entry.name, model_name)
+                continue
+            end
 
-        push!(entries, entry)
+            push!(entries, entry)
 
-        # Apply max_entries limit
-        if max_entries !== nothing && length(entries) >= max_entries
-            break
+            # Apply max_entries limit
+            if max_entries !== nothing && length(entries) >= max_entries
+                break
+            end
         end
     end
 
