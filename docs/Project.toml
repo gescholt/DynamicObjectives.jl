@@ -3,7 +3,7 @@ Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 DynamicObjectives = "a7860e71-583f-4874-99b9-9df52d7a8e5c"
 
 [sources]
-DynamicObjectives = {path = "/home/georgy/globopt_merged/pkg/DynamicObjectives"}
+DynamicObjectives = {path = ".."}
 
 [compat]
 Documenter = "1"
