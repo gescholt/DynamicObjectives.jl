@@ -272,7 +272,7 @@ end
                     max_noise_ratio = 3.5
 
                     [output]
-                    catalogue_path = "$cat_path"
+                    catalogue_path = '$cat_path'
                     name_prefix = "PFX"
                     top_n = 4
                     description = "cat description"
@@ -340,7 +340,7 @@ end
                     time_interval = [0.0, 10.0]
 
                     [output]
-                    catalogue_path = "$cat_path"
+                    catalogue_path = '$cat_path'
                     """,
                 )
 
@@ -399,7 +399,7 @@ end
                     abstol = 1
 
                     [output]
-                    catalogue_path = "$cat_path"
+                    catalogue_path = '$cat_path'
                     eval_timeout = 30
                     """,
                 )
@@ -506,7 +506,7 @@ end
                     numpoints_probe = 10
 
                     [output]
-                    catalogue_path = "$cat_path"
+                    catalogue_path = '$cat_path'
                     name_prefix = "TINY"
                     top_n = 2
                     numpoints = 10
@@ -575,7 +575,7 @@ end
                     numpoints_probe = 10
 
                     [output]
-                    catalogue_path = "$cat_path"
+                    catalogue_path = '$cat_path'
                     """,
                 )
 
