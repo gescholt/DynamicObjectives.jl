@@ -115,7 +115,12 @@ Available experiment configs:
 
 ## Documentation
 
-- **[Model Catalog](docs/src/model_catalog.md)** — All 29 models with configurations and recommended testing sequences
+- **[API Reference](https://gescholt.github.io/DynamicObjectives.jl/api.html)** — docstrings for every exported model, objective builder, and helper
+
+The narrative documentation lives in the [Globtim docs](https://gescholt.github.io/Globtim.jl/dev/ode_parameter_estimation/), next to the optimizer that consumes these objectives:
+
+- **[Model Catalog](https://gescholt.github.io/Globtim.jl/dev/model_catalog/)** — all 29 models with configurations and recommended testing sequences
+- **[Glued Objectives](https://gescholt.github.io/Globtim.jl/dev/glued_objectives/)** — higher-dimensional problems with known critical-point sets
 
 ## License
 

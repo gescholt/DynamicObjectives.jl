@@ -1,4 +1,4 @@
-# Dynamic\_objectives Documentation
+# DynamicObjectives.jl Documentation
 
 **Dynamical system objective functions for global optimization and parameter estimation experiments.**
 
@@ -8,7 +8,7 @@ Parameter estimation in dynamical systems is fundamentally hard. Given observed 
 
 ## The Approach
 
-Dynamic\_objectives provides **29 benchmark ODE models** specifically designed for testing global optimization algorithms on parameter estimation tasks. Each model:
+DynamicObjectives provides **29 benchmark ODE models** specifically designed for testing global optimization algorithms on parameter estimation tasks. Each model:
 
 1. **Defines an ODE system** — Using ModelingToolkit.jl for symbolic representation
 2. **Generates synthetic data** — Time series from true parameters with optional noise
@@ -55,9 +55,11 @@ display_time_series(data)
 
 ## Installation
 
+DynamicObjectives is not registered; install it from this repository:
+
 ```julia
 using Pkg
-Pkg.add("Dynamic_objectives")
+Pkg.add(url = "https://github.com/gescholt/DynamicObjectives.jl")
 ```
 
 Or, for development against a local checkout:
@@ -118,9 +120,15 @@ Opt in per experiment via the TOML config:
 distance_function_override = "L2_squared"
 ```
 
-Available metrics: `L2_norm` (default), `L2_squared`, `log_L2_norm`. The figure above was regenerated with `pkg/DynamicObjectives/examples/figures/l2_vs_l2squared.jl`.
+Available metrics: `L2_norm` (default), `L2_squared`, `log_L2_norm`. The figure above was regenerated with `examples/figures/l2_vs_l2squared.jl`.
 
 ## Contents
 
-- [Model Catalog](model_catalog.md) — All 29 models with configurations and recommended testing sequences
-- [Glued Objectives](glued_objectives.md) — Higher-dim test problems with known CP sets via Cartesian-product gluing
+- [API Reference](api.md) — docstrings for every exported model, objective builder, and helper
+
+The narrative documentation for these objectives is maintained in the
+[Globtim documentation](https://gescholt.github.io/Globtim.jl/dev/ode_parameter_estimation/),
+next to the optimizer that consumes them:
+
+- [Model Catalog](https://gescholt.github.io/Globtim.jl/dev/model_catalog/) — all 29 models with configurations and recommended testing sequences
+- [Glued Objectives](https://gescholt.github.io/Globtim.jl/dev/glued_objectives/) — higher-dim test problems with known CP sets via Cartesian-product gluing
