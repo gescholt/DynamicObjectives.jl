@@ -1,8 +1,8 @@
 name = "DynamicObjectives"
 uuid = "a7860e71-583f-4874-99b9-9df52d7a8e5c"
 license = "MIT"
-version = "0.1.1"
-authors = ["Global Optimization Team <scholtengeorgy@gmail.com>"]
+version = "0.2.0"
+authors = ["Georgy Scholten <scholtengeorgy@gmail.com>"]
 repo = "https://github.com/gescholt/DynamicObjectives.jl"
 
 [deps]
@@ -30,6 +30,7 @@ GlobtimPostProcessing = "b470b6bb-4443-493e-998d-c7c5e1aa9116"
 Optim = "429524aa-4258-5aef-a3af-852621145aeb"
 
 [extensions]
+DynamicObjectivesGlobtimCoreExt = "Globtim"
 DynamicObjectivesGlobtimExt = ["Globtim", "GlobtimPostProcessing", "Optim"]
 
 [compat]

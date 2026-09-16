@@ -5,7 +5,7 @@
 # matching method. BinaryHeap stores its payload as `.valtree::Vector`, so the
 # fix is a one-line forward: empty the underlying vector.
 #
-# Validated by experiments/sandbox/spike_integrator_reuse.jl. Remove this file
+# Validated by an integrator-reuse spike. Remove this file
 # once either DataStructures.jl restores the method or OrdinaryDiffEqCore stops
 # calling it.
 

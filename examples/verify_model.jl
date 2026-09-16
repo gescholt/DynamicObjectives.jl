@@ -52,9 +52,12 @@ time_interval = [0.0, 20.0]
 numpoints = 30
 
 # Create ODEProblem for sample_data
+# Bind the initial condition by `unknowns(model)`, which is what
+# `make_error_distance` does; `states` is model_fn's DECLARATION order and the
+# two differ for these models.
 problem = ODEProblem(
     complete(model),
-    merge(Dict(states .=> ic), Dict(params .=> p_true)),
+    merge(Dict(ModelingToolkit.unknowns(model) .=> ic), Dict(params .=> p_true)),
     time_interval,
 )
 

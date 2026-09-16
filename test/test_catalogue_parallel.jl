@@ -1,12 +1,12 @@
 using Test
 using DynamicObjectives
 
-# Candidate-level parallelism (bead 1yt) — assert that serial and parallel
+# Candidate-level parallelism — assert that serial and parallel
 # `run_catalogue_experiments` return identical result vectors for a
 # deterministic runner. Uses `CatalogueEntry` fixtures so the code path
 # actually touches the type signature consumers will hit in practice.
 
-@testset "run_catalogue_experiments (bead 1yt)" begin
+@testset "run_catalogue_experiments" begin
 
     # Build a handful of distinct entries. The model_fn / bounds values are
     # irrelevant here — the deterministic runner only reads `entry.name`.

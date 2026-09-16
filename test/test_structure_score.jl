@@ -1,5 +1,5 @@
 """
-Tests for the second difficulty axis: structure_score / difficulty_profile (bead cbyn.1).
+Tests for the second difficulty axis: structure_score / difficulty_profile.
 
 interestingness_score ranks "deep narrow wells in a flat sea" and is close to
 blind to "dense multimodality on a curved surface" — over the 73-entry corpus
@@ -44,7 +44,7 @@ function _gs(; n_local_minima = 1, curvature_score = 0.0, plateau_fraction = 0.0
     )
 end
 
-@testset "structure_score / difficulty_profile (cbyn.1)" begin
+@testset "structure_score / difficulty_profile" begin
 
     @testset "stays in [0, 1] across the corner cases" begin
         for gs in (
@@ -79,7 +79,7 @@ end
         # Beyond the 0.7 saturation point it cannot fall further.
         @test structure_score(_gs(plateau_fraction = 1.0)) ≈ flat atol = 1e-9
 
-        # The contrast that motivates the whole bead, and the reason it is a
+        # The contrast that motivates the score, and the reason it is a
         # DISTRIBUTIONAL defect rather than a sign error in the formula.
         #
         # At a corpus-REALISTIC curvature (median curvature_score ≈ 0.089), the

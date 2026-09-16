@@ -2,12 +2,12 @@ using Test
 using DynamicObjectives
 import DynamicObjectives: Tsit5
 
-# Tests for the partial-observability helper added in bead dds.
+# Tests for the partial-observability helper.
 # The underlying capability (passing a subset of outputs to
 # make_error_distance) already worked — this suite asserts the helper
 # validates indices and that restricting outputs changes the landscape.
 
-@testset "Partial observability (bead dds)" begin
+@testset "Partial observability" begin
     model, params, states, outputs = define_constrained_lotka_volterra_4D()
     @assert length(outputs) == 4  # fixture precondition
 

@@ -1,0 +1,1 @@
+{"distance_function":"L2_norm","time_interval":[0.0,40.0],"numpoints":30,"aggregate_distances":"sum","name":"SIR_2D_1","ic":[990.0,10.0,0.0],"p_true":[0.5,0.1],"eval_timeout":null,"model_fn":"define_sir_2d_model","description":"SIR epidemic model: beta=0.5, gamma=0.1, N=1000, S(0)=990, I(0)=10","bounds":[[0.01,2.0],[0.01,1.0]]}

@@ -3,13 +3,13 @@ using DynamicObjectives
 using DynamicObjectives: AGGREGATION_STRATEGIES, resolve_aggregation
 import DynamicObjectives: Tsit5
 
-# Tests for the named aggregation registry added in bead 0iq.
+# Tests for the named aggregation registry.
 # The `aggregate_distances` knob on make_error_distance is already a
 # positional arg accepting any callable — this suite asserts the named
 # registry is present and that distinct strategies produce distinguishable
 # scalar objectives on a fixed fixture.
 
-@testset "Aggregation strategies (bead 0iq)" begin
+@testset "Aggregation strategies" begin
     @testset "Registry contents" begin
         @test AGGREGATION_STRATEGIES[:sum] === sum
         @test AGGREGATION_STRATEGIES[:maximum] === maximum

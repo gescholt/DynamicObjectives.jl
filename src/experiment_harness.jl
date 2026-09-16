@@ -1,4 +1,4 @@
-# Candidate-level parallelism for catalogue experiments (bead 1yt).
+# Candidate-level parallelism for catalogue experiments.
 # Fan-out across entries; complements the inner threading from iyj
 # (thread_evals for per-entry grid evaluation).
 
