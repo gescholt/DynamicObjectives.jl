@@ -23,6 +23,7 @@ include("compat_patches.jl")
 include("systems/daisy_models.jl")
 include("systems/lotka_volterra.jl")
 include("systems/other_systems.jl")
+include("systems/new_benchmarks.jl")
 include("data_generation.jl")
 include("error_metrics.jl")
 include("screening.jl")
@@ -38,6 +39,10 @@ include("glued_objectives.jl")
 
 # System definitions - DAISY models
 export define_daisy_ex3_model_4D, define_daisy_ex3_model_4D_no_input
+export define_daisy_ex3_model_5D
+export define_daisy_ex3_model_6D
+export define_daisy_ex3_model_7D
+export define_daisy_ex3_model_8D
 
 # System definitions - Lotka-Volterra variants
 export define_generalized_lotka_volterra_4D,
@@ -51,15 +56,62 @@ export define_generalized_lotka_volterra_4D,
     define_lotka_volterra_2D_model_v3,
     define_lotka_volterra_2D_model_v3_two_outputs,
     define_lotka_volterra_2D_sciml_benchmark,
+    define_lv2d_coupled_k000,
+    define_lv2d_coupled_k0020,
+    define_lv2d_coupled_k0050,
+    define_lv2d_coupled_k002,
+    define_lv2d_coupled_k005,
+    define_lv2d_sciml_coupled_k000,
+    define_lv2d_sciml_coupled_k0030,
+    define_lv2d_sciml_coupled_k0075,
+    define_lv2d_sciml_coupled_k003,
+    define_lv2d_sciml_coupled_k0075b,
+    define_lv2d_sciml_rc01,
+    define_lv2d_sciml_rc02,
+    define_lv2d_sciml_rc03,
+    define_lv2d_sciml_rc04,
+    define_lv2d_sciml_rc05,
+    define_lv2d_sciml_rc06,
+    define_lv2d_sciml_rc07,
+    define_lv2d_sciml_rc08,
+    define_lv2d_sciml_rc09,
+    define_lv2d_sciml_rc10,
+    define_lv2d_sciml_rc11,
+    define_lv2d_sciml_rc12,
+    define_lv2d_sciml_rc13,
+    define_lv2d_sciml_rc14,
+    define_lv2d_sciml_rc15,
+    define_lv2d_sciml_rc16,
+    define_lv2d_sciml_rc17,
+    define_lv2d_sciml_rc18,
+    define_lv2d_sciml_rc19,
+    define_lv2d_sciml_rc20,
+    define_lv2d_sciml_rc21,
+    define_lv2d_sciml_rc22,
+    define_lv2d_sciml_rc23,
+    define_lv2d_sciml_rc24,
     define_coupled_lv2d_3d_model,
     define_lv2d_reparam_3d_model,
     define_lv_3d_symmetric_model,
     create_lv2d_localid1d_3d_objective
 
 # System definitions - Other models
+export define_fhn_driven_auto, define_fhn_driven_A015, define_fhn_driven_A030
+export define_fhn_driven3_auto
+export define_fhn_coupled_A030_k000, define_fhn_coupled_A030_k002
+export define_fhn_coupled_A030_k005, define_fhn_coupled_A030_k010
+export define_fhn_coupled_A030_k1e5, define_fhn_coupled_A030_k2e5
+export define_fhn_coupled_A030_k5e5, define_fhn_coupled_A030_k1e4
+export define_fhn_coupled_A030_k0002, define_fhn_coupled_A030_k0005
+export define_fhn_coupled_A030_k0020, define_fhn_coupled_A030_k0050
 export define_fitzhugh_nagumo_3D_model,
     define_fitzhugh_nagumo_3D_model_two_outputs,
     define_goodwin_oscillator_4D,
+    define_goodwin_oscillator_5D,
+    define_goodwin_oscillator_6D,
+    define_goodwin_oscillator_4D_hill2,
+    define_goodwin_oscillator_4D_hill4,
+    define_goodwin_oscillator_4D_hill6,
     define_goodwin_oscillator_3D,
     define_goodwin_3d_product_obs_model,
     define_rosenzweig_macarthur_3d_model,
@@ -69,7 +121,16 @@ export define_fitzhugh_nagumo_3D_model,
     define_fhn_3d_locally_id_model,
     define_simple_2D_model_locally_identifiable,
     define_simple_2D_model_locally_identifiable_square,
-    define_simple_1D_model_locally_identifiable
+    define_simple_1D_model_locally_identifiable,
+    # New benchmark models (epidemiology, neuroscience, PK, chemistry, biochemistry)
+    define_sir_2d_model,
+    define_seir_3d_model,
+    define_hindmarsh_rose_3d_model,
+    define_pk_2comp_3d_model,
+    define_brusselator_2d_model,
+    define_michaelis_menten_2d_model,
+    define_mm_chain_3d_model,
+    define_rosenzweig_macarthur_4d_model
 
 # Data generation
 export sample_data
@@ -80,10 +141,10 @@ export make_error_distance,
     L2_norm,
     L2_squared,
     log_L2_norm,
-    # Aggregation strategy registry (bead 0iq)
+    # Aggregation strategy registry
     AGGREGATION_STRATEGIES,
     resolve_aggregation,
-    # Partial observability helper (bead dds)
+    # Partial observability helper
     make_partial_observability_distance,
     # Tolerant objective wrapper (mutable solver/tolerance settings)
     TolerantObjective,
@@ -172,22 +233,27 @@ export CandidateResult, build_bounds, print_candidate_summary_table
 
 # TOML-driven experiment pipeline
 export run_experiment_from_config
+export build_experiment_objective
 
 # TOML-driven screening pipeline
 export ScreeningConfig, load_screening_config, run_screening_from_config
 
 # Grid-based interestingness scoring
 export GridScoreResult,
-    score_landscape_grid, interestingness_score, score_top_candidates, print_grid_score,
-    structure_score, difficulty_profile
+    score_landscape_grid,
+    interestingness_score,
+    score_top_candidates,
+    print_grid_score,
+    structure_score,
+    difficulty_profile
 
 # Parallel grid evaluation (thread-safe factory pattern)
 export evaluate_grid_threaded
 
-# Candidate-level parallelism for catalogue experiments (bead 1yt)
+# Candidate-level parallelism for catalogue experiments
 export run_catalogue_experiments
 
-# Cartesian-product gluing for higher-dim test problems with known CPs (bead zwbs.10.1)
+# Cartesian-product gluing for higher-dim test problems with known CPs
 export glue, glue_catalogue, count_oracle_cps_in_box
 
 # Initialize function registries with all known model/distance/aggregation functions

@@ -321,4 +321,4 @@ error_func = make_error_distance(
 
 ## See Also
 
-- [README](../../README.md) — Package overview, installation, and TOML pipeline usage
+- [Home](index.md) — package overview, installation, and TOML pipeline usage

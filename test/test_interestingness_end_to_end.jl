@@ -2,8 +2,8 @@ using Test
 using DynamicObjectives
 import DynamicObjectives: Tsit5
 
-# End-to-end regression test for bead bzf (grid-based interestingness
-# scoring for top p_true candidates).
+# End-to-end regression test for grid-based interestingness scoring of the
+# top p_true candidates.
 #
 # The implementation — screen_and_probe → score_top_candidates →
 # interestingness_score — already exists in src/screening.jl and
@@ -14,7 +14,7 @@ import DynamicObjectives: Tsit5
 # Runtime budget: LV 2D fixture, tiny candidate counts, points_per_dim=4
 # → ~32 ODE solves total at Tsit5/1e-4.
 
-@testset "Interestingness end-to-end (bead bzf)" begin
+@testset "Interestingness end-to-end" begin
     model, params, states, outputs = define_lotka_volterra_2D_model_v3()
     ic = [1.0, 1.0]
     bounds = [(0.5, 2.0), (0.5, 2.0)]

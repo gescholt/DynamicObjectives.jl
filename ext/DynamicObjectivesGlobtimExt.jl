@@ -77,152 +77,16 @@ function DynamicObjectives.run_experiment_from_config(path::String; io::IO = std
     config.description != "" && println(io, "  $(config.description)")
 
     # ── 2. Resolve model ──
-    entry = nothing
-    objective = nothing
-    bounds = nothing
-    p_true = nothing
-    obj_name = config.name
-
-    if config.catalogue_path !== nothing
-        # ── 2a. Catalogue mode: load entry, build TolerantObjective ──
-        entries = load_catalogue(config.catalogue_path; model_name = config.entry_name)
-        matching = filter(e -> e.name == config.entry_name, entries)
-        isempty(matching) && error(
-            "Entry '$(config.entry_name)' not found in catalogue '$(config.catalogue_path)'. " *
-            "Available: $(join([e.name for e in entries], ", "))",
-        )
-        entry = first(matching)
-
-        # p_true: config overrides catalogue
-        p_true = config.p_true !== nothing ? config.p_true : entry.p_true
-
-        println(io, "  Model: $(config.entry_name) from $(config.catalogue_path)")
-        if config.p_true !== nothing
-            println(
-                io,
-                "  p_true: $p_true (from config, overriding catalogue $(entry.p_true))",
-            )
-        else
-            println(io, "  p_true: $p_true")
-        end
-        if config.time_interval !== nothing
-            println(
-                io,
-                "  time_interval: $(config.time_interval) (overriding catalogue default $(entry.time_interval))",
-            )
-        end
-        if config.sample_times !== nothing
-            println(
-                io,
-                "  sample_times: $(length(config.sample_times)) explicit time points [$(config.sample_times[1]), ..., $(config.sample_times[end])]",
-            )
-        end
-
-        # Build TolerantObjective from catalogue entry
-        model, _, _, outputs = entry.model_fn()
-
-        # Resolve solver settings (config overrides, then defaults)
-        solver =
-            config.solver_method !== nothing ? _resolve_solver(config.solver_method) :
-            Tsit5()
-        abstol = config.solver_abstol !== nothing ? config.solver_abstol : 1e-4
-        reltol = config.solver_reltol !== nothing ? config.solver_reltol : 1e-4
-
-        # sample_times overrides both time_interval and numpoints
-        if config.sample_times !== nothing
-            time_interval = [config.sample_times[1], config.sample_times[end]]
-            numpoints = length(config.sample_times)
-            uneven_sampling_times = config.sample_times
-        else
-            # numpoints: TOML config overrides catalogue entry default
-            numpoints =
-                config.solver_numpoints !== nothing ? config.solver_numpoints :
-                entry.numpoints
-            # time_interval: TOML config overrides catalogue entry default
-            time_interval =
-                config.time_interval !== nothing ? config.time_interval :
-                entry.time_interval
-            uneven_sampling_times = Float64[]
-        end
-
-        # Honour [model].distance_function_override — opt-in swap of the
-        # catalogue entry's distance_function (e.g., L2_squared in place of
-        # L2_norm) without editing the catalogue file. Resolves through
-        # DISTANCE_REGISTRY.
-        distance_fn = if config.distance_function_override !== nothing
-            resolved =
-                get(DISTANCE_REGISTRY, config.distance_function_override, nothing)
-            resolved === nothing && error(
-                "distance_function_override = \"$(config.distance_function_override)\" " *
-                "not in DISTANCE_REGISTRY (have: " *
-                join(sort(collect(keys(DISTANCE_REGISTRY))), ", ") *
-                ")",
-            )
-            println(
-                io,
-                "  distance_function_override: \"$(config.distance_function_override)\" " *
-                "(catalogue entry was using its default)",
-            )
-            resolved
-        else
-            entry.distance_function
-        end
-
-        objective = TolerantObjective(
-            model,
-            outputs,
-            entry.ic,
-            p_true,
-            time_interval,
-            numpoints,
-            distance_fn,
-            entry.aggregate_distances;
-            solver = solver,
-            abstol = abstol,
-            reltol = reltol,
-            uneven_sampling_times = uneven_sampling_times,
-        )
-
-        # Domain center: config p_center → p_true (which may itself be overridden)
-        p_center = config.p_center !== nothing ? config.p_center : p_true
-        if config.p_center !== nothing
-            println(
-                io,
-                "  p_center: $p_center (from config, domain centered away from p_true)",
-            )
-        end
-
-        # Build bounds from config domain specification
-        if config.radius !== nothing
-            bounds = build_bounds(p_center, config.radius)
-        elseif config.radii !== nothing
-            bounds = build_bounds(p_center, config.radii)
-        elseif config.bounds !== nothing
-            bounds = config.bounds
-        else
-            bounds = entry.bounds
-        end
-
-        obj_name = config.entry_name
-    else
-        # ── 2b. Analytical mode: look up function from FUNCTION_REGISTRY ──
-        func_name = config.analytical_function
-        dim = config.dimension
-        println(io, "  Analytical function: $func_name ($(dim)D)")
-
-        bench = Globtim.get_benchmark_config_by_name(func_name, dim)
-        objective = bench.objective
-        obj_name = bench.name
-
-        # Bounds: TOML config overrides registry defaults
-        if config.bounds !== nothing
-            bounds = config.bounds
-        else
-            bounds = bench.bounds
-        end
-
-        println(io, "  Bounds: $(join(["[$(lb), $(ub)]" for (lb, ub) in bounds], " × "))")
-    end
+    # Single source of truth for config → (objective, bounds) resolution:
+    # DynamicObjectives.build_experiment_objective, provided by the narrow
+    # DynamicObjectivesGlobtimCoreExt extension (Globtim-only trigger) and
+    # shared with the per-axis audit/counterfactual drivers (rmow).
+    resolved = DynamicObjectives.build_experiment_objective(config; io = io)
+    objective = resolved.objective
+    bounds = resolved.bounds
+    obj_name = resolved.obj_name
+    entry = resolved.entry
+    p_true = resolved.p_true
 
     # ── 3. Build ExperimentParams ──
     experiment_params = Globtim.config_to_experiment_params(config)
@@ -263,6 +127,7 @@ function DynamicObjectives.run_experiment_from_config(path::String; io::IO = std
             "entry_name" => config.entry_name,                     # e.g. "lv4d_basic" or nothing
         ),
         true_params = p_true,
+        start_system = Symbol(something(config.hc_start_system, "auto")),
     )
 
     degree_results = exp_result[:degree_results]
@@ -282,7 +147,7 @@ function DynamicObjectives.run_experiment_from_config(path::String; io::IO = std
         # Build refinement config
         # Method dispatch (4xgu): NelderMead (default), BFGS, LBFGS supported in
         # the cluster path. Newton variants are not yet in the cluster runner —
-        # use experiments/sandbox/run_refinement_shootout.jl for Newton comparison.
+        # a refinement shootout is the tool for Newton comparison.
         ref_method = if config.refinement_method == "BFGS"
             BFGS()
         elseif config.refinement_method == "LBFGS"
@@ -299,7 +164,7 @@ function DynamicObjectives.run_experiment_from_config(path::String; io::IO = std
         ref_grad_tol =
             config.refinement_gradient_tolerance !== nothing ?
             config.refinement_gradient_tolerance : 1e-4
-        # Newton-step-norm tolerance (62qv): scale-invariant CP criterion. Default
+        # Newton-step-norm tolerance: scale-invariant CP criterion. Default
         # 1e-4 matches "a Newton step would move us less than 1e-4."
         ref_step_tol =
             config.refinement_step_tolerance !== nothing ?

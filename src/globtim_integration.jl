@@ -69,6 +69,23 @@ See the extension module for full documentation.
 """
 function run_experiment_from_config end
 
+"""
+    build_experiment_objective(config; io::IO=stdout)
+        -> (; objective, bounds, obj_name, entry, p_true)
+
+Resolve a parsed TOML experiment config (`Globtim.ExperimentPipelineConfig`)
+into an objective function and domain bounds — the canonical model-resolution
+step shared by `run_experiment_from_config` and the per-axis audit /
+counterfactual cluster drivers.
+
+**Requires** `using Globtim` (activates the narrow
+`DynamicObjectivesGlobtimCoreExt` package extension — GlobtimPostProcessing /
+Optim are NOT needed).
+
+See the extension module for full documentation of the resolution semantics.
+"""
+function build_experiment_objective end
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # Solver resolution — shared between core and extension
 # ═══════════════════════════════════════════════════════════════════════════════
