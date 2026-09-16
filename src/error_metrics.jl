@@ -162,15 +162,18 @@ function make_error_distance(
         data_sample_true[key] = add_noise_in_time_series(values)
     end
 
-    # ── Build per-thread integrator pool for the fast path (vemc) ──────────
-    # Per-thread `init`'d integrators + a single `setp` closure replace the
-    # per-call `remake(problem; p=...)+solve(...)` allocation. The closure
-    # branches on T2: Float64 → pool (~15 μs/call), Dual/other → legacy path.
-    # See experiments/sandbox/spike_integrator_reuse.jl for validation.
+    # ── Build the integrator freelist for the fast path (vemc) ─────────────
+    # A Channel of `init`'d (integrator, out_buffer) pairs + a single `setp`
+    # closure replace the per-call `remake(problem; p=...)+solve(...)`
+    # allocation. take!/put! per call (~100 ns) is noise against the ~15 μs
+    # solve, and unlike `pool[Threads.threadid()]` it cannot alias two
+    # migrating tasks onto one integrator. The closure branches on T2:
+    # Float64 → pool (~15 μs/call), Dual/other → legacy path.
+    # Validated by an integrator-reuse spike.
     sampling_times_vec = uneven_sampling ?
         collect(uneven_sampling_times) :
         collect(range(time_interval[1], time_interval[2], length = numpoints))
-    integrators_pool, setp_fn, out_buffers = _build_integrator_pool(
+    integrators_pool, setp_fn = _build_integrator_pool(
         problem,
         model,
         solver,
@@ -197,7 +200,6 @@ function make_error_distance(
                     aggregate_distances,
                     integrators_pool,
                     setp_fn,
-                    out_buffers,
                     numpoints,
                 ) : _compute_error_distance(
                     p_test,
@@ -260,7 +262,6 @@ function make_error_distance(
                     aggregate_distances,
                     integrators_pool,
                     setp_fn,
-                    out_buffers,
                     numpoints,
                 ) : _compute_error_distance(
                     p_test,
@@ -294,7 +295,6 @@ function make_error_distance(
                 aggregate_distances,
                 integrators_pool,
                 setp_fn,
-                out_buffers,
                 numpoints,
             ) : _compute_error_distance(
                 p_test,
@@ -397,10 +397,16 @@ function make_error_distance(
         ])
     end
 
-    # Fast path: reuse the per-thread integrator and pre-allocated output buffer.
+    # Fast path: borrow an (integrator, out_buffer) pair from the freelist.
     # Mirrors _compute_error_distance's validation + aggregation, but the inner
     # `sample_data!` does setp/reinit!/solve! against a pre-built integrator
     # instead of remake+solve. Float64-only — gated by the outer closure.
+    #
+    # take!/put! rather than `pool[Threads.threadid()]`: under task migration
+    # (Julia ≥1.7) a task can move threads between the threadid() read and the
+    # solve, aliasing two tasks onto one integrator — which corrupts the solve
+    # silently (the return_inf_on_error closure absorbs it as Inf). The
+    # freelist hands each in-flight call exclusive ownership of a pair.
     function _compute_error_distance_pool(
         p_test::AbstractVector{Float64},
         measured_data,
@@ -409,7 +415,6 @@ function make_error_distance(
         aggregate_distances,
         integrators_pool,
         setp_fn,
-        out_buffers,
         datasize,
     )
         if datasize != length(data_sample_true["t"])
@@ -418,47 +423,50 @@ function make_error_distance(
             )
         end
 
-        tid = Threads.threadid()
-        integrator = integrators_pool[tid]
-        out = out_buffers[tid]
-
+        integrator, out = take!(integrators_pool)
         try
-            sample_data!(out, integrator, p_test, setp_fn, measured_data)
-        catch e
-            if isa(e, InterruptException)
-                rethrow(e)
-            end
-            error(
-                "ODE sampling (integrator-pool path) failed for parameters p_test=$p_test: $(sprint(showerror, e))",
-            )
-        end
-
-        for (key, values) in out
-            if key == "t"
-                continue
-            end
-            if any(isnan, values)
+            try
+                sample_data!(out, integrator, p_test, setp_fn, measured_data)
+            catch e
+                if isa(e, InterruptException)
+                    rethrow(e)
+                end
                 error(
-                    "NaN detected in sampled data for variable '$key' with parameters p_test=$p_test",
+                    "ODE sampling (integrator-pool path) failed for parameters p_test=$p_test: $(sprint(showerror, e))",
                 )
             end
-            if any(isinf, values)
-                error(
-                    "Inf detected in sampled data for variable '$key' with parameters p_test=$p_test",
-                )
-            end
-            if any(isnan, data_sample_true[key])
-                error("NaN detected in reference data for variable '$key'")
-            end
-            if any(isinf, data_sample_true[key])
-                error("Inf detected in reference data for variable '$key'")
-            end
-        end
 
-        return aggregate_distances([
-            distance_function(data_sample_true[key], out[key]) for
-            key in keys(data_sample_true) if key != "t"
-        ])
+            for (key, values) in out
+                if key == "t"
+                    continue
+                end
+                if any(isnan, values)
+                    error(
+                        "NaN detected in sampled data for variable '$key' with parameters p_test=$p_test",
+                    )
+                end
+                if any(isinf, values)
+                    error(
+                        "Inf detected in sampled data for variable '$key' with parameters p_test=$p_test",
+                    )
+                end
+                if any(isnan, data_sample_true[key])
+                    error("NaN detected in reference data for variable '$key'")
+                end
+                if any(isinf, data_sample_true[key])
+                    error("Inf detected in reference data for variable '$key'")
+                end
+            end
+
+            return aggregate_distances([
+                distance_function(data_sample_true[key], out[key]) for
+                key in keys(data_sample_true) if key != "t"
+            ])
+        finally
+            # A pair borrowed by a failed call goes back too: sample_data!'s
+            # reinit! resets the integrator state on next use.
+            put!(integrators_pool, (integrator, out))
+        end
     end
 
     return error_distance
@@ -470,12 +478,17 @@ end
 
 """
     _build_integrator_pool(problem, model, solver, abstol, reltol, saveat, outputs, numpoints)
-        -> (integrators::Vector, setp_fn, out_buffers::Vector{OrderedDict})
+        -> (pool::Channel, setp_fn)
 
-Build the per-thread scaffolding used by the `make_error_distance` Float64 fast
-path: one `init`'d integrator per thread (sharing the same `problem` template),
-a single `setp` closure for in-place parameter mutation, and one pre-allocated
-output buffer (`OrderedDict{Any,Vector{Float64}}`) per thread.
+Build the freelist used by the `make_error_distance` Float64 fast path: a
+`Channel` of `(integrator, out_buffer)` pairs — each an `init`'d integrator
+sharing the same `problem` template plus a pre-allocated output buffer
+(`OrderedDict{Any,Vector{Float64}}`) — and a single `setp` closure for
+in-place parameter mutation. Callers `take!` a pair for exclusive use and
+`put!` it back; a Channel rather than `pool[Threads.threadid()]` indexing
+because task migration can move a task between the threadid() read and the
+solve, aliasing two tasks onto one integrator (silent-Inf corruption under
+`thread_evals`).
 
 If construction fails (e.g., the model is incompatible with `setp` or `init`),
 raises — callers should treat that as a real configuration error, not a
@@ -497,20 +510,18 @@ function _build_integrator_pool(
     # Bail out for composite / auto-switching solvers (e.g. AutoTsit5(Rosenbrock23())).
     # CompositeAlgorithm carries stiffness-detector state in AutoSwitch that
     # `reinit!` does not reset, causing ~1e-5 drift across sequential solves
-    # (diagnostic: experiments/sandbox/diagnose_vemc_drift.jl). Returning
-    # (nothing, nothing, nothing) signals the caller to use the legacy
-    # remake+solve path, which is allocation-heavy but correct.
+    # (established by a drift diagnostic). Returning
+    # (nothing, nothing) signals the caller to use the legacy remake+solve
+    # path, which is allocation-heavy but correct.
     if !_solver_pool_safe(solver)
-        return nothing, nothing, nothing
+        return nothing, nothing
     end
 
-    # Size the pool by Threads.maxthreadid() (default + interactive pools), not
-    # Threads.nthreads() (default pool only). On Julia 1.9+, Threads.threadid()
-    # may return values up to maxthreadid() when tasks dispatch to the
-    # interactive pool. Sizing only by nthreads() makes integrators_pool[tid]
-    # raise BoundsError on those threads — silently caught by the closure's
-    # try/catch as Inf, biasing the audit's polynomial fit and shifting leaf
-    # counts down by ~13% with non-deterministic variance across runs.
+    # Freelist capacity: Threads.maxthreadid() (default + interactive pools)
+    # bounds how many tasks the schedulers can run simultaneously, so take!
+    # never blocks under the chunked-@spawn fan-out; if it ever did (more
+    # in-flight callers than pairs), the call waits for a free pair instead
+    # of aliasing state.
     n = Threads.maxthreadid()
     proto = SciMLBase.init(
         problem,
@@ -521,10 +532,23 @@ function _build_integrator_pool(
         verbose = false,
         maxiters = 1000000,
     )
-    pool = Vector{typeof(proto)}(undef, n)
-    pool[1] = proto
-    for i in 2:n
-        pool[i] = SciMLBase.init(
+
+    setp_fn = SciMLBase.setp(problem, ModelingToolkit.parameters(model))
+
+    saveat_vec = collect(Float64, saveat)
+    make_buffer() =
+        let buf = DataStructures.OrderedDict{Any,Vector{Float64}}()
+            for v in outputs
+                buf[Num(v.lhs)] = Vector{Float64}(undef, numpoints)
+            end
+            buf["t"] = copy(saveat_vec)
+            buf
+        end
+
+    pool = Channel{Tuple{typeof(proto),DataStructures.OrderedDict{Any,Vector{Float64}}}}(n)
+    put!(pool, (proto, make_buffer()))
+    for _ in 2:n
+        integ = SciMLBase.init(
             problem,
             solver;
             saveat = saveat,
@@ -533,22 +557,10 @@ function _build_integrator_pool(
             verbose = false,
             maxiters = 1000000,
         )
+        put!(pool, (integ, make_buffer()))
     end
 
-    setp_fn = SciMLBase.setp(problem, ModelingToolkit.parameters(model))
-
-    saveat_vec = collect(Float64, saveat)
-    out_buffers = [
-        let buf = DataStructures.OrderedDict{Any,Vector{Float64}}()
-            for v in outputs
-                buf[Num(v.lhs)] = Vector{Float64}(undef, numpoints)
-            end
-            buf["t"] = copy(saveat_vec)
-            buf
-        end for _ in 1:n
-    ]
-
-    return pool, setp_fn, out_buffers
+    return pool, setp_fn
 end
 
 #==============================================================================#
@@ -744,7 +756,7 @@ function _rebuild_error_func!(obj::TolerantObjective)
 end
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Named aggregation strategies (bead 0iq)
+# Named aggregation strategies
 # ─────────────────────────────────────────────────────────────────────────────
 
 """
@@ -759,7 +771,7 @@ Current strategies:
 - `:mean`    — arithmetic mean
 - `:maximum` — worst-case output error
 - `:minimum` — best-case output error
-- `:first`   — first output only (legacy behaviour prior to bead pam)
+- `:first`   — first output only (legacy behaviour)
 - `:rms`     — root-mean-square of per-output distances
 """
 const AGGREGATION_STRATEGIES = Dict{Symbol,Function}(
@@ -790,7 +802,7 @@ function resolve_aggregation(name::Symbol)
 end
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Partial observability helper (bead dds)
+# Partial observability helper
 # ─────────────────────────────────────────────────────────────────────────────
 
 """

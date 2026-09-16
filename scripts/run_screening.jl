@@ -1,6 +1,6 @@
 #!/usr/bin/env julia
 # ═══════════════════════════════════════════════════════════════════════════════
-# run_screening.jl — TOML-driven entry point for screen_and_probe (bead 20p7)
+# run_screening.jl — TOML-driven entry point for screen_and_probe
 #
 # Replaces the per-model `run_*_screening.jl` example scripts with a single
 # config-driven driver. The TOML's [screening] section carries every parameter
@@ -18,7 +18,7 @@
 #   - catalogue_path  output JSONL path (relative paths resolve via globtim_results/)
 #
 # All other [screening] fields are optional; defaults come from
-# experiments/sandbox/sandbox_shared.jl::SCREENING_*_DEFAULT.
+# the sandbox screening defaults (SCREENING_*_DEFAULT).
 #
 # See examples/configs/screening_lv4d.toml for a worked example.
 # ═══════════════════════════════════════════════════════════════════════════════

@@ -43,6 +43,14 @@
         "define_simple_2D_model_locally_identifiable" => (p = [1.0, 2.0], ic = [1.0]),
         "define_simple_2D_model_locally_identifiable_square" =>
             (p = [0.5, 2.0], ic = [1.0]),
+        # New benchmark models
+        "define_sir_2d_model" => (p = [0.5, 0.1], ic = [990.0, 10.0, 0.0]),
+        "define_seir_3d_model" => (p = [0.6, 0.2, 0.1], ic = [990.0, 0.0, 10.0, 0.0]),
+        "define_hindmarsh_rose_3d_model" =>
+            (p = [3.0, 5.0, 1.0], ic = [-1.0, 0.0, 0.0]),
+        "define_pk_2comp_3d_model" => (p = [0.1, 0.5, 0.3], ic = [10.0, 0.0]),
+        "define_brusselator_2d_model" => (p = [1.0, 3.0], ic = [1.0, 1.0]),
+        "define_michaelis_menten_2d_model" => (p = [2.0, 1.0], ic = [5.0, 0.0]),
     )
 
     for (name, fn) in MODEL_REGISTRY

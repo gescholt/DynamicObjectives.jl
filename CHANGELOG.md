@@ -4,6 +4,48 @@ All notable changes to Dynamic_objectives.jl are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-09-10
+
+### Added
+
+- **Driven FitzHugh--Nagumo family** — `define_fhn_driven_auto`,
+  `define_fhn_driven_A015`, `define_fhn_driven_A030`, `define_fhn_driven3_auto`.
+  Spike-count aliasing creases the loss into tens of local minima, which makes
+  the family a completeness test rather than a recovery test.
+- **Coupled FHN and coupled LV families** across a coupling ladder
+  (`define_fhn_coupled_A030_k*`, `define_lv2d_coupled_k*`,
+  `define_lv2d_sciml_coupled_k*`, and 24 randomized-wiring
+  `define_lv2d_sciml_rc*` instances). At zero coupling the summed-square loss
+  splits exactly, so the four-dimensional critical set is the product of the two
+  factor sets and is known without a four-dimensional grid.
+- **Nested DAISY and Goodwin ladders** — `define_daisy_ex3_model_5D` through
+  `_8D`, `define_goodwin_oscillator_5D`/`_6D`, and the Hill-exponent dial
+  `define_goodwin_oscillator_4D_hill2`/`_hill4`/`_hill6`. Each rung is an exact
+  slice of the next, so cost can be measured against dimension with the
+  landscape held fixed.
+- **New benchmark systems**: Brusselator 2D, Michaelis--Menten 2D, MM-chain 3D,
+  SIR 2D, SEIR 3D, Hindmarsh--Rose 3D, two-compartment PK 3D, and a
+  locally-identifiable 1D model.
+- **Grid-based interestingness scoring** — `interestingness_score`,
+  `score_top_candidates`, `print_grid_score`, and `build_experiment_objective`.
+
+### Fixed
+
+- **`PrettyTables` pinned to 2.** Version 3 changed the `backend` keyword from
+  a `Symbol` to a `Val`, which broke every table-printing path
+  (`expected Symbol, got Val{:text}`). This is the failure the package CI has
+  been hitting.
+- Canonical initial-condition binding in the last 15 call sites; the package
+  tests were not harmless about this.
+- Four numerics-audit fixes covering `Dual`/`BigFloat` inputs reaching generic
+  signatures.
+
+### Changed
+
+- **Relicensed from GPL-3.0 to MIT.** The published `LICENSE` was already MIT.
+- Comments and docstrings no longer cite internal issue ids or monorepo-only
+  script paths.
+
 ## [0.1.1] - 2026-08-05
 
 ### Fixed

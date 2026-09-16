@@ -1,0 +1,1 @@
+{"aggregate_distances":"sum","numpoints":30,"name":"mm2d","p_true":[2.0,1.0],"description":"Michaelis-Menten kinetics: Vmax=2.0, Km=1.0, S(0)=5.0, ES(0)=0.0, E_total=1.0","distance_function":"L2_norm","dimension":2,"time_interval":[0.0,20.0],"ic":[5.0,0.0],"eval_timeout":null,"model_fn":"define_michaelis_menten_2d_model","bounds":[[1.0,3.0],[0.5,1.5]]}

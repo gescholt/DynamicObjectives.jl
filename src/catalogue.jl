@@ -120,6 +120,10 @@ function _init_registries!()
 
     # Model functions — all define_* from systems/
     register_model!("define_daisy_ex3_model_4D", define_daisy_ex3_model_4D)
+    register_model!("define_daisy_ex3_model_5D", define_daisy_ex3_model_5D)
+    register_model!("define_daisy_ex3_model_6D", define_daisy_ex3_model_6D)
+    register_model!("define_daisy_ex3_model_7D", define_daisy_ex3_model_7D)
+    register_model!("define_daisy_ex3_model_8D", define_daisy_ex3_model_8D)
     register_model!(
         "define_daisy_ex3_model_4D_no_input",
         define_daisy_ex3_model_4D_no_input,
@@ -150,12 +154,45 @@ function _init_registries!()
         "define_lotka_volterra_2D_sciml_benchmark",
         define_lotka_volterra_2D_sciml_benchmark,
     )
+    register_model!("define_lv2d_coupled_k000", define_lv2d_coupled_k000)
+    register_model!("define_lv2d_coupled_k0020", define_lv2d_coupled_k0020)
+    register_model!("define_lv2d_coupled_k0050", define_lv2d_coupled_k0050)
+    register_model!("define_lv2d_coupled_k002", define_lv2d_coupled_k002)
+    register_model!("define_lv2d_coupled_k005", define_lv2d_coupled_k005)
+    register_model!("define_lv2d_sciml_coupled_k000", define_lv2d_sciml_coupled_k000)
+    register_model!("define_lv2d_sciml_coupled_k0030", define_lv2d_sciml_coupled_k0030)
+    register_model!("define_lv2d_sciml_coupled_k0075", define_lv2d_sciml_coupled_k0075)
+    register_model!("define_lv2d_sciml_coupled_k003", define_lv2d_sciml_coupled_k003)
+    register_model!("define_lv2d_sciml_coupled_k0075b", define_lv2d_sciml_coupled_k0075b)
+    # Randomized-wiring family: 24 fixed literal draws (see lotka_volterra.jl).
+    for i = 1:24
+        nm = "define_lv2d_sciml_rc" * lpad(i, 2, '0')
+        register_model!(nm, getfield(@__MODULE__, Symbol(nm)))
+    end
     register_model!("define_fitzhugh_nagumo_3D_model", define_fitzhugh_nagumo_3D_model)
+    register_model!("define_fhn_driven_auto", define_fhn_driven_auto)
+    register_model!("define_fhn_driven_A015", define_fhn_driven_A015)
+    register_model!("define_fhn_driven_A030", define_fhn_driven_A030)
+    register_model!("define_fhn_driven3_auto", define_fhn_driven3_auto)
+    register_model!("define_fhn_coupled_A030_k000", define_fhn_coupled_A030_k000)
+    register_model!("define_fhn_coupled_A030_k002", define_fhn_coupled_A030_k002)
+    register_model!("define_fhn_coupled_A030_k005", define_fhn_coupled_A030_k005)
+    register_model!("define_fhn_coupled_A030_k010", define_fhn_coupled_A030_k010)
+    register_model!("define_fhn_coupled_A030_k0002", define_fhn_coupled_A030_k0002)
+    register_model!("define_fhn_coupled_A030_k0005", define_fhn_coupled_A030_k0005)
+    register_model!("define_fhn_coupled_A030_k0020", define_fhn_coupled_A030_k0020)
+    register_model!("define_fhn_coupled_A030_k0050", define_fhn_coupled_A030_k0050)
+    register_model!("define_fhn_coupled_A030_k1e5", define_fhn_coupled_A030_k1e5)
+    register_model!("define_fhn_coupled_A030_k2e5", define_fhn_coupled_A030_k2e5)
+    register_model!("define_fhn_coupled_A030_k5e5", define_fhn_coupled_A030_k5e5)
+    register_model!("define_fhn_coupled_A030_k1e4", define_fhn_coupled_A030_k1e4)
     register_model!(
         "define_fitzhugh_nagumo_3D_model_two_outputs",
         define_fitzhugh_nagumo_3D_model_two_outputs,
     )
     register_model!("define_goodwin_oscillator_4D", define_goodwin_oscillator_4D)
+    register_model!("define_goodwin_oscillator_5D", define_goodwin_oscillator_5D)
+    register_model!("define_goodwin_oscillator_6D", define_goodwin_oscillator_6D)
     register_model!(
         "define_simple_2D_model_locally_identifiable",
         define_simple_2D_model_locally_identifiable,
@@ -187,6 +224,24 @@ function _init_registries!()
     )
     register_model!("define_fhn_3d_locally_id_model", define_fhn_3d_locally_id_model)
     register_model!("define_lv_3d_symmetric_model", define_lv_3d_symmetric_model)
+
+    # New benchmark models (epidemiology, neuroscience, PK, chemistry, biochemistry)
+    register_model!("define_sir_2d_model", define_sir_2d_model)
+    register_model!("define_seir_3d_model", define_seir_3d_model)
+    register_model!("define_hindmarsh_rose_3d_model", define_hindmarsh_rose_3d_model)
+    register_model!("define_pk_2comp_3d_model", define_pk_2comp_3d_model)
+    register_model!("define_brusselator_2d_model", define_brusselator_2d_model)
+    register_model!("define_michaelis_menten_2d_model", define_michaelis_menten_2d_model)
+    register_model!("define_goodwin_oscillator_4D_hill2", define_goodwin_oscillator_4D_hill2)
+    register_model!("define_goodwin_oscillator_4D_hill4", define_goodwin_oscillator_4D_hill4)
+    register_model!("define_goodwin_oscillator_4D_hill6", define_goodwin_oscillator_4D_hill6)
+    register_model!("define_mm_chain_3d_model", define_mm_chain_3d_model)
+
+    # 4-D trophic model (3-species RMA food chain)
+    register_model!(
+        "define_rosenzweig_macarthur_4d_model",
+        define_rosenzweig_macarthur_4d_model,
+    )
 
     return nothing
 end
@@ -544,22 +599,29 @@ function load_catalogue(
     isfile(path) || error("Catalogue file not found: $path")
 
     entries = CatalogueEntry[]
-    for line in eachline(path)
-        stripped = strip(line)
-        isempty(stripped) && continue
-        d = JSON3.read(stripped, Dict{String,Any})
-        entry = _dict_to_entry(d)
+    # Open explicitly rather than iterating `eachline(path)`: that form closes
+    # its handle only when the iterator is exhausted, and the `max_entries`
+    # break below leaves it open. POSIX unlinks an open file happily, so this
+    # went unnoticed on Linux and macOS, but on Windows the caller then gets
+    # EBUSY deleting or moving the file. `open(...) do` closes on break.
+    open(path, "r") do io
+        for line in eachline(io)
+            stripped = strip(line)
+            isempty(stripped) && continue
+            d = JSON3.read(stripped, Dict{String,Any})
+            entry = _dict_to_entry(d)
 
-        # Apply model_name filter
-        if model_name !== nothing && !startswith(entry.name, model_name)
-            continue
-        end
+            # Apply model_name filter
+            if model_name !== nothing && !startswith(entry.name, model_name)
+                continue
+            end
 
-        push!(entries, entry)
+            push!(entries, entry)
 
-        # Apply max_entries limit
-        if max_entries !== nothing && length(entries) >= max_entries
-            break
+            # Apply max_entries limit
+            if max_entries !== nothing && length(entries) >= max_entries
+                break
+            end
         end
     end
 
