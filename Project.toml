@@ -41,6 +41,17 @@ GlobtimPostProcessing = "0.1"
 JSON3 = "1.14"
 LinearAlgebra = "1"
 Logging = "1"
+# The SciML majors below are pinned together on purpose: MTK 11 / SciMLBase 3 /
+# OrdinaryDiffEq* 2 only resolve as one wave, and the wave needs a source port
+# this package has not had. Measured 2026-09-16 on a fresh resolve (MTK 11.26.8,
+# SciMLBase 3.55.0, Symbolics 7.39.2, solvers 2.x): everything precompiles, then
+# the suite errors twice. (1) `verbose = false` into SciMLBase.init is rejected —
+# "Passing a `Bool` for `verbose` is no longer supported in OrdinaryDiffEq v7" —
+# at error_metrics.jl:532/557, data_generation.jl:81, screening.jl:236. (2) with
+# those dropped, `SciMLBase.setp` is undefined (error_metrics.jl:536); it now
+# lives in SymbolicIndexingInterface. Widening without that port is a compat lie:
+# the workspace stays on the old stack (Opt_Traj and BioObjectives pin
+# SciMLBase 2) while a fresh mirror-CI resolve takes the new one and errors.
 ModelingToolkit = "10"
 Optim = "1, 2"
 OrdinaryDiffEqRosenbrock = "1"
