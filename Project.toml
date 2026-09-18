@@ -35,7 +35,10 @@ DynamicObjectivesGlobtimExt = ["Globtim", "GlobtimPostProcessing", "Optim"]
 
 [compat]
 DataStructures = "0.18, 0.19"
-Aqua = "0.8"
+# Aqua 0.8.17+ test_persistent_tasks mirrors the test manifest and errors on any
+# dependency lacking a Project.toml: TreeViews 0.3.0 (via HomotopyContinuation)
+# ships only a REQUIRE file. Pinned 2026-09-17; lift once upstream tolerates it.
+Aqua = "0.8.0 - 0.8.16"
 Globtim = "1, 2"
 GlobtimPostProcessing = "0.1"
 JSON3 = "1.14"
