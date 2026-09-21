@@ -22,6 +22,8 @@
         "define_lotka_volterra_2D_model_v3_two_outputs" =>
             (p = [1.0, 0.5], ic = [1.0, 0.5]),
         "define_lotka_volterra_2D_sciml_benchmark" => (p = [1.5, 1.0], ic = [1.0, 1.0]),
+        "define_lv2d_sciml_product3_k000" =>
+            (p = [1.0, 1.5, 1.2, 1.3, 1.4, 1.1], ic = ones(6)),
         "define_lotka_volterra_3D_model" => (p = [0.5, -0.3, 0.2], ic = [1.0, 0.5]),
         "define_lotka_volterra_3D_model_locally_identifiable" =>
             (p = [0.5, -0.3, 0.2], ic = [1.0, 0.5]),

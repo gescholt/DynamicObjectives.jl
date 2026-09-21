@@ -864,6 +864,54 @@ define_lv2d_sciml_coupled_k0075() = _define_lv2d_sciml_coupled(0.0075) # 1.25%
 define_lv2d_sciml_coupled_k003() = _define_lv2d_sciml_coupled(0.03)    # 5%
 define_lv2d_sciml_coupled_k0075b() = _define_lv2d_sciml_coupled(0.075) # 12.5%
 
+# ── k-brick product family (bead 5618.1, dimension ladder 5618) ──────────────
+"""
+    _define_lv2d_sciml_product(k::Int)
+
+`k` uncoupled copies of the SciML LV brick,
+`D(x_i) = x_i (a_{2i-1} - 0.6 y_i)`, `D(y_i) = y_i (-a_{2i} + 0.8 x_i)`, every
+state observed: the kappa = 0 product family in `2k` parameters. The misfit is
+a sum of `k` planar misfits, so its critical set is the product
+`crit(f_1) x ... x crit(f_k)` of `k` planar censuses, which gives exact ground
+truth at every dimension `m = 2k`. `k = 2` is `define_lv2d_sciml_coupled_k000`
+with the same parameter and state names (`a1..a4`, `x1..x4`); `k = 1` is the
+brick itself.
+
+Parameters (2k): `a1 .. a_{2k}`; states (2k): `x1 .. x_{2k}`, brick `i` on
+`(x_{2i-1}, x_{2i})`; outputs (2k): `y_i = x_i`.
+"""
+function _define_lv2d_sciml_product(k::Int)
+    k >= 1 || throw(ArgumentError("need at least one brick, got k = $k"))
+    @independent_variables t
+    D = Differential(t)
+    # Bind the name before interpolating: `$(Symbol("a", i))` inside the macro
+    # is spliced as an expression and names the variable "Symbol(a, 1)".
+    params = map(1:2k) do i
+        nm = Symbol("a", i)
+        only(@parameters $nm)
+    end
+    states = map(1:2k) do i
+        nm = Symbol("x", i)
+        only(@variables $nm(t))
+    end
+    outs = map(1:2k) do i
+        nm = Symbol("y", i)
+        only(@variables $nm(t))
+    end
+    eqs = Equation[]
+    for i in 1:k
+        x, y = states[2i-1], states[2i]
+        push!(eqs, D(x) ~ x * (params[2i-1] - 0.6 * y))
+        push!(eqs, D(y) ~ y * (-params[2i] + 0.8 * x))
+    end
+    model = mtkcompile(System(eqs, t, states, params; name = :model))
+    outputs = [outs[i] ~ states[i] for i in 1:2k]
+    return model, params, states, outputs
+end
+
+"""Three uncoupled SciML LV bricks: the m = 6 rung of the dimension ladder."""
+define_lv2d_sciml_product3_k000() = _define_lv2d_sciml_product(3)
+
 # ── Randomized wiring family (rc01..rc24) ────────────────────────────────────
 # Same two wired pairs as the kappa ladder, but each of the four cross-rates is
 # drawn independently: sign +/- and magnitude log-uniform on [3e-4, 3e-2], which

@@ -200,6 +200,9 @@ include("test_experiment_utils.jl")
 # Validate all registered models
 include("test_all_registered_models.jl")
 
+# k-brick product family (bead 5618.1)
+include("test_lv2d_product.jl")
+
 # globtim integration tests (comprehensive test suite)
 include("test_globtim_integration.jl")
 
