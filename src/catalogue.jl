@@ -164,6 +164,8 @@ function _init_registries!()
     register_model!("define_lv2d_sciml_coupled_k0075", define_lv2d_sciml_coupled_k0075)
     register_model!("define_lv2d_sciml_coupled_k003", define_lv2d_sciml_coupled_k003)
     register_model!("define_lv2d_sciml_coupled_k0075b", define_lv2d_sciml_coupled_k0075b)
+    register_model!("define_lv2d_sciml_coupled_k0050", define_lv2d_sciml_coupled_k0050)
+    register_model!("define_lv2d_sciml_coupled_k0100", define_lv2d_sciml_coupled_k0100)
     register_model!("define_lv2d_sciml_product3_k000", define_lv2d_sciml_product3_k000)
     # Randomized-wiring family: 24 fixed literal draws (see lotka_volterra.jl).
     for i = 1:24
