@@ -203,6 +203,9 @@ include("test_all_registered_models.jl")
 # k-brick product family
 include("test_lv2d_product.jl")
 
+# FitzHugh-Nagumo sign conventions (reversed-sign models vs the Ramsay form)
+include("test_fhn_sign.jl")
+
 # globtim integration tests (comprehensive test suite)
 include("test_globtim_integration.jl")
 

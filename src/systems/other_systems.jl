@@ -2,13 +2,22 @@
 # FitzHugh-Nagumo and simple test models for identifiability studies
 
 """
-FitzHugh-Nagumo 3D model
-
-A simplified model of neuronal excitability derived from the Hodgkin-Huxley model.
+FitzHugh-Nagumo-form cubic system, 3 parameters, sign-reversed recovery equation
 
 System equations:
     dV/dt = g*(V - V³/3 + R)
     dR/dt = (1/g)*(V - a + b*R)
+
+!!! warning "Not the FitzHugh-Nagumo model"
+    The recovery equation has the sign reversed relative to FitzHugh-Nagumo in
+    the form of Ramsay et al. (2007), where `dR/dt = -(1/g)(V - a + bR)`. With
+    the sign used here the system is not excitable: at the catalogue entry
+    `FHN3D_1`, `(g, a, b) = (1.109, 1.133, 0.546)` from `(V, R)(0) = (0, 0)`, V
+    decreases monotonically to about -72 by `t = 20` and R to about -1.3e5. The
+    name and dynamics are kept so that the catalogue entries and published
+    results stay reproducible; read it as a cubic two-state test system
+    (called CUB-3D in the accompanying paper), not as a neuron model. The
+    correctly signed model is [`define_fitzhugh_nagumo_ramsay_model`](@ref).
 
 Parameters:
 - g: coupling parameter
@@ -42,11 +51,12 @@ function define_fitzhugh_nagumo_3D_model()
 end
 
 """
-FitzHugh-Nagumo 3D model — dual output (V + R)
+FitzHugh-Nagumo-form cubic system — dual output (V + R)
 
-Same ODE dynamics as `define_fitzhugh_nagumo_3D_model`, but both states are observed.
-Measuring both voltage V and recovery variable R eliminates the structural
-non-identifiability that makes single-output FHN level sets collapse to hyperplanes.
+Same ODE dynamics as `define_fitzhugh_nagumo_3D_model` (including its reversed
+recovery sign; see the warning there), but both states are observed.
+Measuring both V and R eliminates the structural non-identifiability that makes
+single-output level sets collapse to hyperplanes.
 
 System equations:
     dV/dt = g*(V - V³/3 + R)
@@ -81,6 +91,40 @@ function define_fitzhugh_nagumo_3D_model_two_outputs()
         params,
     )
     outputs = [y1 ~ V, y2 ~ R]
+    return model, params, states, outputs
+end
+
+"""
+    define_fitzhugh_nagumo_ramsay_model()
+
+FitzHugh-Nagumo model in the form of Ramsay, Hooker, Campbell and Cao (2007),
+three parameters, voltage observed.
+
+System equations:
+    dV/dt = g*(V - V³/3 + R)
+    dR/dt = -(1/g)*(V - a + b*R)
+
+Unlike `define_fitzhugh_nagumo_3D_model` (reversed sign in `dR/dt`), this is the
+excitable neuron model: at `(g, a, b) = (1.109, 1.133, 0.546)` from `(V, R)(0) = (0, 0)`
+V rises to about 1.76 and settles near 1.4. Ramsay et al. use
+`(a, b, g) = (0.2, 0.2, 3)`, which gives sustained spiking.
+
+Returns `(model, [g, a, b], [V, R], [y1 ~ V])`.
+"""
+function define_fitzhugh_nagumo_ramsay_model()
+    @independent_variables t
+    @parameters g a b
+    @variables V(t) R(t) y1(t)
+    D = Differential(t)
+    states = [V, R]
+    params = [g, a, b]
+    outputs = [y1 ~ V]
+    @mtkcompile model = System(
+        [D(V) ~ g * (V - V^3 / 3 + R), D(R) ~ -1 / g * (V - a + b * R)],
+        t,
+        states,
+        params,
+    )
     return model, params, states, outputs
 end
 
@@ -652,9 +696,10 @@ function define_goodwin_3d_locally_id_model()
 end
 
 """
-FitzHugh-Nagumo 3D — locally identifiable (squared coupling, dual output)
+FitzHugh-Nagumo-form cubic system — locally identifiable (squared coupling, dual output)
 
-Same FHN ODE but g → g², with both V and R observed. The squared parameterization
+Same ODE as `define_fitzhugh_nagumo_3D_model`, with the same reversed recovery sign
+(see the warning there), but g → g², with both V and R observed. The squared parameterization
 creates sign-flip symmetry: (g, a, b) and (-g, a, b) produce identical trajectories.
 Dual output avoids the 60-90% plateau problem of single-output FHN.
 

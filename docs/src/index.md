@@ -29,6 +29,11 @@ The result: a systematic way to benchmark parameter estimation algorithms across
 | Hard | FHN, Goodwin 4D, Lorenz, Rossler, identifiability tests | 1-4 params |
 | Very Hard | Generalized Lotka-Volterra 4D | 20 params |
 
+The "FHN" entries (`define_fitzhugh_nagumo_3D_model` and its variants) have the sign of
+the recovery equation reversed relative to FitzHugh-Nagumo, so they are cubic test
+systems rather than neuron models; `define_fitzhugh_nagumo_ramsay_model` is the
+correctly signed model, and the driven FitzHugh-Nagumo families use the standard form.
+
 See [Model Catalog](model_catalog.md) for complete details.
 
 ### Robust Error Handling

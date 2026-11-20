@@ -4,6 +4,23 @@ All notable changes to Dynamic_objectives.jl are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `define_fitzhugh_nagumo_ramsay_model`: FitzHugh-Nagumo in the form of Ramsay et
+  al. (2007), `dR/dt = -(1/g)(V - a + bR)`, voltage observed.
+
+### Documentation
+
+- `define_fitzhugh_nagumo_3D_model`, `define_fitzhugh_nagumo_3D_model_two_outputs`
+  and `define_fhn_3d_locally_id_model` have the recovery sign reversed relative to
+  FitzHugh-Nagumo (`dR/dt = +(1/g)(V - a + bR)`). Their dynamics are unchanged, so
+  catalogue entries and published results stay reproducible, but their docstrings
+  now say that they are cubic test systems, not neuron models (at `FHN3D_1` the
+  voltage decreases monotonically to about -72 by `t = 20`). The driven and
+  coupled FitzHugh-Nagumo families use the standard form and are not affected.
+
 ## [0.2.0] - 2026-11-19
 
 First registered release.

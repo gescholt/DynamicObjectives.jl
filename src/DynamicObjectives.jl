@@ -109,6 +109,7 @@ export define_fhn_coupled_A030_k0002, define_fhn_coupled_A030_k0005
 export define_fhn_coupled_A030_k0020, define_fhn_coupled_A030_k0050
 export define_fitzhugh_nagumo_3D_model,
     define_fitzhugh_nagumo_3D_model_two_outputs,
+    define_fitzhugh_nagumo_ramsay_model,
     define_goodwin_oscillator_4D,
     define_goodwin_oscillator_5D,
     define_goodwin_oscillator_6D,

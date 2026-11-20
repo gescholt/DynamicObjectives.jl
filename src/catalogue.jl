@@ -173,6 +173,10 @@ function _init_registries!()
         register_model!(nm, getfield(@__MODULE__, Symbol(nm)))
     end
     register_model!("define_fitzhugh_nagumo_3D_model", define_fitzhugh_nagumo_3D_model)
+    register_model!(
+        "define_fitzhugh_nagumo_ramsay_model",
+        define_fitzhugh_nagumo_ramsay_model,
+    )
     register_model!("define_fhn_driven_auto", define_fhn_driven_auto)
     register_model!("define_fhn_driven_A015", define_fhn_driven_A015)
     register_model!("define_fhn_driven_A030", define_fhn_driven_A030)
