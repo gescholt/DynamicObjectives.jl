@@ -5,18 +5,14 @@ using StaticArrays
 using OrdinaryDiffEqTsit5: Tsit5, AutoTsit5
 using OrdinaryDiffEqVerner: Vern7, Vern9
 using OrdinaryDiffEqRosenbrock: Rosenbrock23, Rodas5
-using OrdinaryDiffEqSDIRK: TRBDF2, KenCarp4
 using SciMLBase
 using DataStructures
 using LinearAlgebra
 using JSON3
 using Logging
 using Printf
-using PrettyTables
 using Statistics: mean
-using Term: Panel, apply_style
 using TOML
-using UnicodePlots
 
 # Include submodules
 include("compat_patches.jl")
@@ -157,15 +153,14 @@ export make_error_distance,
     get_tolerance,
     get_solver,
     # Re-exported ODE solvers (needed for TolerantObjective / make_error_distance,
-    # ext module, tests, and examples)
+    # ext module, tests, and examples). TRBDF2 / KenCarp4 are not re-exported:
+    # they come from `using OrdinaryDiffEqSDIRK` (DynamicObjectivesSDIRKExt).
     Tsit5,
     Vern7,
     Vern9,
     AutoTsit5,
     Rosenbrock23,
     Rodas5,
-    TRBDF2,
-    KenCarp4,
     # Re-exported SciMLBase symbols (needed by tests and examples)
     ODEProblem
 
@@ -181,7 +176,8 @@ export BoundednessResult,
     RankingResult,
     ScreeningResult
 
-# Display infrastructure
+# Display infrastructure (renderers in the PrettyTables / Term / UnicodePlots
+# extensions; see src/display.jl)
 export DisplayConfig,
     set_display_config!,
     display_model_summary,

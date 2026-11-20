@@ -19,7 +19,7 @@ using Printf
 
 import DynamicObjectives: run_experiment_from_config, _resolve_solver
 import DynamicObjectives:
-    Tsit5, Vern7, Vern9, Rodas5, Rosenbrock23, TRBDF2, KenCarp4, AutoTsit5
+    Tsit5, Vern7, Vern9, Rodas5, Rosenbrock23, AutoTsit5
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # run_experiment_from_config — TOML-driven experiment orchestrator

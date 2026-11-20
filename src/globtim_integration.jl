@@ -90,27 +90,48 @@ function build_experiment_objective end
 # Solver resolution — shared between core and extension
 # ═══════════════════════════════════════════════════════════════════════════════
 
-"""Map solver method name strings to OrdinaryDiffEq solver constructors."""
+"""
+Map solver method name strings to OrdinaryDiffEq solver constructors.
+
+A `Dict`, not a constant table: package extensions add the solvers whose package
+is optional (DynamicObjectivesSDIRKExt adds `"TRBDF2"` and `"KenCarp4"` in its
+`__init__`).
+"""
 const _SOLVER_MAP = Dict{String,Function}(
     "Tsit5" => () -> Tsit5(),
     "Vern7" => () -> Vern7(),
     "Vern9" => () -> Vern9(),
     "Rodas5" => () -> Rodas5(),
     "Rosenbrock23" => () -> Rosenbrock23(),
-    "TRBDF2" => () -> TRBDF2(),
-    "KenCarp4" => () -> KenCarp4(),
     "AutoTsit5" => () -> AutoTsit5(Rosenbrock23()),
+)
+
+"""Solver names provided by a package extension => (package to load, extension)."""
+const _EXTENSION_SOLVERS = Dict(
+    "TRBDF2" => ("OrdinaryDiffEqSDIRK", "DynamicObjectivesSDIRKExt"),
+    "KenCarp4" => ("OrdinaryDiffEqSDIRK", "DynamicObjectivesSDIRKExt"),
 )
 
 """
     _resolve_solver(method::String)
 
 Resolve a solver method name to an OrdinaryDiffEq solver instance.
+
+`"TRBDF2"` and `"KenCarp4"` need `using OrdinaryDiffEqSDIRK`; without it they
+raise an error naming that package.
 """
 function _resolve_solver(method::String)
-    haskey(_SOLVER_MAP, method) || error(
+    haskey(_SOLVER_MAP, method) && return _SOLVER_MAP[method]()
+    if haskey(_EXTENSION_SOLVERS, method)
+        pkg, ext = _EXTENSION_SOLVERS[method]
+        error(
+            "solver \"$method\" requires $pkg.jl. Add `using $pkg` to register it " *
+            "(package extension $ext).",
+        )
+    end
+    error(
         "Unknown solver method: \"$method\". " *
-        "Known: $(join(sort(collect(keys(_SOLVER_MAP))), ", "))",
+        "Known: $(join(sort(collect(keys(_SOLVER_MAP))), ", ")); " *
+        "with an extra package: $(join(sort(collect(keys(_EXTENSION_SOLVERS))), ", "))",
     )
-    return _SOLVER_MAP[method]()
 end

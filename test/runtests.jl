@@ -2,6 +2,9 @@ using DynamicObjectives
 using DynamicObjectives: DataStructures, ModelingToolkit
 import DynamicObjectives: ODEProblem, Tsit5, Vern9, AutoTsit5, Rosenbrock23
 using Test
+# The terminal display lives in three package extensions; the display testset
+# below needs all three. test_optional_deps.jl checks the package without them.
+using PrettyTables, Term, UnicodePlots
 
 @testset "DynamicObjectives.jl" begin
 
@@ -127,11 +130,49 @@ using Test
                 show_plot = false,
                 config = DisplayConfig(use_color = false),
             )
+
+            # Every display function, coloured and plain, through its extension
+            for cfg in (DisplayConfig(use_color = true), DisplayConfig(use_color = false))
+                @test display_time_series(data; config = cfg) === nothing
+                @test_nowarn display_comparison(data, data; config = cfg)
+                @test_nowarn display_model_summary(model; config = cfg)
+                @test_nowarn display_parameters(param_names, p_values; config = cfg)
+                @test_nowarn display_error_metrics(errors; config = cfg)
+                @test_nowarn display_optimization_result(result; config = cfg)
+                @test_nowarn display_optimization_progress(3, p_values, 0.5; config = cfg)
+                @test_nowarn display_section("Section"; subtitle = "sub", config = cfg)
+                @test_nowarn display_subsection("Subsection"; config = cfg)
+                @test_nowarn display_results(["a" => 1, "b" => 2.5e-6]; config = cfg)
+                @test_nowarn display_gradient_analysis([1e-9, 1e-3]; config = cfg)
+                @test_nowarn display_quality_summary(
+                    (n_raw = 4, n_converged = 3, best_refined_value = 1e-8,
+                     mean_improvement = 2.0);
+                    config = cfg,
+                )
+                @test_nowarn display_degree_comparison(
+                    [(degree = 4, n_critical_points = 3, best_objective = 1e-5)];
+                    config = cfg,
+                )
+                @test_nowarn display_top_critical_points(
+                    [p_values, 2 .* p_values], [0.1, 0.2], param_names;
+                    true_params = p_values, config = cfg,
+                )
+                @test_nowarn display_step(1, 2, "Step"; status = :completed, config = cfg)
+                @test with_progress((x, i) -> x^2, 1:3; config = cfg) == [1, 4, 9]
+                @test with_spinner(() -> 42, "spin"; config = cfg) == 42
+            end
+            # The stub reports a MethodError, not "requires PrettyTables", once
+            # the extension is loaded and only the argument types are wrong.
+            @test_throws MethodError display_results(42)
         finally
             redirect_stdout(original_stdout)
         end
     end
 end
+
+# Optional dependencies: display extensions and the SDIRK solvers, checked in a
+# subprocess that loads DynamicObjectives alone
+include("test_optional_deps.jl")
 
 # Aggregation strategy registry
 include("test_aggregation_strategies.jl")
