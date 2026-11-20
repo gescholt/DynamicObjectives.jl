@@ -266,8 +266,14 @@ A typed, immutable description of an ODE parameter estimation benchmark.
 - `name::String`: Short identifier (e.g., "LV_2D_v3")
 - `description::String`: Human-readable description
 - `model_fn::Function`: Returns `(model, params, states, outputs)` when called with no arguments
-- `p_true::Vector{Float64}`: True parameter values (generates reference data)
-- `ic::Vector{Float64}`: Initial conditions for ODE integration
+- `p_true::Vector{Float64}`: True parameter values (generates reference data), indexed by
+  `ModelingToolkit.parameters(model)`
+- `ic::Vector{Float64}`: Initial conditions for ODE integration, indexed by
+  `ModelingToolkit.unknowns(model)`, which is how the objective binds them. After
+  `@mtkcompile` that order often differs from the `states` that `model_fn` returns (for
+  the Lotka-Volterra, FitzHugh-Nagumo-form, Goodwin and DAISY models it is the reverse),
+  so `ic = [1.0, 0.5]` on a model with `unknowns = [x2, x1]` means `x1(0) = 0.5`. Bind
+  `Dict(unknowns(model) .=> ic)` when simulating an entry by hand.
 - `bounds::Vector{Tuple{Float64,Float64}}`: Parameter search bounds as (lo, hi) tuples
 - `time_interval::Vector{Float64}`: Integration time span `[t_start, t_end]`
 - `numpoints::Int`: Number of time points to sample

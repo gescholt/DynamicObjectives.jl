@@ -11,8 +11,10 @@ using DynamicObjectives.SciMLBase: solve
 
 function _fhn_trajectory(define_model, p; T = 20.0, n = 201)
     model, params, states, outputs = define_model()
-    # bind by the returned state symbols, not by unknowns(model) order
-    prob = ODEProblem(model, merge(Dict(states .=> [0.0, 0.0]), Dict(params .=> p)), (0.0, T))
+    # canonical binding, as the catalogue objective does (ic indexed by unknowns(model));
+    # (0, 0) is the same in either order
+    u = DynamicObjectives.ModelingToolkit.unknowns(model)
+    prob = ODEProblem(model, merge(Dict(u .=> [0.0, 0.0]), Dict(params .=> p)), (0.0, T))
     sol = solve(prob, Tsit5(); abstol = 1e-10, reltol = 1e-10, saveat = range(0.0, T; length = n))
     return sol[states[1]], sol[states[2]]
 end
