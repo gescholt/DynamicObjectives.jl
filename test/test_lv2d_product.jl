@@ -18,7 +18,7 @@ function _outputs(fn, p, ic; T = 20.0, n = 60)
     return reduce(hcat, [collect(sol[eq.rhs]) for eq in outs])
 end
 
-@testset "lv2d product family (5618.1)" begin
+@testset "lv2d product family" begin
     brick = DynamicObjectives.define_lotka_volterra_2D_sciml_benchmark
     YA = _outputs(brick, [1.0, 1.5], ones(2))
     YB = _outputs(brick, [1.2, 1.3], ones(2))
