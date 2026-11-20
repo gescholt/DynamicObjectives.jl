@@ -2,75 +2,31 @@
 
 Reproducible experiments for the SIAM/DS paper on polynomial-based parameter estimation.
 
-## Prerequisites
-
-You need the following installed before proceeding:
-
-- **Julia 1.10+**
-- **Globtim** — clone from the shared repo into a sibling directory
-- **GlobtimPostProcessing** — clone from the shared repo into a sibling directory
-
-Your directory layout must look like:
-
-```
-parent_dir/
-  DynamicObjectives/     # this repo
-  globtim/                # Globtim package
-  globtimpostprocessing/  # GlobtimPostProcessing package
-```
-
 ## Setup
 
-```bash
-# 1. Clone all three repos into the same parent directory
-cd parent_dir
-git clone git@github.com:gescholt/DynamicObjectives.jl.git
-git clone <globtim-repo-url> globtim
-git clone <globtimpostprocessing-repo-url> globtimpostprocessing
+All three packages are registered in Julia's General registry:
 
-# 2. Run setup (adds Globtim + GlobtimPostProcessing as dev dependencies)
-cd DynamicObjectives.jl
-julia setup_dev_packages.jl
+```julia
+using Pkg
+Pkg.add(["DynamicObjectives", "Globtim", "GlobtimPostProcessing", "Optim"])
 ```
 
-The setup script will error if the sibling directories are not found.
+Julia 1.12 or later.
 
 ## Running experiments
 
-### From the monorepo root (recommended)
+Each file in `configs/` is a complete experiment (model, catalogue entry, domain,
+polynomial degrees, solver, refinement, output directory). Run one from the package root:
 
-```bash
-# Run a single experiment
-julia --project=profiles/dev experiments/drivers/run_experiment.jl pkg/DynamicObjectives/paper/configs/lv2d.toml
-
-# Run all 16 paper experiments
-julia --project=profiles/dev experiments/drivers/run_experiment.jl pkg/DynamicObjectives/paper/configs/*.toml
-
-# Validate configs without executing (dry run)
-julia --project=profiles/dev experiments/drivers/run_experiment.jl --dry-run pkg/DynamicObjectives/paper/configs/*.toml
+```julia
+using DynamicObjectives, Globtim, GlobtimPostProcessing, Optim
+result = run_experiment_from_config("paper/configs/lv2d.toml")
 ```
 
-### From the DynamicObjectives directory
-
-```bash
-cd DynamicObjectives
-julia --project=. paper/run_experiment.jl paper/configs/deuflhard_2d.toml
-julia --project=. paper/run_experiment.jl paper/configs/*.toml
-```
-
-Results are written to the `[output].dir` path in each TOML config.
-
-## Post-processing saved results
-
-After running an experiment, re-run the analysis without re-computing:
-
-```bash
-# From monorepo root
-julia --project=profiles/dev experiments/drivers/postprocess_experiment.jl results/lv2d/ --all
-
-# From DynamicObjectives/
-julia --project=. paper/postprocess_experiment.jl results/lv2d/ --all
-```
+Loading Globtim, GlobtimPostProcessing and Optim activates the package extension that
+provides `run_experiment_from_config`. Results are written to the `[output].dir` path in
+each config; a path starting with `globtim_results/` resolves under Globtim's results
+root (the `GLOBTIM_RESULTS_ROOT` environment variable when set).
 
 ## Experiment list
 

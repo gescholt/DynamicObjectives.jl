@@ -2,12 +2,11 @@
 # Regenerate the L2 vs L2² illustrative figure for DynamicObjectives docs.
 #
 # Run with:
-#   julia --project=profiles/viz pkg/DynamicObjectives/examples/figures/l2_vs_l2squared.jl
+#   julia --project=<env with DynamicObjectives and CairoMakie> examples/figures/l2_vs_l2squared.jl
 #
-# Output: pkg/DynamicObjectives/docs/src/assets/l2_vs_l2squared.png
+# Output: docs/src/assets/l2_vs_l2squared.png (relative to the package root)
 #
-# Setup mirrors the LV2D_paper_1 catalogue entry
-# (globtim_results/lv2d_catalogue.jsonl).
+# Setup mirrors the LV2D_paper_1 entry of paper/catalogue/lv2d_catalogue.jsonl.
 
 using DynamicObjectives
 using DynamicObjectives: L2_norm, L2_squared, make_error_distance

@@ -1,6 +1,6 @@
 #!/usr/bin/env julia
 # End-to-end screening pipeline demo
-# Usage: julia --project=DynamicObjectives DynamicObjectives/examples/run_screening_demo.jl
+# Usage: julia --project=<env with DynamicObjectives> examples/run_screening_demo.jl
 #
 # Demonstrates the full p_true discovery workflow:
 #   1. Define model + parameter space

@@ -5,11 +5,11 @@
 #
 # Usage:
 #   using DynamicObjectives
-#   result = run_screening_from_config("DynamicObjectives/examples/exp_candidates/lv4d.toml")
+#   result = run_screening_from_config("examples/exp_candidates/lv4d.toml")
 #
 # Then run CP recovery with the experiment config:
 #   using DynamicObjectives, Globtim, GlobtimPostProcessing
-#   result = run_experiment_from_config("DynamicObjectives/examples/configs/lv4d_basic.toml")
+#   result = run_experiment_from_config("examples/configs/lv4d_basic.toml")
 
 [screening]
 name = "lv4d"
@@ -33,6 +33,7 @@ abstol = 1e-4
 reltol = 1e-4
 
 [output]
-catalogue_path = "globtim_results/lv4d_catalogue.jsonl"
+# Relative paths resolve against this file's directory.
+catalogue_path = "lv4d_catalogue.jsonl"
 name_prefix = "LV4D"
 top_n = 3

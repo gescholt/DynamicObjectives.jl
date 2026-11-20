@@ -95,13 +95,11 @@ Screening configs live in [`examples/exp_candidates/`](examples/exp_candidates/)
 
 ```julia
 using DynamicObjectives
-result = run_screening_from_config("DynamicObjectives/examples/exp_candidates/lv4d.toml")
+result = run_screening_from_config("examples/exp_candidates/lv4d.toml")
 ```
 
-Available screening configs:
-- `lv4d.toml` — Constrained Lotka-Volterra 4D
-- `fhn3d.toml` — FitzHugh-Nagumo 3D (stiff-aware solver)
-- `daisy4d.toml` — DAISY Ex3 4D
+`lv4d.toml` screens the constrained Lotka-Volterra 4D model and writes its catalogue
+next to the config. Relative paths in a config resolve against the config's directory.
 
 ### Pipeline 2: CP Recovery
 
@@ -112,14 +110,12 @@ Experiment configs live in [`examples/configs/`](examples/configs/).
 
 ```julia
 using DynamicObjectives, Globtim, GlobtimPostProcessing
-result = run_experiment_from_config("DynamicObjectives/examples/configs/lv4d_basic.toml")
+result = run_experiment_from_config("examples/configs/lv4d_basic.toml")
 ```
 
-Available experiment configs:
-- `lv4d_basic.toml` — LV4D at radius=0.005
-- `fhn3d_basic.toml` — FHN3D with AutoTsit5
-- `fhn3d_tight.toml` — FHN3D with tighter tolerances
-- `daisy4d_sweep.toml` — DAISY4D at radius=0.005
+`lv4d_basic.toml` runs LV4D at radius 0.005 on the `LV4D_1` entry of the catalogue
+shipped in [`paper/catalogue/`](paper/catalogue/). The experiment configs of the paper
+are in [`paper/configs/`](paper/configs/).
 
 ## Running Tests
 

@@ -863,14 +863,15 @@ define_lv2d_sciml_coupled_k0030() = _define_lv2d_sciml_coupled(0.003)  # 0.5% of
 define_lv2d_sciml_coupled_k0075() = _define_lv2d_sciml_coupled(0.0075) # 1.25%
 define_lv2d_sciml_coupled_k003() = _define_lv2d_sciml_coupled(0.03)    # 5%
 define_lv2d_sciml_coupled_k0075b() = _define_lv2d_sciml_coupled(0.075) # 12.5%
-# Band located by the downward displacement-ratio ladder (bead 0lhz.10, 2026-09-30,
+# Band located by a downward displacement-ratio ladder (
 # T = 40 bricks, 49 product points): ratio to nearest-neighbour spacing 0.33 at 5e-3
 # (lower edge) and 0.61 at 1e-2 (crossing: 42/49 polishes leave their product point).
-# These are the COUPLED arms under the 2026-09-21 rule; k0030 is a deformed product.
+# These count as genuinely coupled (the 4-D critical set is not a product of two
+# planar ones); k0030 is a deformed product.
 define_lv2d_sciml_coupled_k0050() = _define_lv2d_sciml_coupled(0.005)  # 0.83%, band edge
 define_lv2d_sciml_coupled_k0100() = _define_lv2d_sciml_coupled(0.01)   # 1.67%, crossing
 
-# ── k-brick product family (bead 5618.1, dimension ladder 5618) ──────────────
+# ── k-brick product family ───────────────────────────────────────────────────
 """
     _define_lv2d_sciml_product(k::Int)
 

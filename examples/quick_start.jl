@@ -1,11 +1,6 @@
 #!/usr/bin/env julia
 # Quick Start: Your First Test with globtim
-# Usage: julia --project=. examples/quick_start.jl
-#
-# Prerequisites: Run setup_dev_packages.jl once to install Globtim
-
-using Pkg
-Pkg.activate(dirname(@__DIR__))
+# Usage: julia --project=<env with DynamicObjectives, Globtim, GlobtimPostProcessing> examples/quick_start.jl
 
 using DynamicObjectives
 using Globtim: Globtim, run_standard_experiment
@@ -13,13 +8,6 @@ using GlobtimPostProcessing:
     GlobtimPostProcessing, refine_experiment_results, ode_refinement_config
 using LinearAlgebra
 using Printf
-
-# Load ExperimentCLI for configuration
-if !isdefined(Main, :ExperimentCLI)
-    globtim_path = joinpath(dirname(@__DIR__), "..", "globtim")
-    include(joinpath(globtim_path, "src", "ExperimentCLI.jl"))
-end
-using .ExperimentCLI
 
 display_section("Quick Start: Testing DynamicObjectives with globtim")
 

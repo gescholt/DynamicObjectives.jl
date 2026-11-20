@@ -93,8 +93,9 @@ const _SCREENING_RESULTS_PREFIX = "globtim_results/"  # always forward slash —
 Resolve a relative path from a screening TOML config to an absolute path.
 
 - Absolute paths pass through unchanged
-- Paths starting with `"globtim_results/"` are resolved by walking up from
-  `config_dir` to find the repo root (directory containing `globtim_results/`)
+- Paths starting with `"globtim_results/"` are resolved against `GLOBTIM_RESULTS_ROOT`
+  when set, else against the nearest `globtim_results/` directory above `config_dir`
+  (an error names the alternatives when there is none)
 - Other relative paths resolve relative to `config_dir`
 """
 function _resolve_screening_path(p::AbstractString, config_dir::AbstractString)
@@ -141,13 +142,14 @@ function _find_results_root_from(start_dir::AbstractString)::String
         current = parent
     end
     error("""
-        Cannot find globtim_results/ directory.
-        Searched upward from: $start_dir
+        A path starting with "globtim_results/" is resolved against a globtim_results/
+        directory found by searching upward from the config file's directory, and there
+        is none above $start_dir.
 
         Either:
-        1. Run from within the repository, or
-        2. Set the GLOBTIM_RESULTS_ROOT environment variable, or
-        3. Use an absolute path for catalogue_path in your TOML config
+        1. give catalogue_path relative to the TOML file (e.g. "lv4d_catalogue.jsonl"),
+        2. give an absolute path, or
+        3. set the GLOBTIM_RESULTS_ROOT environment variable to an existing directory.
         """)
 end
 

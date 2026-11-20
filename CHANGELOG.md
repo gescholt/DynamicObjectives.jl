@@ -4,7 +4,25 @@ All notable changes to Dynamic_objectives.jl are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.0] - 2026-09-10
+## [0.2.0] - 2026-11-19
+
+First registered release.
+
+### Removed
+
+- The campaign scripts in `examples/` (per-model screening runs, sweeps,
+  diagnostics, integration templates) and `scripts/run_screening.jl`. They read
+  result directories outside the package. `examples/` keeps a few self-contained
+  demos (see `examples/README.md`).
+
+### Changed
+
+- `examples/configs/lv4d_basic.toml` reads the catalogue shipped in
+  `paper/catalogue/`, and `examples/exp_candidates/lv4d.toml` writes its catalogue
+  next to the config.
+- The error for a `globtim_results/...` path with no `globtim_results/` directory
+  above the config now says what to pass instead.
+- `GlobtimPostProcessing` weak-dependency compat widened to `0.1, 0.2`.
 
 ### Added
 

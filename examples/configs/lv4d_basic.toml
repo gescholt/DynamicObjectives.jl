@@ -1,16 +1,16 @@
 # LV4D Basic — Constrained Lotka-Volterra 4D CP Recovery
-# Mirrors: DynamicObjectives/examples/run_lv4d_globtim.jl
 #
 # Usage:
 #   using DynamicObjectives
-#   result = run_experiment_from_config("DynamicObjectives/examples/configs/lv4d_basic.toml")
+#   result = run_experiment_from_config("examples/configs/lv4d_basic.toml")
 
 [experiment]
 name = "lv4d_basic"
 description = "Constrained LV4D CP recovery on first screening candidate"
 
 [model]
-catalogue_path = "globtim_results/lv4d_catalogue.jsonl"
+# The catalogue shipped with the package (paper/catalogue); relative to this file.
+catalogue_path = "../../paper/catalogue/lv4d_catalogue.jsonl"
 entry_name = "LV4D_1"
 
 [domain]

@@ -1,4 +1,4 @@
-# The k-brick kappa=0 product family (bead 5618.1). Its value is that the
+# The k-brick kappa=0 product family. Its value is that the
 # critical set of the 2k-parameter misfit is the product of k planar censuses,
 # which only holds if brick i of the product IS the planar brick with the same
 # rates. These tests pin that: trajectories of the product blocks equal the

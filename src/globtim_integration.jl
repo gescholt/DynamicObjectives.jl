@@ -38,7 +38,7 @@ using DynamicObjectives
 using Globtim                  # ← triggers DynamicObjectivesGlobtimExt
 using GlobtimPostProcessing    # ← triggers DynamicObjectivesGlobtimExt
 
-result = run_experiment_from_config("experiments/lv4d_basic.toml")
+result = run_experiment_from_config("examples/configs/lv4d_basic.toml")
 ```
 
 # ForwardDiff Compatibility
