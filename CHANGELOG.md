@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-19
+
 ### Added
 
 - `define_fitzhugh_nagumo_ramsay_model`: FitzHugh-Nagumo in the form of Ramsay et
