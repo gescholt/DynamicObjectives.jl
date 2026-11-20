@@ -1,8 +1,9 @@
 #!/usr/bin/env julia
 # Quick Start: Your First Test with globtim
-# Usage: julia --project=<env with DynamicObjectives, Globtim, GlobtimPostProcessing> examples/quick_start.jl
+# Usage: julia --project=<env with DynamicObjectives, Globtim, GlobtimPostProcessing, PrettyTables, Term> examples/quick_start.jl
 
 using DynamicObjectives
+using PrettyTables, Term  # display_results / display_parameters tables; display_section panels
 using Globtim: Globtim, run_standard_experiment
 using GlobtimPostProcessing:
     GlobtimPostProcessing, refine_experiment_results, ode_refinement_config

@@ -50,6 +50,21 @@ Or, for development against a local checkout:
 pkg> develop /path/to/DynamicObjectives
 ```
 
+### Optional packages
+
+Some features are package extensions: they load when you load the package behind
+them, and otherwise raise an error that names that package.
+
+| Feature | Load |
+|---|---|
+| Terminal tables: `display_parameters`, `display_results`, `display_error_metrics`, `display_gradient_analysis`, `display_quality_summary`, `display_degree_comparison`, `display_top_critical_points`, the table of `display_time_series` | `using PrettyTables` |
+| Panels, headers and progress: `display_section`, `display_subsection`, `display_step`, `display_model_summary`, `display_optimization_result`, `display_optimization_progress`, `progress_bar` / `with_progress`, `spinner` / `with_spinner` | `using Term` |
+| Line plots: `display_comparison`, the plots of `display_time_series` (`show_plot = false` skips them) | `using UnicodePlots` |
+| Stiff SDIRK solvers `"TRBDF2"` and `"KenCarp4"` (solver names in TOML configs); the solver types come from that package, not from DynamicObjectives | `using OrdinaryDiffEqSDIRK` |
+
+The screening and objective pipelines need none of these. `"AutoTsit5"`,
+`"Rodas5"` and `"Rosenbrock23"` (stiff-capable) stay in the core package.
+
 ## Quick Start
 
 ```julia

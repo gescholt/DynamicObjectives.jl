@@ -1,7 +1,10 @@
 # Basic Workflow Example
 # A simple, practical example showing typical usage of DynamicObjectives
+# Needs PrettyTables, Term and UnicodePlots in the environment (terminal display
+# is a package extension of each).
 
 using DynamicObjectives
+using PrettyTables, Term, UnicodePlots  # tables, panels, line plots
 
 println("\n" * "="^60)
 println("Basic Parameter Estimation Workflow")

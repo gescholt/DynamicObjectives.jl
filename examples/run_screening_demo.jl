@@ -1,6 +1,6 @@
 #!/usr/bin/env julia
 # End-to-end screening pipeline demo
-# Usage: julia --project=<env with DynamicObjectives> examples/run_screening_demo.jl
+# Usage: julia --project=<env with DynamicObjectives, PrettyTables, Term> examples/run_screening_demo.jl
 #
 # Demonstrates the full p_true discovery workflow:
 #   1. Define model + parameter space
@@ -10,6 +10,7 @@
 #   5. Verify: construct objective from loaded entry, sanity-check at p_true
 
 using DynamicObjectives
+using PrettyTables, Term  # display_results tables; display_section panels
 using Printf
 
 # ═══════════════════════════════════════════════════════════════════════════════

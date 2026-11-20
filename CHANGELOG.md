@@ -10,6 +10,43 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - `define_fitzhugh_nagumo_ramsay_model`: FitzHugh-Nagumo in the form of Ramsay et
   al. (2007), `dR/dt = -(1/g)(V - a + bR)`, voltage observed.
+- Package extensions `DynamicObjectivesPrettyTablesExt`, `DynamicObjectivesTermExt`,
+  `DynamicObjectivesUnicodePlotsExt` and `DynamicObjectivesSDIRKExt` (see Changed).
+
+### Changed
+
+- **Breaking.** Terminal display needs the package that draws it, loaded next to
+  DynamicObjectives; PrettyTables, Term and UnicodePlots are no longer
+  dependencies. Without the package the function raises an error that names it
+  (`display_results requires PrettyTables.jl. Add `using PrettyTables` ...`).
+  - `using PrettyTables`: `display_parameters`, `display_error_metrics`,
+    `display_results`, `display_gradient_analysis`, `display_quality_summary`,
+    `display_degree_comparison`, `display_top_critical_points`, and the preview
+    table of `display_time_series`.
+  - `using Term`: `display_section`, `display_subsection`, `display_step`,
+    `display_model_summary`, `display_optimization_result`,
+    `display_optimization_progress`, and drawing of progress bars and spinners
+    (`progress_bar`, `update_progress!`, `finish_progress!`, `with_progress`,
+    `spinner`, `spin!`, `stop_spinner!`, `with_spinner`). The `ProgressBar` and
+    `Spinner` types stay in the core package.
+  - `using UnicodePlots`: `display_comparison` and the plots of
+    `display_time_series` (`show_plot = false` needs PrettyTables only).
+  - `DisplayConfig`, `set_display_config!`, `format_duration` and
+    `format_critical_points_markdown` need none of them.
+  - So that each function needs one package, the panel headers above tables and
+    plots are gone: `display_error_metrics` and `display_time_series` print their
+    heading as the table title, `display_comparison` prints a plain-text heading.
+- **Breaking.** The solver names `"TRBDF2"` and `"KenCarp4"` need
+  `using OrdinaryDiffEqSDIRK`; OrdinaryDiffEqSDIRK is no longer a dependency.
+  Without it `_resolve_solver` (and every TOML config naming those solvers) raises
+  `solver "TRBDF2" requires OrdinaryDiffEqSDIRK.jl. Add `using OrdinaryDiffEqSDIRK` ...`.
+  Tsit5, AutoTsit5, Vern7, Vern9, Rosenbrock23 and Rodas5 are unchanged.
+- The dependency closure drops from 204 to 171 registered packages.
+
+### Removed
+
+- **Breaking.** `TRBDF2` and `KenCarp4` are no longer exported; take them from
+  `OrdinaryDiffEqSDIRK`.
 
 ### Documentation
 
